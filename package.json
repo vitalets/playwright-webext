@@ -22,7 +22,7 @@
     "tsc": "tsc",
     "prettier": "prettier --check --ignore-unknown .",
     "prettier:w": "prettier --write --ignore-unknown .",
-    "test": "echo tbd",
+    "test": "npx playwright test",
     "deps": "npx npm-check-updates -i --format group,dep,repo --cooldown 3",
     "build": "rm -rf ./dist && tsc -p tsconfig.build.json"
   },
