@@ -1,3 +1,7 @@
+/**
+ * Launches the persistent Chromium context that hosts the extension under test.
+ */
+
 import { dirname, isAbsolute, resolve } from 'node:path';
 import { chromium } from '@playwright/test';
 import type { ViewportSize } from '@playwright/test';
@@ -11,6 +15,9 @@ type LaunchExtensionOptions = {
   viewport: ViewportSize | null;
 };
 
+/**
+ * Starts Chromium with the configured extension and returns its runtime facade.
+ */
 export async function launchContextWithExtension({
   configFile,
   extensionPath,
@@ -20,11 +27,11 @@ export async function launchContextWithExtension({
 }: LaunchExtensionOptions): Promise<Extension> {
   const path = resolveExtensionPath(extensionPath, configFile);
   const context = await chromium.launchPersistentContext('', {
+    channel: 'chromium',
     args: [
       `--load-extension=${path}`, // prettier-ignore
       `--disable-extensions-except=${path}`,
     ],
-    channel: 'chromium',
     headless,
     viewport,
   });

@@ -1,3 +1,7 @@
+/**
+ * Represents a running browser extension and exposes its Playwright runtime handles.
+ */
+
 /// <reference types="chrome" preserve="true" />
 
 import type { BrowserContext, Worker } from '@playwright/test';
@@ -10,6 +14,9 @@ type ExtensionOptions = {
   worker: Worker;
 };
 
+/**
+ * Provides access to a loaded extension's context, metadata, worker, and resource URLs.
+ */
 export class Extension {
   private readonly options: ExtensionOptions;
 
@@ -41,14 +48,15 @@ export class Extension {
    *
    * This intentionally does not emulate dynamic URLs created by
    * web_accessible_resources entries with use_dynamic_url.
-   *
-   * @param path Path relative to the extension root.
    */
   getURL(path = ''): string {
     const suffix = path.startsWith('/') ? path : `/${path}`;
     return new URL(`chrome-extension://${this.id}${suffix}`).href;
   }
 
+  /**
+   * Creates an extension facade after its background worker becomes available.
+   */
   static async create(context: BrowserContext, timeout: number): Promise<Extension> {
     const worker = await waitForWorker(context, timeout);
     const workerUrl = assertBackgroundWorker(worker);
@@ -66,6 +74,9 @@ export class Extension {
   }
 }
 
+/**
+ * Returns the extension service worker, waiting for it when necessary.
+ */
 export async function waitForWorker(context: BrowserContext, timeout: number): Promise<Worker> {
   const worker = context.serviceWorkers().find(isExtensionWorker);
   return (
