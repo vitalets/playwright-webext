@@ -1,10 +1,12 @@
 # playwright-webext
 
-Playwright fixtures for testing one unpacked Chromium Manifest V3 extension.
+A Playwright-powered testing harness for browser extensions.
 
-The package leaves Playwright's built-in `page` and `context` untouched. Tests
-that request the lazy `extension` fixture receive a separate persistent
-Chromium context with the extension loaded.
+## Features
+
+- Auto-loading extension by `extensionPath` option.
+- A single `extension` fixture with useful methods.
+- tbd
 
 ## Prerequisites
 
@@ -23,6 +25,8 @@ npm install -D playwright-webext
 
 ## Configuration
 
+Add `extensionPath` option to the `use` section in the Playwright config:
+
 ```ts
 // playwright.config.ts
 import { defineConfig } from '@playwright/test';
@@ -35,15 +39,11 @@ export default defineConfig<WebextOptions>({
 });
 ```
 
-Relative `extensionPath` values resolve from the directory containing the
-Playwright configuration file. When no configuration file is used, they
-resolve from `process.cwd()`. The directory must already contain a built,
-unpacked MV3 extension.
-
 ## Usage
 
 ```ts
-import { expect, test } from 'playwright-webext';
+import { test } from 'playwright-webext';
+import { expect } from '@playwright/test';
 
 test('opens an extension page', async ({ extension }) => {
   const page = await extension.context.newPage();
@@ -51,9 +51,7 @@ test('opens an extension page', async ({ extension }) => {
   await page.goto(extension.getURL('options.html'));
   await expect(page).toHaveTitle(/Options/);
 
-  const runtimeId = await extension.worker.evaluate(
-    () => chrome.runtime.id,
-  );
+  const runtimeId = await extension.worker.evaluate(() => chrome.runtime.id);
   expect(runtimeId).toBe(extension.id);
   expect(extension.manifest.manifest_version).toBe(3);
 });
