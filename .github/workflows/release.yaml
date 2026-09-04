@@ -50,6 +50,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - run: npm ci
+      - run: npx playwright install --with-deps chromium
       # - run: npm run lint
       - run: npm run prettier
       # - run: npm run knip
