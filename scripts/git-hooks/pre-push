@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# Exit on any error
+set -euo pipefail
+
+if [[ -n "${SKIP_GIT_HOOKS-}" ]]; then exit 0; fi
+
+npm run prettier
+npm run tsc
+npm run build
+
+# todo: lint, knip, tests
