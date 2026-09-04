@@ -1,5 +1,8 @@
 node_modules/
 .DS_Store
 .vscode/
+/dist/
+/test-results/
+/playwright-report/
 
 /todo.txt
