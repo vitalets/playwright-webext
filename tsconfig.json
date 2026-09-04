@@ -8,17 +8,8 @@
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
     "stripInternal": true,
-    "types": [
-      "chrome",
-      "node"
-    ]
+    "types": ["chrome", "node"]
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    "**/*.mts"
-  ],
-  "exclude": [
-    "dist"
-  ]
+  "include": ["**/*.ts", "**/*.tsx", "**/*.mts"],
+  "exclude": ["dist"]
 }

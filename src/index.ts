@@ -17,16 +17,7 @@ export type WebextFixtures = {
 
 export const test = base.extend<WebextOptions & WebextFixtures>({
   extensionPath: ['', { option: true }],
-  extension: async (
-    {
-      browserName,
-      extensionPath,
-      headless,
-      viewport,
-    },
-    use,
-    testInfo,
-  ) => {
+  extension: async ({ browserName, extensionPath, headless, viewport }, use, testInfo) => {
     throwIf(!extensionPath, 'The extension fixture requires use.extensionPath.');
     throwIf(
       browserName !== 'chromium',

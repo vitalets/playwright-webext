@@ -49,16 +49,13 @@ export class Extension {
     return new URL(`chrome-extension://${this.id}${suffix}`).href;
   }
 
-  static async create(
-    context: BrowserContext,
-    timeout: number,
-  ): Promise<Extension> {
+  static async create(context: BrowserContext, timeout: number): Promise<Extension> {
     const worker = await waitForWorker(context, timeout);
     const workerUrl = assertBackgroundWorker(worker);
 
-    const manifest = await worker.evaluate(
-      () => chrome.runtime.getManifest(),
-    ) as chrome.runtime.ManifestV3;
+    const manifest = (await worker.evaluate(() =>
+      chrome.runtime.getManifest(),
+    )) as chrome.runtime.ManifestV3;
 
     return new Extension({
       context,
@@ -69,15 +66,15 @@ export class Extension {
   }
 }
 
-export async function waitForWorker(
-  context: BrowserContext,
-  timeout: number,
-): Promise<Worker> {
+export async function waitForWorker(context: BrowserContext, timeout: number): Promise<Worker> {
   const worker = context.serviceWorkers().find(isExtensionWorker);
-  return worker ?? context.waitForEvent('serviceworker', {
-    predicate: isExtensionWorker,
-    timeout,
-  });
+  return (
+    worker ??
+    context.waitForEvent('serviceworker', {
+      predicate: isExtensionWorker,
+      timeout,
+    })
+  );
 }
 
 function isExtensionWorker(worker: Worker): boolean {

@@ -18,6 +18,7 @@
     "README.md"
   ],
   "scripts": {
+    "tsc": "tsc",
     "build": "rm -rf ./dist && tsc -p tsconfig.build.json",
     "prettier": "prettier --check --ignore-unknown .",
     "prettier:w": "prettier --write --ignore-unknown .",

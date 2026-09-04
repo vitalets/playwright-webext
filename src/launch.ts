@@ -37,10 +37,7 @@ export async function launchContextWithExtension({
   }
 }
 
-function resolveExtensionPath(
-  extensionPath: string,
-  configFile?: string,
-): string {
+function resolveExtensionPath(extensionPath: string, configFile?: string): string {
   if (isAbsolute(extensionPath)) {
     return extensionPath;
   }
