@@ -3,11 +3,7 @@
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "rootDir": "src",
-    "outDir": "dist",
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
+    "noEmit": true,
     "strict": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
@@ -18,6 +14,11 @@
     ]
   },
   "include": [
-    "src/**/*.ts"
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.mts"
+  ],
+  "exclude": [
+    "dist"
   ]
 }
