@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "description": "A Playwright-powered testing harness for browser extensions",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vitalets/playwright-webext.git"
+  },
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
