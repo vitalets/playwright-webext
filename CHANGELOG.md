@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+- Forward Playwright `launchOptions` to the extension browser.
+
 ## [0.1.1] - 2026-09-04
 
 - Initial release.

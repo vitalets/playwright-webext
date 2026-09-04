@@ -30,7 +30,11 @@ export { Extension } from './extension.js';
  */
 export const test = base.extend<WebextOptions & WebextFixtures>({
   extensionPath: ['', { option: true }],
-  extension: async ({ browserName, extensionPath, headless, viewport }, use, testInfo) => {
+  extension: async (
+    { browserName, extensionPath, headless, launchOptions, viewport },
+    use,
+    testInfo,
+  ) => {
     throwIf(!extensionPath, 'The extension fixture requires use.extensionPath.');
     throwIf(
       browserName !== 'chromium',
@@ -41,6 +45,7 @@ export const test = base.extend<WebextOptions & WebextFixtures>({
       configFile: testInfo.config.configFile,
       extensionPath,
       headless,
+      launchOptions,
       timeout: testInfo.timeout,
       viewport,
     });

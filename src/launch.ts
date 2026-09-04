@@ -4,13 +4,14 @@
 
 import { dirname, isAbsolute, resolve } from 'node:path';
 import { chromium } from '@playwright/test';
-import type { ViewportSize } from '@playwright/test';
+import type { LaunchOptions, ViewportSize } from '@playwright/test';
 import { Extension } from './extension.js';
 
 type LaunchExtensionOptions = {
   configFile?: string;
   extensionPath: string;
   headless: boolean;
+  launchOptions: Omit<LaunchOptions, 'tracesDir'>;
   timeout: number;
   viewport: ViewportSize | null;
 };
@@ -22,13 +23,16 @@ export async function launchContextWithExtension({
   configFile,
   extensionPath,
   headless,
+  launchOptions: { args = [], ...launchOptions },
   timeout,
   viewport,
 }: LaunchExtensionOptions): Promise<Extension> {
   const path = resolveExtensionPath(extensionPath, configFile);
   const context = await chromium.launchPersistentContext('', {
+    ...launchOptions,
     channel: 'chromium',
     args: [
+      ...args,
       `--load-extension=${path}`, // prettier-ignore
       `--disable-extensions-except=${path}`,
     ],
