@@ -4,4 +4,9 @@
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-09-04
+
 - Initial release.
+
+[unreleased]: https://github.com/vitalets/playwright-webext/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/vitalets/playwright-webext/releases/tag/v0.1.1

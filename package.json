@@ -1,6 +1,6 @@
 {
   "name": "playwright-webext",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A Playwright-powered testing harness for browser extensions",
   "type": "module",
   "repository": {
