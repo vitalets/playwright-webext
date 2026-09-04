@@ -6,14 +6,20 @@ The package leaves Playwright's built-in `page` and `context` untouched. Tests
 that request the lazy `extension` fixture receive a separate persistent
 Chromium context with the extension loaded.
 
-## Installation
+## Prerequisites
+
+The package is ESM-only. Node `^20.19.0 || >=22.12.0` and Playwright Test are required:
 
 ```sh
-npm install --save-dev playwright-webext @playwright/test
+npm install -D @playwright/test
 npx playwright install chromium
 ```
 
-Node `^20.19.0 || >=22.12.0` is required. The package is ESM-only.
+## Installation
+
+```sh
+npm install -D playwright-webext
+```
 
 ## Configuration
 
@@ -24,9 +30,7 @@ import type { WebextOptions } from 'playwright-webext';
 
 export default defineConfig<WebextOptions>({
   use: {
-    extensionPath: './dist/extension',
-    headless: true,
-    viewport: { width: 1280, height: 720 },
+    extensionPath: './dist',
   },
 });
 ```
@@ -34,7 +38,7 @@ export default defineConfig<WebextOptions>({
 Relative `extensionPath` values resolve from the directory containing the
 Playwright configuration file. When no configuration file is used, they
 resolve from `process.cwd()`. The directory must already contain a built,
-unpacked MV3 extension with `background.service_worker`.
+unpacked MV3 extension.
 
 ## Usage
 
