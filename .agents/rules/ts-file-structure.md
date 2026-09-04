@@ -1,6 +1,7 @@
 # TypeScript File Structure
 
 Structure TypeScript source files for top-down reading: a reader should understand what the file does before encountering implementation details.
+Apply only to the source files, not tests.
 
 ## Ordering Rules
 

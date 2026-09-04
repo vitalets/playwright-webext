@@ -1,7 +1,3 @@
-/**
- * Verifies that Playwright can load the minimal Extension Under Test and expose its manifest.
- */
-
 import { expect } from '@playwright/test';
 import { test } from '../src/index.js';
 

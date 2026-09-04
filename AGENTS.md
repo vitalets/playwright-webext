@@ -2,9 +2,10 @@
 
 ## Source file structure
 
-For all TypeScript source files, follow `.agents/rules/ts-file-structure.md`.
+For TypeScript implementation files, follow `.agents/rules/ts-file-structure.md`.
 
-Apply this rule whenever creating, modifying, or refactoring TypeScript files.
+Apply this rule whenever creating, modifying, or refactoring implementation files. Do not
+apply it to tests or test fixtures.
 
 ## Validation
 
