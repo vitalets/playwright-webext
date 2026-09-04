@@ -1,0 +1,66 @@
+name: release
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: Channel
+        required: true
+        type: choice
+        default: '-'
+        options:
+          - '-'
+          - stable
+          - next
+      version:
+        description: Version
+        required: true
+        type: choice
+        default: patch
+        options:
+          - patch
+          - minor
+          - major
+      skip-npm-publish:
+        description: Skip NPM publish
+        required: false
+        type: boolean
+        default: false
+      dry-run:
+        description: Dry run
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write # git commit, tag, push
+      id-token: write # OIDC trusted publishing to npm
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          # Required: writes .npmrc so OIDC token exchange works during npm publish
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: npm ci
+      # - run: npm run lint
+      - run: npm run prettier
+      # - run: npm run knip
+      - run: npm run tsc
+      - run: npm run build
+      - run: npm test
+
+      - uses: vitalets/npm-release@v2
+        with:
+          channel: ${{ inputs.channel }}
+          version: ${{ inputs.version }}
+          skip-npm-publish: ${{ inputs.skip-npm-publish }}
+          dry-run: ${{ inputs.dry-run }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}

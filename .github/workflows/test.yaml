@@ -1,0 +1,37 @@
+name: test
+
+on:
+  push:
+    branches: ['**', '!docs']
+    paths:
+      - '.github/workflows/test.yaml'
+      - 'src/**'
+      - 'test/**'
+      - 'package*.json'
+      - 'tsconfig*.json'
+      - '.npmrc'
+  pull_request:
+    branches: [main]
+    paths:
+      # no way to avoid repeating the paths here
+      - '.github/workflows/test.yaml'
+      - 'src/**'
+      - 'test/**'
+      - 'package*.json'
+      - 'tsconfig*.json'
+      - '.npmrc'
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm test
