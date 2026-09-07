@@ -26,7 +26,7 @@ export class Extension {
 
   get worker(): Worker {
     if (!this.#worker) {
-      throw new Error('Extension service worker is not yet available.');
+      throw new Error('Extension service worker is not available.');
     }
 
     return this.#worker;
