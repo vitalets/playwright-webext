@@ -1,5 +1,5 @@
 import { expect } from '@playwright/test';
-import { test } from '../src/index.js';
+import { test } from '../../src/index.js';
 
 test('opens the popup document in a regular tab', async ({ extension }) => {
   const page = await extension.openPopup();

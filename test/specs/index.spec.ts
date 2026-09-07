@@ -1,5 +1,5 @@
 import { expect } from '@playwright/test';
-import { test } from '../src/index.js';
+import { test } from '../../src/index.js';
 
 const userAgent = 'playwright-webext-test';
 
