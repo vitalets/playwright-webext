@@ -1,8 +1,6 @@
 import { expect } from '@playwright/test';
 import { test } from '../src/index.js';
 
-test.use({ extensionPath: './test/data/extension' });
-
 test('disables and enables the extension', async ({ extension }) => {
   const detailsPage = await extension.openDetailsPage();
   const originalWorker = extension.worker;
