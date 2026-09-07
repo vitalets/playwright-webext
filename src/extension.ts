@@ -75,6 +75,26 @@ export class Extension {
   }
 
   /**
+   * Opens the configured options document in a regular browser tab.
+   *
+   * This intentionally ignores `options_ui.open_in_tab` and does not call
+   * `chrome.runtime.openOptionsPage()`. Opening the document directly provides a standalone
+   * Playwright page with normal tab lifecycle and message-sender behavior, including
+   * `sender.tab` for runtime messages.
+   */
+  async openOptions(): Promise<Page> {
+    const optionsPath = this.manifest.options_ui?.page ?? this.manifest.options_page;
+    if (!optionsPath) {
+      throw new Error('Extension does not define options_ui.page or options_page.');
+    }
+
+    const page = await this.context.newPage();
+    await page.goto(this.getURL(optionsPath));
+
+    return page;
+  }
+
+  /**
    * Opens Chromium's management details for this extension.
    */
   async openDetailsPage(): Promise<ExtensionDetailsPage> {

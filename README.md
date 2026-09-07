@@ -91,6 +91,30 @@ in `extension.context.pages()` and is not interactable as a Playwright `Page`. U
 `extension.openPopup()` when the test needs locators or other page interactions, and close the
 returned page explicitly when the test is finished.
 
+Open the extension's configured options document as a normal Playwright `Page`:
+
+```ts
+test('changes extension options', async ({ extension }) => {
+  const optionsPage = await extension.openOptions();
+
+  await optionsPage.getByLabel('Theme').selectOption('dark');
+  await optionsPage.close();
+});
+```
+
+`extension.openOptions()` uses `options_ui.page`, falling back to the legacy `options_page`
+declaration. It always opens a new regular tab and intentionally ignores `options_ui.open_in_tab`.
+It does not call `chrome.runtime.openOptionsPage()`.
+
+When `open_in_tab` is `false`, Chromium can open or focus its `chrome://extensions` management UI
+and embed the options document there. The management UI can be visible through
+`extension.context.pages()`, but the options document is not exposed as its own standalone
+Playwright `Page`. Opening the extension URL directly makes the document reliably interactable and
+gives it a normal tab lifecycle. Runtime messages from this directly opened page include
+`sender.tab`, unlike messages from embedded options. See Chrome's
+[options-page documentation](https://developer.chrome.com/docs/extensions/develop/ui/options-page)
+for the native embedded and full-page behaviors.
+
 Open Chromium's details page to disable or enable the extension through the same controls
 available to users:
 
