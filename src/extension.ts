@@ -4,7 +4,7 @@
 
 /// <reference types="chrome" preserve="true" />
 
-import type { BrowserContext, Worker } from '@playwright/test';
+import type { BrowserContext, Page, Worker } from '@playwright/test';
 import { ExtensionDetailsPage } from './details-page.js';
 
 /**
@@ -52,6 +52,26 @@ export class Extension {
   getURL(path = ''): string {
     const suffix = path.startsWith('/') ? path : `/${path}`;
     return new URL(`chrome-extension://${this.id}${suffix}`).href;
+  }
+
+  /**
+   * Opens the configured popup document in a regular browser tab.
+   *
+   * This returns an interactable Playwright page, but does not reproduce the native action
+   * popup's viewport, focus, dismissal, lifecycle, active-tab, or message-sender behavior.
+   * Chromium's native `chrome.action.openPopup()` surface is not exposed by
+   * `BrowserContext.pages()` and cannot be interacted with as a Playwright `Page`.
+   */
+  async openPopup(): Promise<Page> {
+    const popupPath = this.manifest.action?.default_popup;
+    if (!popupPath) {
+      throw new Error('Extension does not define action.default_popup.');
+    }
+
+    const page = await this.context.newPage();
+    await page.goto(this.getURL(popupPath));
+
+    return page;
   }
 
   /**

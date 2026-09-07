@@ -4,6 +4,7 @@
 
 ## [Unreleased]
 
+- Add `Extension.openPopup()` for interacting with the configured popup document in a regular tab.
 - Add `Extension.openDetailsPage()` for enabling and disabling the extension through Chromium's
   management UI.
 - Add `Extension.waitForReady()` and keep `extension.worker` attached to a replacement service

@@ -16,6 +16,10 @@ _Avoid_: Target extension, tested extension
 Chromium's management surface for one Extension Under Test, distinct from the list of all loaded extensions.
 _Avoid_: Extensions Page
 
+**Popup Document**:
+The extension page declared by `action.default_popup`, which the harness can host in a regular browser tab for interaction without claiming to reproduce Chromium's native toolbar popup.
+_Avoid_: Popup Page, Emulated Popup, Real Popup
+
 **Catalog Projection**:
 Testing a selected translation catalog through the extension's real i18n API without claiming to change the browser's actual locale.
 _Avoid_: Locale emulation, mocked locale
