@@ -41,7 +41,9 @@ export async function launchContextWithExtension({
   });
 
   try {
-    return await Extension.create(context, timeout);
+    const extension = new Extension(context);
+    await extension.waitForReady(timeout);
+    return extension;
   } catch (error) {
     await context.close();
     throw error;

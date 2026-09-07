@@ -6,7 +6,7 @@ A Playwright-powered testing harness for browser extensions.
 
 - Auto-loading extension by `extensionPath` option.
 - A single `extension` fixture with useful methods.
-- tbd
+- User-facing enable and disable controls through Chromium's extension details page.
 
 ## Prerequisites
 
@@ -54,6 +54,20 @@ test('opens an extension page', async ({ extension }) => {
   const runtimeId = await extension.worker.evaluate(() => chrome.runtime.id);
   expect(runtimeId).toBe(extension.id);
   expect(extension.manifest.manifest_version).toBe(3);
+});
+```
+
+Open Chromium's details page to disable or enable the extension through the same controls
+available to users:
+
+```ts
+test('toggles the extension', async ({ extension }) => {
+  const detailsPage = await extension.openDetailsPage();
+
+  await detailsPage.disable();
+  await detailsPage.enable();
+  await extension.waitForReady();
+  await detailsPage.close();
 });
 ```
 

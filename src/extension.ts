@@ -5,46 +5,46 @@
 /// <reference types="chrome" preserve="true" />
 
 import type { BrowserContext, Worker } from '@playwright/test';
-import { throwIf } from './utils.js';
-
-type ExtensionOptions = {
-  context: BrowserContext;
-  id: string;
-  manifest: chrome.runtime.ManifestV3;
-  worker: Worker;
-};
+import { ExtensionDetailsPage } from './details-page.js';
 
 /**
  * Provides access to a loaded extension's context, metadata, worker, and resource URLs.
  */
 export class Extension {
-  private readonly options: ExtensionOptions;
+  readonly context: BrowserContext;
+  #worker?: Worker;
+  id!: string;
+  manifest!: chrome.runtime.ManifestV3;
 
-  private constructor(options: ExtensionOptions) {
-    this.options = options;
-  }
-
-  get context(): BrowserContext {
-    return this.options.context;
-  }
-
-  get id(): string {
-    return this.options.id;
-  }
-
-  get manifest(): chrome.runtime.ManifestV3 {
-    return this.options.manifest;
+  /**
+   * Creates an extension facade for the supplied browser context.
+   */
+  constructor(context: BrowserContext) {
+    this.context = context;
+    this.autoAttachToWorker();
   }
 
   get worker(): Worker {
-    return this.options.worker;
+    if (!this.#worker) {
+      throw new Error('Extension service worker is not yet available.');
+    }
+
+    return this.#worker;
+  }
+
+  /**
+   * Waits for this extension's service worker and refreshes its runtime metadata.
+   * Fails if the worker closes or is replaced during initialization.
+   */
+  async waitForReady(timeout = 5_000): Promise<void> {
+    const worker = await waitForExtensionWorker(this.context, timeout);
+    this.attachToWorker(worker);
+    this.populateExtensionId(worker);
+    await this.populateManifest();
   }
 
   /**
    * Returns a fully qualified URL for a resource inside the extension.
-   *
-   * The path may be passed with or without a leading slash. An empty path
-   * returns the extension root URL.
    *
    * This intentionally does not emulate dynamic URLs created by
    * web_accessible_resources entries with use_dynamic_url.
@@ -55,29 +55,48 @@ export class Extension {
   }
 
   /**
-   * Creates an extension facade after its background worker becomes available.
+   * Opens Chromium's management details for this extension.
    */
-  static async create(context: BrowserContext, timeout: number): Promise<Extension> {
-    const worker = await waitForWorker(context, timeout);
-    const workerUrl = assertBackgroundWorker(worker);
+  async openDetailsPage(): Promise<ExtensionDetailsPage> {
+    const page = await this.context.newPage();
+    await page.goto(`chrome://extensions/?id=${this.id}`);
+    return new ExtensionDetailsPage(page);
+  }
 
-    const manifest = (await worker.evaluate(() =>
-      chrome.runtime.getManifest(),
-    )) as chrome.runtime.ManifestV3;
-
-    return new Extension({
-      context,
-      id: workerUrl.hostname,
-      manifest,
-      worker,
+  private autoAttachToWorker(): void {
+    this.context.on('serviceworker', (worker) => {
+      if (isExtensionWorker(worker)) {
+        this.attachToWorker(worker);
+      }
     });
+  }
+
+  private attachToWorker(worker: Worker): void {
+    if (this.#worker === worker) return;
+    this.#worker = worker;
+    worker.once('close', () => {
+      if (this.#worker === worker) {
+        this.#worker = undefined;
+      }
+    });
+  }
+
+  private populateExtensionId(worker: Worker): void {
+    this.id = new URL(worker.url()).hostname;
+  }
+
+  private async populateManifest(): Promise<void> {
+    const manifest = await this.worker.evaluate(() => chrome.runtime.getManifest());
+    // potentially worker can re-start during .evaluate call,
+    // then we should check: if (this.#worker !== worker) { ... }
+    this.manifest = manifest as chrome.runtime.ManifestV3;
   }
 }
 
 /**
  * Returns the extension service worker, waiting for it when necessary.
  */
-export async function waitForWorker(context: BrowserContext, timeout: number): Promise<Worker> {
+async function waitForExtensionWorker(context: BrowserContext, timeout: number): Promise<Worker> {
   const worker = context.serviceWorkers().find(isExtensionWorker);
   return (
     worker ??
@@ -90,13 +109,4 @@ export async function waitForWorker(context: BrowserContext, timeout: number): P
 
 function isExtensionWorker(worker: Worker): boolean {
   return worker.url().startsWith('chrome-extension://');
-}
-
-function assertBackgroundWorker(worker: Worker): URL {
-  const workerUrl = new URL(worker.url());
-  throwIf(
-    workerUrl.protocol !== 'chrome-extension:' || !workerUrl.hostname,
-    `Expected a Chrome extension service worker, received: ${worker.url()}`,
-  );
-  return workerUrl;
 }

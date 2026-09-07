@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+- Add `Extension.openDetailsPage()` for enabling and disabling the extension through Chromium's
+  management UI.
+- Add `Extension.waitForReady()` and keep `extension.worker` attached to a replacement service
+  worker after the extension restarts.
 - Forward Playwright `launchOptions` to the extension browser.
 
 ## [0.1.1] - 2026-09-04

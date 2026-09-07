@@ -12,6 +12,10 @@ _Avoid_: Harness user, package consumer
 The author's unpacked Chromium Manifest V3 extension currently exercised by a test run. In v0 it has a background service worker.
 _Avoid_: Target extension, tested extension
 
+**Extension Details Page**:
+Chromium's management surface for one Extension Under Test, distinct from the list of all loaded extensions.
+_Avoid_: Extensions Page
+
 **Catalog Projection**:
 Testing a selected translation catalog through the extension's real i18n API without claiming to change the browser's actual locale.
 _Avoid_: Locale emulation, mocked locale
