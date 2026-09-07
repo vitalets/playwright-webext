@@ -21,3 +21,10 @@ test('disables and enables the extension', async ({ extension }) => {
   await detailsPage.close();
   expect(detailsPage.page.isClosed()).toBe(true);
 });
+
+test('uninstalls the extension', async ({ extension }) => {
+  await extension.uninstall();
+
+  expect(() => extension.worker).toThrow('Extension service worker is not yet available.');
+  expect(extension.context.serviceWorkers()).toHaveLength(0);
+});

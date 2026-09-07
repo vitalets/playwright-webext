@@ -6,7 +6,7 @@ A Playwright-powered testing harness for browser extensions.
 
 - Auto-loading extension by `extensionPath` option.
 - A single `extension` fixture with useful methods.
-- User-facing enable and disable controls through Chromium's extension details page.
+- Extension lifecycle controls for enabling, disabling, and uninstalling.
 
 ## Prerequisites
 
@@ -68,6 +68,14 @@ test('toggles the extension', async ({ extension }) => {
   await detailsPage.enable();
   await extension.waitForReady();
   await detailsPage.close();
+});
+```
+
+Remove the extension from its isolated browser profile:
+
+```ts
+test('uninstalls the extension', async ({ extension }) => {
+  await extension.uninstall();
 });
 ```
 

@@ -63,6 +63,20 @@ export class Extension {
     return new ExtensionDetailsPage(page);
   }
 
+  /**
+   * Removes the extension from its browser profile.
+   */
+  async uninstall(): Promise<void> {
+    await Promise.all([
+      this.worker.waitForEvent('close'),
+      this.worker.evaluate(() => {
+        setTimeout(() => {
+          void chrome.management.uninstallSelf({ showConfirmDialog: false });
+        });
+      }),
+    ]);
+  }
+
   private autoAttachToWorker(): void {
     this.context.on('serviceworker', (worker) => {
       if (isExtensionWorker(worker)) {
