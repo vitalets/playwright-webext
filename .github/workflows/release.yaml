@@ -43,6 +43,13 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Ensure lint/test workflows passed
+        run: |
+          gh run list --workflow=lint.yaml --branch=${{ github.ref_name }} --limit=1 --json conclusion --jq '.[0].conclusion' | grep -q "success" || (echo "lint.yaml workflow must pass before publishing" && exit 1)
+          gh run list --workflow=test.yaml --branch=${{ github.ref_name }} --limit=1 --json conclusion --jq '.[0].conclusion' | grep -q "success" || (echo "test.yaml workflow must pass before publishing" && exit 1)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - uses: actions/setup-node@v7
         with:
           node-version: 24
@@ -50,13 +57,11 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
       # - run: npm run lint
       - run: npm run prettier
       # - run: npm run knip
       - run: npm run tsc
       - run: npm run build
-      - run: npm test
 
       - uses: vitalets/npm-release@v2
         with:
