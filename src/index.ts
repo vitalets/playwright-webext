@@ -5,9 +5,10 @@
 /// <reference types="chrome" preserve="true" />
 
 import { dirname, isAbsolute, resolve } from 'node:path';
-import { test as base } from '@playwright/test';
+import { test as base, type BrowserContext } from '@playwright/test';
 import { Extension } from './extension.js';
-import { createLocalizedCopyIfNeeded } from './i18n.js';
+import { ExtensionCopy } from './extension-copy.js';
+import { isDefaultLocale, localizeExtension } from './i18n.js';
 import { launchContextWithExtension } from './launch.js';
 import { throwIf } from './utils.js';
 
@@ -16,6 +17,7 @@ import { throwIf } from './utils.js';
  */
 export type WebextOptions = {
   extensionPath: string;
+  oldVersionExtensionPath?: string;
 };
 
 /**
@@ -33,8 +35,17 @@ export { ExtensionDetailsPage } from './details-page.js';
  */
 export const test = base.extend<WebextOptions & WebextFixtures>({
   extensionPath: ['', { option: true }],
+  oldVersionExtensionPath: [undefined, { option: true }],
   extension: async (
-    { browserName, extensionPath, headless, launchOptions, locale, viewport },
+    {
+      browserName,
+      extensionPath,
+      headless,
+      launchOptions,
+      locale,
+      oldVersionExtensionPath,
+      viewport,
+    },
     use,
     testInfo,
   ) => {
@@ -44,25 +55,66 @@ export const test = base.extend<WebextOptions & WebextFixtures>({
       `The extension fixture only supports Chromium projects; received "${browserName}".`,
     );
 
-    extensionPath = resolveExtensionPath(extensionPath, testInfo.config.configFile);
-    const localizedExtensionCopy = await createLocalizedCopyIfNeeded(extensionPath, locale);
+    const { configFile } = testInfo.config;
+    extensionPath = resolvePath(extensionPath, configFile);
+    oldVersionExtensionPath = resolvePath(oldVersionExtensionPath, configFile);
 
-    const extension = await launchContextWithExtension({
-      extensionPath: localizedExtensionCopy?.path ?? extensionPath,
-      headless,
-      launchOptions,
+    const extensionCopy = await createExtensionCopyIfNeeded(
+      extensionPath,
+      oldVersionExtensionPath,
       locale,
-      timeout: testInfo.timeout,
-      viewport,
-    });
+    );
 
-    await use(extension);
-    await extension.context.close();
-    await localizedExtensionCopy?.close();
+    // todo: move to helper
+    const upgradeOptions =
+      oldVersionExtensionPath && extensionCopy
+        ? { extensionCopy, extensionPath, locale }
+        : undefined;
+
+    try {
+      const context = await launchContextWithExtension({
+        extensionPath: extensionCopy?.path ?? extensionPath,
+        headless,
+        launchOptions,
+        locale,
+        viewport,
+      });
+
+      try {
+        const extension = new Extension(context, upgradeOptions);
+        await extension.waitForReady(testInfo.timeout);
+        await use(extension);
+      } finally {
+        await context.close();
+      }
+    } finally {
+      await extensionCopy?.cleanup();
+    }
   },
 });
 
-function resolveExtensionPath(extensionPath: string, configFile?: string): string {
+async function createExtensionCopyIfNeeded(
+  extensionPath: string,
+  oldVersionExtensionPath?: string,
+  locale?: string,
+) {
+  let extensionCopy: ExtensionCopy | undefined;
+
+  if (oldVersionExtensionPath) {
+    extensionCopy = await new ExtensionCopy().copyFrom(oldVersionExtensionPath);
+  }
+
+  if (!isDefaultLocale(locale)) {
+    extensionCopy = extensionCopy || (await new ExtensionCopy().copyFrom(extensionPath));
+    await localizeExtension(extensionCopy.path, locale);
+  }
+
+  return extensionCopy;
+}
+
+function resolvePath<T extends string | undefined>(extensionPath: T, configFile?: string) {
+  if (!extensionPath) return extensionPath;
+
   if (isAbsolute(extensionPath)) {
     return extensionPath;
   }

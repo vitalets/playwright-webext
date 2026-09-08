@@ -6,6 +6,7 @@
 
 import type { BrowserContext, Page, Worker } from '@playwright/test';
 import { ExtensionDetailsPage } from './details-page.js';
+import { ExtensionUpgrade, type ExtensionUpgradeOptions } from './extension-upgrade.js';
 
 /**
  * Provides access to a loaded extension's context, metadata, worker, and resource URLs.
@@ -13,14 +14,16 @@ import { ExtensionDetailsPage } from './details-page.js';
 export class Extension {
   readonly context: BrowserContext;
   #worker?: Worker;
+  readonly #upgrade?: ExtensionUpgrade;
   id!: string;
   manifest!: chrome.runtime.ManifestV3;
 
   /**
    * Creates an extension facade for the supplied browser context.
    */
-  constructor(context: BrowserContext) {
+  constructor(context: BrowserContext, upgradeOptions?: ExtensionUpgradeOptions) {
     this.context = context;
+    this.#upgrade = upgradeOptions ? new ExtensionUpgrade(context, upgradeOptions) : undefined;
     this.autoAttachToWorker();
   }
 
@@ -101,6 +104,20 @@ export class Extension {
     const page = await this.context.newPage();
     await page.goto(`chrome://extensions/?id=${this.id}`);
     return new ExtensionDetailsPage(page);
+  }
+
+  /**
+   * Replaces the loaded old extension with the configured current version and reloads it.
+   */
+  async upgrade(): Promise<void> {
+    if (!this.#upgrade) {
+      throw new Error('Extension upgrade requires use.oldVersionExtensionPath.');
+    }
+
+    const worker = await this.#upgrade.upgrade(this.worker);
+    this.attachToWorker(worker);
+    this.populateExtensionId(worker);
+    await this.populateManifest();
   }
 
   /**

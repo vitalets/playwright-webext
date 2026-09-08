@@ -1,0 +1,8 @@
+{
+  "extensionName": {
+    "message": "Old Test Extension"
+  },
+  "greeting": {
+    "message": "Old Hello"
+  }
+}

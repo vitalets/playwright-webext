@@ -3,30 +3,27 @@
  */
 
 import { chromium } from '@playwright/test';
-import type { LaunchOptions, ViewportSize } from '@playwright/test';
-import { Extension } from './extension.js';
+import type { BrowserContext, LaunchOptions, ViewportSize } from '@playwright/test';
 
 type LaunchExtensionOptions = {
   extensionPath: string;
   headless: boolean;
   launchOptions: Omit<LaunchOptions, 'tracesDir'>;
   locale?: string;
-  timeout: number;
   viewport: ViewportSize | null;
 };
 
 /**
- * Starts Chromium with the configured extension and returns its runtime facade.
+ * Starts Chromium with the configured extension and returns its persistent context.
  */
 export async function launchContextWithExtension({
   extensionPath,
   headless,
   launchOptions: { args = [], ...launchOptions },
   locale,
-  timeout,
   viewport,
-}: LaunchExtensionOptions): Promise<Extension> {
-  const context = await chromium.launchPersistentContext('', {
+}: LaunchExtensionOptions): Promise<BrowserContext> {
+  return chromium.launchPersistentContext('', {
     ...launchOptions,
     channel: 'chromium',
     args: [
@@ -38,8 +35,4 @@ export async function launchContextWithExtension({
     locale,
     viewport,
   });
-
-  const extension = new Extension(context);
-  await extension.waitForReady(timeout);
-  return extension;
 }

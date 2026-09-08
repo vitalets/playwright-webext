@@ -6,7 +6,7 @@ A Playwright-powered testing harness for browser extensions.
 
 - Auto-loading extension by `extensionPath` option.
 - A single `extension` fixture with useful methods.
-- Extension lifecycle controls for enabling, disabling, and uninstalling.
+- Extension lifecycle controls for enabling, disabling, upgrading, and uninstalling.
 
 ## Prerequisites
 
@@ -38,6 +38,19 @@ export default defineConfig<WebextOptions>({
   },
 });
 ```
+
+To test an unpacked upgrade, also configure the older extension build:
+
+```ts
+export default defineConfig<WebextOptions>({
+  use: {
+    extensionPath: './dist',
+    oldVersionExtensionPath: './dist-old',
+  },
+});
+```
+
+Both paths are resolved relative to the Playwright configuration file.
 
 ### Testing localization
 
@@ -168,6 +181,24 @@ test('uninstalls the extension', async ({ extension }) => {
   await extension.uninstall();
 });
 ```
+
+Upgrade from `oldVersionExtensionPath` to `extensionPath` while preserving the extension ID and
+browser-profile state:
+
+```ts
+test('migrates stored settings', async ({ extension }) => {
+  expect(extension.manifest.version).toBe('1.0.0');
+
+  await extension.upgrade();
+
+  expect(extension.manifest.version).toBe('2.0.0');
+});
+```
+
+The fixture initially loads a private copy of the old build. `extension.upgrade()` replaces that
+copy's contents at the same path, reloads it through Chrome's runtime API, and waits for the new
+service worker and manifest. The method is one-shot and throws when `oldVersionExtensionPath` is
+not configured. With a non-default `locale`, the same catalog projection is applied to both builds.
 
 The fixture is lazy. A test that does not request `extension` uses native
 Playwright fixtures and does not launch an extension browser:

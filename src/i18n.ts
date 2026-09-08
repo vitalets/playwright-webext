@@ -1,9 +1,8 @@
 /**
- * Prepares temporary extension builds that use one requested locale.
+ * Projects a requested translation catalog onto an extension directory.
  */
 
-import { cp, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 /**
@@ -14,48 +13,6 @@ const DEFAULT_PLAYWRIGHT_LOCALE = 'en-US';
 type DefaultLocale = typeof DEFAULT_PLAYWRIGHT_LOCALE | undefined;
 
 /**
- * A temporary extension build configured for one locale.
- */
-export class LocalizedExtensionCopy {
-  /**
-   * Creates a localized copy of an extension for the requested locale.
-   */
-  static async create(extensionPath: string, locale: string): Promise<LocalizedExtensionCopy> {
-    const extensionLocale = await resolveExtensionLocale(extensionPath, locale);
-    const temporaryRoot = await mkdtemp(join(tmpdir(), 'playwright-webext-'));
-    const projectedPath = join(temporaryRoot, 'extension');
-
-    try {
-      await cp(extensionPath, projectedPath, { recursive: true });
-      await localizeExtension(projectedPath, extensionLocale);
-      return new LocalizedExtensionCopy(projectedPath, temporaryRoot);
-    } catch (error) {
-      await rm(temporaryRoot, { recursive: true, force: true });
-      throw error;
-    }
-  }
-
-  private temporaryRoot?: string;
-
-  private constructor(
-    readonly path: string,
-    temporaryRoot: string,
-  ) {
-    this.temporaryRoot = temporaryRoot;
-  }
-
-  /**
-   * Removes the temporary extension build. Repeated calls are safe.
-   */
-  async close(): Promise<void> {
-    if (!this.temporaryRoot) return;
-
-    await rm(this.temporaryRoot, { recursive: true, force: true });
-    this.temporaryRoot = undefined;
-  }
-}
-
-/**
  * Returns whether a locale uses Playwright's default localization behavior.
  */
 export function isDefaultLocale(locale: string | undefined): locale is DefaultLocale {
@@ -63,13 +20,11 @@ export function isDefaultLocale(locale: string | undefined): locale is DefaultLo
 }
 
 /**
- * Creates a localized extension copy when the locale differs from Playwright's default.
+ * Projects the requested locale onto an extension directory in place.
  */
-export async function createLocalizedCopyIfNeeded(
-  extensionPath: string,
-  locale: string | undefined,
-): Promise<LocalizedExtensionCopy | undefined> {
-  return isDefaultLocale(locale) ? undefined : LocalizedExtensionCopy.create(extensionPath, locale);
+export async function localizeExtension(extensionPath: string, locale: string): Promise<void> {
+  const extensionLocale = await resolveExtensionLocale(extensionPath, locale);
+  await applyExtensionLocale(extensionPath, extensionLocale);
 }
 
 async function resolveExtensionLocale(extensionPath: string, locale: string): Promise<string> {
@@ -114,7 +69,7 @@ async function readAvailableLocales(
   }
 }
 
-async function localizeExtension(extensionPath: string, locale: string): Promise<void> {
+async function applyExtensionLocale(extensionPath: string, locale: string): Promise<void> {
   const manifestPath = join(extensionPath, 'manifest.json');
   const manifest = JSON.parse(await readFile(manifestPath, 'utf8')) as chrome.runtime.Manifest;
   manifest.default_locale = locale;
