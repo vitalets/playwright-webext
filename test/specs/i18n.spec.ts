@@ -1,4 +1,5 @@
-import { expect, test } from '../../src/index.js';
+import { expect } from '@playwright/test';
+import { test } from '../../src/index.js';
 
 test.describe(() => {
   test.use({ locale: 'es' });

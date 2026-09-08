@@ -62,11 +62,6 @@ export const test = base.extend<WebextOptions & WebextFixtures>({
   },
 });
 
-/**
- * Playwright assertions bound to the extended test instance.
- */
-export const expect = test.expect;
-
 function resolveExtensionPath(extensionPath: string, configFile?: string): string {
   if (isAbsolute(extensionPath)) {
     return extensionPath;
