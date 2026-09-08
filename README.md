@@ -39,6 +39,38 @@ export default defineConfig<WebextOptions>({
 });
 ```
 
+### Testing localization
+
+Use Playwright's built-in `locale` option to test an extension translation catalog:
+
+```ts
+test.describe('Spanish locale', () => {
+  test.use({ locale: 'es' });
+
+  test('shows translated content', async ({ extension }) => {
+    const message = await extension.worker.evaluate(() => chrome.i18n.getMessage('welcome'));
+    expect(message).toBe('Bienvenido');
+  });
+});
+```
+
+The extension fixture copies the configured extension into a temporary directory, selects the
+requested `_locales` catalog, and removes the copy after Chromium closes. Locale names use Chrome's
+underscore directory convention internally, and regional locales fall back to their base language;
+for example, `es-ES` uses `_locales/es` when `_locales/es_ES` is absent. The original extension is
+not modified.
+
+Playwright implicitly supplies `en-US`, so that value preserves the normal behavior and loads the
+original extension without creating a localized build. This means explicitly setting `en-US` also
+does not localize the build. Any other locale, including `en-GB`, requires an exact or base-language catalog
+and fails clearly when one is unavailable.
+
+The localized build controls the messages returned by the real `chrome.i18n` API, while Playwright
+continues to apply `locale` to `navigator.language`, request headers, and formatting. It does not
+change Chromium's own UI locale, `chrome.i18n.getUILanguage()`, or the `@@ui_locale` predefined
+message. Projected builds can also receive a different path-derived extension ID unless the
+manifest provides a stable `key`.
+
 ## Usage
 
 ```ts

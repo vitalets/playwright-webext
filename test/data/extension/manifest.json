@@ -1,7 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Test Extension",
+  "name": "__MSG_extensionName__",
   "version": "1.0.0",
+  "default_locale": "en",
   "background": {
     "service_worker": "background.js"
   },

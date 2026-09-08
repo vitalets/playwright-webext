@@ -4,8 +4,10 @@
 
 /// <reference types="chrome" preserve="true" />
 
+import { dirname, isAbsolute, resolve } from 'node:path';
 import { test as base } from '@playwright/test';
 import { Extension } from './extension.js';
+import { createLocalizedCopyIfNeeded } from './i18n.js';
 import { launchContextWithExtension } from './launch.js';
 import { throwIf } from './utils.js';
 
@@ -32,7 +34,7 @@ export { ExtensionDetailsPage } from './details-page.js';
 export const test = base.extend<WebextOptions & WebextFixtures>({
   extensionPath: ['', { option: true }],
   extension: async (
-    { browserName, extensionPath, headless, launchOptions, viewport },
+    { browserName, extensionPath, headless, launchOptions, locale, viewport },
     use,
     testInfo,
   ) => {
@@ -42,17 +44,21 @@ export const test = base.extend<WebextOptions & WebextFixtures>({
       `The extension fixture only supports Chromium projects; received "${browserName}".`,
     );
 
+    extensionPath = resolveExtensionPath(extensionPath, testInfo.config.configFile);
+    const localizedExtensionCopy = await createLocalizedCopyIfNeeded(extensionPath, locale);
+
     const extension = await launchContextWithExtension({
-      configFile: testInfo.config.configFile,
-      extensionPath,
+      extensionPath: localizedExtensionCopy?.path ?? extensionPath,
       headless,
       launchOptions,
+      locale,
       timeout: testInfo.timeout,
       viewport,
     });
 
     await use(extension);
     await extension.context.close();
+    await localizedExtensionCopy?.close();
   },
 });
 
@@ -60,3 +66,12 @@ export const test = base.extend<WebextOptions & WebextFixtures>({
  * Playwright assertions bound to the extended test instance.
  */
 export const expect = test.expect;
+
+function resolveExtensionPath(extensionPath: string, configFile?: string): string {
+  if (isAbsolute(extensionPath)) {
+    return extensionPath;
+  }
+
+  const baseDir = configFile ? dirname(configFile) : process.cwd();
+  return resolve(baseDir, extensionPath);
+}
