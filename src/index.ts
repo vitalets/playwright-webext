@@ -5,7 +5,7 @@
 /// <reference types="chrome" preserve="true" />
 
 import { dirname, isAbsolute, resolve } from 'node:path';
-import { test as base, type BrowserContext } from '@playwright/test';
+import { test as base } from '@playwright/test';
 import { Extension } from './extension.js';
 import { ExtensionCopy } from './extension-copy.js';
 import { isDefaultLocale, localizeExtension } from './i18n.js';
@@ -28,7 +28,7 @@ export type WebextFixtures = {
 };
 
 export { Extension } from './extension.js';
-export { ExtensionDetailsPage } from './details-page.js';
+export { ExtensionDetailsPage } from './internal-pages/extension-details.js';
 
 /**
  * Playwright test extended with extension configuration and fixtures.

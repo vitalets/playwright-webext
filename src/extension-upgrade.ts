@@ -4,8 +4,8 @@
 
 import type { BrowserContext, Worker } from '@playwright/test';
 import type { ExtensionCopy } from './extension-copy.js';
-import { ExtensionsPage } from './extensions-page.js';
 import { isDefaultLocale, localizeExtension } from './i18n.js';
+import { ExtensionsPage } from './internal-pages/extensions.js';
 
 /**
  * Filesystem and localization inputs for an unpacked extension upgrade.

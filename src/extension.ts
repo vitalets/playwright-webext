@@ -5,8 +5,8 @@
 /// <reference types="chrome" preserve="true" />
 
 import type { BrowserContext, Page, Worker } from '@playwright/test';
-import { ExtensionDetailsPage } from './details-page.js';
 import { ExtensionUpgrade, type ExtensionUpgradeOptions } from './extension-upgrade.js';
+import { ExtensionDetailsPage } from './internal-pages/extension-details.js';
 
 /**
  * Provides access to a loaded extension's context, metadata, worker, and resource URLs.
