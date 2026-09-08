@@ -102,6 +102,23 @@ test('opens an extension page', async ({ extension }) => {
 });
 ```
 
+Wait for a value in extension storage with `extension.expectStorageKey()`. It checks local storage
+by default and uses Playwright's `toEqual`, so asymmetric matchers support partial matching:
+
+```ts
+await extension.expectStorageKey('settings', expect.objectContaining({ theme: 'dark' }), {
+  timeout: 10_000,
+});
+```
+
+Pass `area` to check sync or session storage. A missing key has the value `undefined`:
+
+```ts
+await extension.expectStorageKey('preferences', { colorScheme: 'dark' }, { area: 'sync' });
+await extension.expectStorageKey('accessToken', expect.stringMatching(/.+/), { area: 'session' });
+await extension.expectStorageKey('obsoleteKey', undefined);
+```
+
 Open the extension's configured popup document and interact with it as a normal Playwright
 `Page`:
 
