@@ -102,22 +102,30 @@ test('opens an extension page', async ({ extension }) => {
 });
 ```
 
-Wait for a value in extension storage with `extension.expectStorageKey()`. It checks local storage
-by default and uses Playwright's `toEqual`, so asymmetric matchers support partial matching:
+Read and update extension storage with `extension.storage`. The `local`, `sync`, `session`, and
+`managed` areas expose Promise-based `get`, `set`, `remove`, `clear`, and `getKeys` methods with
+Chrome's arguments and results. The extension needs the `storage` permission. Managed storage
+is read-only; mutation methods reject with Chrome's error. `getKeys` requires Chrome 130 or later.
 
 ```ts
-await extension.expectStorageKey('settings', expect.objectContaining({ theme: 'dark' }), {
-  timeout: 10_000,
-});
+await extension.storage.sync.set({ preferences: { colorScheme: 'dark' } });
+const { preferences } = await extension.storage.sync.get('preferences');
+const allValues = await extension.storage.local.get();
+const keys = await extension.storage.session.getKeys();
+await extension.storage.local.remove(['obsoleteKey', 'oldSettings']);
+await extension.storage.session.clear();
 ```
 
-Pass `area` to check sync or session storage. A missing key has the value `undefined`:
+Use Playwright's `expect.poll` to wait for storage updates or match partial values:
 
 ```ts
-await extension.expectStorageKey('preferences', { colorScheme: 'dark' }, { area: 'sync' });
-await extension.expectStorageKey('accessToken', expect.stringMatching(/.+/), { area: 'session' });
-await extension.expectStorageKey('obsoleteKey', undefined);
+await expect
+  .poll(() => extension.storage.local.get('settings'), { timeout: 10_000 })
+  .toEqual({ settings: expect.objectContaining({ theme: 'dark' }) });
 ```
+
+`get` also accepts an array of keys, an object of defaults, or `null` for all values.
+Missing keys are omitted from its result.
 
 Open the extension's configured popup document and interact with it as a normal Playwright
 `Page`:

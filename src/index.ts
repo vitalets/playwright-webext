@@ -27,7 +27,6 @@ export type WebextFixtures = {
   extension: Extension;
 };
 
-export type { ExpectStorageKeyOptions } from './expect.js';
 export { Extension } from './extension.js';
 export { ExtensionDetailsPage } from './internal-pages/extension-details.js';
 

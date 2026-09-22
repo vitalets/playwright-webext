@@ -9,19 +9,19 @@ test.describe('extension upgrade', () => {
 
     const oldId = extension.id;
     const oldWorker = extension.worker;
-    await oldWorker.evaluate(() => chrome.storage.local.set({ foo: 'bar' }));
+    await extension.storage.local.set({ foo: 'bar' });
 
     await extension.upgrade();
 
     expect(extension.manifest.version).toBe('1.0.0');
     expect(extension.id).toBe(oldId);
     expect(extension.worker).not.toBe(oldWorker);
-    await extension.expectStorageKey('foo', 'bar');
-    await extension.expectStorageKey('onInstalled', {
-      reason: 'update',
-      previousVersion: '0.1.0',
-    });
-
+    expect(await extension.storage.local.get('foo')).toEqual({ foo: 'bar' });
+    await expect
+      .poll(() => extension.storage.local.get('onInstalled'))
+      .toEqual({
+        onInstalled: { reason: 'update', previousVersion: '0.1.0' },
+      });
     await expect(extension.upgrade()).rejects.toThrow('already been used');
   });
 });

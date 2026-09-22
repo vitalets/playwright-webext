@@ -1,50 +1,26 @@
 import { expect } from '@playwright/test';
 import { test } from '../../src/index.js';
 
-test('matches local storage values by default', async ({ extension }) => {
-  await extension.worker.evaluate(() =>
-    chrome.storage.local.set({
-      enabled: true,
-      settings: { appearance: { theme: 'dark', fontSize: 16 }, notifications: true },
-    }),
-  );
+for (const area of ['local', 'sync', 'session'] as const) {
+  test(`reads and updates ${area} storage`, async ({ extension }) => {
+    // Wait for the fixture's install handler before clearing local storage.
+    await expect
+      .poll(() => extension.storage.local.get('onInstalled'))
+      .toHaveProperty('onInstalled');
+    const storage = extension.storage[area];
+    await storage.clear();
 
-  await extension.expectStorageKey('enabled', true);
-  await extension.expectStorageKey(
-    'settings',
-    expect.objectContaining({
-      appearance: expect.objectContaining({ theme: 'dark' }),
-    }),
-  );
-});
+    await storage.set({ theme: 'dark', enabled: true });
+    expect(await storage.get('theme')).toEqual({ theme: 'dark' });
+    expect((await storage.getKeys()).sort()).toEqual(['enabled', 'theme']);
 
-for (const area of ['sync', 'session'] as const) {
-  test(`matches a value in ${area} storage`, async ({ extension }) => {
-    await extension.worker.evaluate(
-      ({ area }) => chrome.storage[area].set({ greeting: `hello from ${area}` }),
-      { area },
-    );
+    await storage.set({ theme: 'light' });
+    expect(await storage.get()).toEqual({ theme: 'light', enabled: true });
 
-    await extension.expectStorageKey('greeting', `hello from ${area}`, { area });
+    await storage.remove('theme');
+    expect(await storage.get()).toEqual({ enabled: true });
+
+    await storage.clear();
+    expect(await storage.get()).toEqual({});
   });
 }
-
-test('polls for a delayed storage update', async ({ extension }) => {
-  await extension.worker.evaluate(() => {
-    setTimeout(() => {
-      void chrome.storage.local.set({ status: 'ready' });
-    }, 100);
-  });
-
-  await extension.expectStorageKey('status', 'ready');
-});
-
-test('matches a missing storage key as undefined', async ({ extension }) => {
-  await extension.expectStorageKey('missing', undefined);
-});
-
-test('forwards the polling timeout', async ({ extension }) => {
-  await expect(extension.expectStorageKey('missing', 'value', { timeout: 50 })).rejects.toThrow(
-    /Timeout 50ms exceeded/,
-  );
-});

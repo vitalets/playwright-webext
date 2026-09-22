@@ -5,15 +5,16 @@
 /// <reference types="chrome" preserve="true" />
 
 import type { BrowserContext, Page, Worker } from '@playwright/test';
-import { expectStorageKey, type ExpectStorageKeyOptions } from './expect.js';
 import { ExtensionUpgrade, type ExtensionUpgradeOptions } from './extension-upgrade.js';
 import { ExtensionDetailsPage } from './internal-pages/extension-details.js';
+import { createStorage } from './storage.js';
 
 /**
  * Provides access to a loaded extension's context, metadata, worker, and resource URLs.
  */
 export class Extension {
   readonly context: BrowserContext;
+  readonly storage = createStorage(() => this.worker);
   #worker?: Worker;
   readonly #upgrade?: ExtensionUpgrade;
   id!: string;
@@ -45,18 +46,6 @@ export class Extension {
     this.attachToWorker(worker);
     this.populateExtensionId(worker);
     await this.populateManifest();
-  }
-
-  /**
-   * Polls an extension storage key until its value equals the expected value.
-   * Playwright asymmetric matchers can be used for partial matching.
-   */
-  async expectStorageKey(
-    key: string,
-    expected: unknown,
-    options: ExpectStorageKeyOptions = {},
-  ): Promise<void> {
-    await expectStorageKey(this.worker, key, expected, options);
   }
 
   /**
