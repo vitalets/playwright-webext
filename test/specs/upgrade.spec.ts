@@ -2,9 +2,10 @@ import { expect } from '@playwright/test';
 import { test } from '../../src/index.js';
 
 test.describe('extension upgrade', () => {
-  test.use({ oldVersionExtensionPath: './data/extension-0.1.0' });
+  test.use({ extensionAutoInstall: false });
 
   test('0.1.0 -> current', async ({ extension }) => {
+    await extension.install('./data/extension-0.1.0');
     expect(extension.manifest.version).toBe('0.1.0');
 
     const oldId = extension.id;
@@ -29,10 +30,11 @@ test.describe('extension upgrade', () => {
 test.describe('localized upgrade', () => {
   test.use({
     locale: 'es',
-    oldVersionExtensionPath: './data/extension-0.1.0',
+    extensionAutoInstall: false,
   });
 
   test('0.1.0 -> current (+i18n)', async ({ extension }) => {
+    await extension.install('./data/extension-0.1.0');
     expect(extension.manifest.name).toBe('Extensión de prueba antigua');
     expect(await extension.worker.evaluate(() => chrome.i18n.getMessage('greeting'))).toBe(
       'Hola antigua',
@@ -46,5 +48,5 @@ test.describe('localized upgrade', () => {
 });
 
 test('rejects upgrade when no old version is configured', async ({ extension }) => {
-  await expect(extension.upgrade()).rejects.toThrow('use.oldVersionExtensionPath');
+  await expect(extension.upgrade()).rejects.toThrow('extension.install(path)');
 });

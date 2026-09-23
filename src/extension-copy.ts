@@ -20,6 +20,7 @@ export class ExtensionCopy {
   }
 
   async cleanup(): Promise<void> {
+    if (!this.path) return;
     await rm(this.path, { recursive: true, force: true });
   }
 

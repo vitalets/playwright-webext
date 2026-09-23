@@ -5,9 +5,13 @@
 /// <reference types="chrome" preserve="true" />
 
 import type { BrowserContext, Page, Worker } from '@playwright/test';
-import { ExtensionUpgrade, type ExtensionUpgradeOptions } from './extension-upgrade.js';
+import { ExtensionInstaller, type InstallOptions } from './install.js';
 import { ExtensionDetailsPage } from './internal-pages/extension-details.js';
 import { createStorage } from './storage.js';
+
+type ExtensionOptions = InstallOptions & {
+  timeout: number;
+};
 
 /**
  * Provides access to a loaded extension's context, metadata, worker, and resource URLs.
@@ -15,37 +19,43 @@ import { createStorage } from './storage.js';
 export class Extension {
   readonly context: BrowserContext;
   readonly storage = createStorage(() => this.worker);
-  #worker?: Worker;
-  readonly #upgrade?: ExtensionUpgrade;
-  id!: string;
-  manifest!: chrome.runtime.ManifestV3;
+  readonly #installer: ExtensionInstaller;
+  #id?: string;
+  #manifest?: chrome.runtime.ManifestV3;
 
   /**
    * Creates an extension facade for the supplied browser context.
    */
-  constructor(context: BrowserContext, upgradeOptions?: ExtensionUpgradeOptions) {
+  constructor(
+    context: BrowserContext,
+    private readonly options: ExtensionOptions,
+  ) {
     this.context = context;
-    this.#upgrade = upgradeOptions ? new ExtensionUpgrade(context, upgradeOptions) : undefined;
-    this.autoAttachToWorker();
+    this.#installer = new ExtensionInstaller(context, options);
   }
 
   get worker(): Worker {
-    if (!this.#worker) {
-      throw new Error('Extension service worker is not available.');
-    }
+    const worker = this.findWorker();
+    if (!worker) throw new Error('Extension service worker is not available.');
+    return worker;
+  }
 
-    return this.#worker;
+  get id(): string {
+    if (!this.#id) throw new Error('Extension is not installed. Call extension.install() first.');
+    return this.#id;
+  }
+
+  get manifest(): chrome.runtime.ManifestV3 {
+    if (!this.#manifest) throw new Error('Extension is not ready. Call extension.install() first.');
+    return this.#manifest;
   }
 
   /**
-   * Waits for this extension's service worker and refreshes its runtime metadata.
-   * Fails if the worker closes or is replaced during initialization.
+   * Installs the configured build, or a private copy of a custom build for later upgrade.
    */
-  async waitForReady(timeout = 5_000): Promise<void> {
-    const worker = await waitForExtensionWorker(this.context, timeout);
-    this.attachToWorker(worker);
-    this.populateExtensionId(worker);
-    await this.populateManifest();
+  async install(path?: string): Promise<void> {
+    this.#id = await this.#installer.install(path);
+    await this.waitForReady();
   }
 
   /**
@@ -112,14 +122,8 @@ export class Extension {
    * Replaces the loaded old extension with the configured current version and reloads it.
    */
   async upgrade(): Promise<void> {
-    if (!this.#upgrade) {
-      throw new Error('Extension upgrade requires use.oldVersionExtensionPath.');
-    }
-
-    const worker = await this.#upgrade.upgrade(this.worker);
-    this.attachToWorker(worker);
-    this.populateExtensionId(worker);
-    await this.populateManifest();
+    await Promise.all([this.waitForStopped(), this.#installer.upgrade()]);
+    await this.waitForReady();
   }
 
   /**
@@ -127,59 +131,36 @@ export class Extension {
    */
   async uninstall(): Promise<void> {
     await Promise.all([
-      this.worker.waitForEvent('close'),
       this.worker.evaluate(() => {
         setTimeout(() => {
           void chrome.management.uninstallSelf({ showConfirmDialog: false });
         });
       }),
+      this.waitForStopped(),
     ]);
   }
 
-  private autoAttachToWorker(): void {
-    this.context.on('serviceworker', (worker) => {
-      if (isExtensionWorker(worker)) {
-        this.attachToWorker(worker);
-      }
-    });
+  private async waitForReady(): Promise<void> {
+    const predicate = (worker: Worker) => worker.url().startsWith(`chrome-extension://${this.id}/`);
+    const existingWorker = this.context.serviceWorkers().find(predicate);
+    const worker =
+      existingWorker ??
+      (await this.context.waitForEvent('serviceworker', {
+        predicate,
+        timeout: this.options.timeout,
+      }));
+    const manifest = await worker.evaluate(() => chrome.runtime.getManifest());
+    this.#manifest = manifest as chrome.runtime.ManifestV3;
   }
 
-  private attachToWorker(worker: Worker): void {
-    if (this.#worker === worker) return;
-    this.#worker = worker;
-    worker.once('close', () => {
-      if (this.#worker === worker) {
-        this.#worker = undefined;
-      }
-    });
+  private async waitForStopped(): Promise<void> {
+    const worker = this.findWorker();
+    if (worker) await worker.waitForEvent('close', { timeout: this.options.timeout });
   }
 
-  private populateExtensionId(worker: Worker): void {
-    this.id = new URL(worker.url()).hostname;
+  private findWorker(): Worker | undefined {
+    return this.context
+      .serviceWorkers()
+      .find((worker) => worker.url().startsWith(`chrome-extension://${this.#id}/`));
   }
-
-  private async populateManifest(): Promise<void> {
-    const manifest = await this.worker.evaluate(() => chrome.runtime.getManifest());
-    // potentially worker can re-start during .evaluate call,
-    // then we should check: if (this.#worker !== worker) { ... }
-    this.manifest = manifest as chrome.runtime.ManifestV3;
-  }
-}
-
-/**
- * Returns the extension service worker, waiting for it when necessary.
- */
-async function waitForExtensionWorker(context: BrowserContext, timeout: number): Promise<Worker> {
-  const worker = context.serviceWorkers().find(isExtensionWorker);
-  return (
-    worker ??
-    context.waitForEvent('serviceworker', {
-      predicate: isExtensionWorker,
-      timeout,
-    })
-  );
-}
-
-function isExtensionWorker(worker: Worker): boolean {
-  return worker.url().startsWith('chrome-extension://');
 }

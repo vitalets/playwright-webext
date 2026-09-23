@@ -6,7 +6,6 @@ import { chromium } from '@playwright/test';
 import type { BrowserContext, LaunchOptions, ViewportSize } from '@playwright/test';
 
 type LaunchExtensionOptions = {
-  extensionPath: string;
   headless: boolean;
   launchOptions: Omit<LaunchOptions, 'tracesDir'>;
   locale?: string;
@@ -14,23 +13,26 @@ type LaunchExtensionOptions = {
 };
 
 /**
- * Starts Chromium with the configured extension and returns its persistent context.
+ * Starts Chromium with CDP extension installation enabled and returns its persistent context.
  */
 export async function launchContextWithExtension({
-  extensionPath,
   headless,
-  launchOptions: { args = [], ...launchOptions },
+  launchOptions: { args = [], ignoreDefaultArgs, ...launchOptions },
   locale,
   viewport,
 }: LaunchExtensionOptions): Promise<BrowserContext> {
   return chromium.launchPersistentContext('', {
     ...launchOptions,
     channel: 'chromium',
-    args: [
-      ...args,
-      `--load-extension=${extensionPath}`, // prettier-ignore
-      `--disable-extensions-except=${extensionPath}`,
-    ],
+    /**
+     * Enables Extensions.loadUnpacked over CDP for installation and upgrades.
+     */
+    args: [...args, '--enable-unsafe-extension-debugging'],
+    /**
+     * Omits Playwright's --disable-extensions default so installed extensions can run.
+     */
+    ignoreDefaultArgs:
+      ignoreDefaultArgs === true ? true : [...(ignoreDefaultArgs || []), '--disable-extensions'],
     headless,
     locale,
     viewport,

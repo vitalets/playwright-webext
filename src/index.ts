@@ -8,7 +8,6 @@ import { dirname, isAbsolute, resolve } from 'node:path';
 import { test as base } from '@playwright/test';
 import { Extension } from './extension.js';
 import { ExtensionCopy } from './extension-copy.js';
-import { isDefaultLocale, localizeExtension } from './i18n.js';
 import { launchContextWithExtension } from './launch.js';
 import { throwIf } from './utils.js';
 
@@ -17,7 +16,7 @@ import { throwIf } from './utils.js';
  */
 export type WebextOptions = {
   extensionPath: string;
-  oldVersionExtensionPath?: string;
+  extensionAutoInstall?: boolean;
 };
 
 /**
@@ -35,17 +34,9 @@ export { ExtensionDetailsPage } from './internal-pages/extension-details.js';
  */
 export const test = base.extend<WebextOptions & WebextFixtures>({
   extensionPath: ['', { option: true }],
-  oldVersionExtensionPath: [undefined, { option: true }],
+  extensionAutoInstall: [true, { option: true }],
   extension: async (
-    {
-      browserName,
-      extensionPath,
-      headless,
-      launchOptions,
-      locale,
-      oldVersionExtensionPath,
-      viewport,
-    },
+    { browserName, extensionPath, headless, launchOptions, locale, extensionAutoInstall, viewport },
     use,
     testInfo,
   ) => {
@@ -57,23 +48,10 @@ export const test = base.extend<WebextOptions & WebextFixtures>({
 
     const { configFile } = testInfo.config;
     extensionPath = resolvePath(extensionPath, configFile);
-    oldVersionExtensionPath = resolvePath(oldVersionExtensionPath, configFile);
-
-    const extensionCopy = await createExtensionCopyIfNeeded(
-      extensionPath,
-      oldVersionExtensionPath,
-      locale,
-    );
-
-    // todo: move to helper
-    const upgradeOptions =
-      oldVersionExtensionPath && extensionCopy
-        ? { extensionCopy, extensionPath, locale }
-        : undefined;
+    const extensionCopy = new ExtensionCopy();
 
     try {
       const context = await launchContextWithExtension({
-        extensionPath: extensionCopy?.path ?? extensionPath,
         headless,
         launchOptions,
         locale,
@@ -81,36 +59,23 @@ export const test = base.extend<WebextOptions & WebextFixtures>({
       });
 
       try {
-        const extension = new Extension(context, upgradeOptions);
-        await extension.waitForReady(testInfo.timeout);
+        const extension = new Extension(context, {
+          extensionPath,
+          extensionCopy,
+          baseDir: configFile ? dirname(configFile) : process.cwd(),
+          locale,
+          timeout: testInfo.timeout,
+        });
+        if (extensionAutoInstall) await extension.install();
         await use(extension);
       } finally {
         await context.close();
       }
     } finally {
-      await extensionCopy?.cleanup();
+      await extensionCopy.cleanup();
     }
   },
 });
-
-async function createExtensionCopyIfNeeded(
-  extensionPath: string,
-  oldVersionExtensionPath?: string,
-  locale?: string,
-) {
-  let extensionCopy: ExtensionCopy | undefined;
-
-  if (oldVersionExtensionPath) {
-    extensionCopy = await new ExtensionCopy().copyFrom(oldVersionExtensionPath);
-  }
-
-  if (!isDefaultLocale(locale)) {
-    extensionCopy = extensionCopy || (await new ExtensionCopy().copyFrom(extensionPath));
-    await localizeExtension(extensionCopy.path, locale);
-  }
-
-  return extensionCopy;
-}
 
 function resolvePath<T extends string | undefined>(extensionPath: T, configFile?: string) {
   if (!extensionPath) return extensionPath;

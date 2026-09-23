@@ -4,5 +4,6 @@ import { test } from '../../src/index.js';
 test('uninstalls the extension', async ({ extension }) => {
   await extension.uninstall();
 
-  await expect.poll(() => extension.context.serviceWorkers()).toHaveLength(0);
+  expect(extension.context.serviceWorkers()).toHaveLength(0);
+  expect(() => extension.worker).toThrow('not available');
 });

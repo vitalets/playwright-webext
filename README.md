@@ -39,18 +39,24 @@ export default defineConfig<WebextOptions>({
 });
 ```
 
-To test an unpacked upgrade, also configure the older extension build:
+Extensions are installed automatically through Chromium's CDP API. To prepare the browser
+context before installation, turn off `extensionAutoInstall`:
 
 ```ts
-export default defineConfig<WebextOptions>({
-  use: {
-    extensionPath: './dist',
-    oldVersionExtensionPath: './dist-old',
-  },
+test.use({ extensionAutoInstall: false });
+
+test('installs after setup', async ({ extension }) => {
+  await extension.context.addCookies([
+    { name: 'setup', value: 'ready', url: 'https://example.com' },
+  ]);
+  await extension.install();
 });
 ```
 
-Both paths are resolved relative to the Playwright configuration file.
+`extensionPath` remains required. Both it and custom paths passed to `extension.install(path)`
+are resolved relative to the Playwright configuration file. Installation is allowed once per
+fixture; calling it again, including after uninstall, throws. A failed load can be retried.
+The browser must support CDP `Extensions.loadUnpacked`; there is no launch-flag fallback.
 
 ### Testing localization
 
@@ -193,8 +199,15 @@ test('toggles the extension', async ({ extension }) => {
   const detailsPage = await extension.openDetailsPage();
 
   await detailsPage.disable();
+  await expect(() => {
+    expect(() => extension.worker).toThrow('not available');
+  }).toPass();
+
   await detailsPage.enable();
-  await extension.waitForReady();
+  await expect(() => {
+    expect(extension.worker).toBeDefined();
+  }).toPass();
+  expect(await extension.worker.evaluate(() => chrome.runtime.id)).toBe(extension.id);
   await detailsPage.close();
 });
 ```
@@ -207,11 +220,14 @@ test('uninstalls the extension', async ({ extension }) => {
 });
 ```
 
-Upgrade from `oldVersionExtensionPath` to `extensionPath` while preserving the extension ID and
+Install an older build, then upgrade to `extensionPath` while preserving the extension ID and
 browser-profile state:
 
 ```ts
+test.use({ extensionAutoInstall: false });
+
 test('migrates stored settings', async ({ extension }) => {
+  await extension.install('./dist-old');
   expect(extension.manifest.version).toBe('1.0.0');
 
   await extension.upgrade();
@@ -220,10 +236,15 @@ test('migrates stored settings', async ({ extension }) => {
 });
 ```
 
-The fixture initially loads a private copy of the old build. `extension.upgrade()` replaces that
-copy's contents at the same path, reloads it through Chrome's runtime API, and waits for the new
-service worker and manifest. The method is one-shot and throws when `oldVersionExtensionPath` is
-not configured. With a non-default `locale`, the same catalog projection is applied to both builds.
+`extension.install(path)` loads a private copy of the old build. `extension.upgrade()` replaces
+that copy's contents at the same path and loads it again through CDP, preserving its ID and storage.
+No Developer Mode toggle is needed. The method is one-shot and requires installation with a custom
+path. With a non-default `locale`, the same catalog projection is applied to both builds.
+
+Installation and upgrade wait for the extension worker and refresh its manifest. Uninstall waits
+for worker shutdown. The details-page object waits only for the UI state; callers wait for worker
+availability through assertions, as shown above. `extension.worker` looks up the current worker on
+each access and throws when none is running. There is no permanent service-worker listener.
 
 The fixture is lazy. A test that does not request `extension` uses native
 Playwright fixtures and does not launch an extension browser:
