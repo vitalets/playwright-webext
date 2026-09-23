@@ -51,6 +51,15 @@ export class Extension {
   }
 
   /**
+   * Runs code in the current extension service worker using Playwright's evaluation API.
+   */
+  evaluate<R, Arg>(...args: Parameters<typeof this.worker.evaluate<R, Arg>>): Promise<R>;
+  evaluate<R>(...args: Parameters<typeof this.worker.evaluate<R>>): Promise<R>;
+  evaluate(...args: Parameters<Worker['evaluate']>) {
+    return this.worker.evaluate(...args);
+  }
+
+  /**
    * Installs the configured build, or a private copy of a custom build for later upgrade.
    */
   async install(path?: string): Promise<void> {

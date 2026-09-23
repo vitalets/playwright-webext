@@ -107,11 +107,14 @@ test('opens an extension page', async ({ extension }) => {
   await page.goto(extension.getURL('options.html'));
   await expect(page).toHaveTitle(/Options/);
 
-  const runtimeId = await extension.worker.evaluate(() => chrome.runtime.id);
+  const runtimeId = await extension.evaluate(() => chrome.runtime.id);
   expect(runtimeId).toBe(extension.id);
   expect(extension.manifest.manifest_version).toBe(3);
 });
 ```
+
+Run code in the current extension service worker with `extension.evaluate()`. It accepts the same
+functions, expressions, and arguments as Playwright's `worker.evaluate()`.
 
 Read and update extension storage with `extension.storage`. The `local`, `sync`, `session`, and
 `managed` areas expose Promise-based `get`, `set`, `remove`, `clear`, and `getKeys` methods with

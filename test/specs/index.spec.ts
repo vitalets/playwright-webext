@@ -12,5 +12,5 @@ test.use({
 test('loads the extension manifest', async ({ extension }) => {
   expect(extension.manifest.name).toBe('Test Extension');
   expect(extension.manifest.manifest_version).toBe(3);
-  expect(await extension.worker.evaluate(() => navigator.userAgent)).toBe(userAgent);
+  expect(await extension.evaluate(() => navigator.userAgent)).toBe(userAgent);
 });
