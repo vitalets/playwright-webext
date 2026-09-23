@@ -7,7 +7,7 @@
 import { dirname, isAbsolute, resolve } from 'node:path';
 import { test as base } from '@playwright/test';
 import { Extension } from './extension.js';
-import { ExtensionCopy } from './extension-copy.js';
+import { ExtensionCopy } from './copy.js';
 import { launchContextWithExtension } from './launch.js';
 import { throwIf } from './utils.js';
 

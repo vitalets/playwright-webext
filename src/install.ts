@@ -5,7 +5,7 @@
 
 import { resolve } from 'node:path';
 import type { BrowserContext } from '@playwright/test';
-import type { ExtensionCopy } from './extension-copy.js';
+import type { ExtensionCopy } from './copy.js';
 import { isDefaultLocale, localizeExtension } from './i18n.js';
 
 type InstallState = 'not-installed' | 'installing' | 'installed' | 'upgrading' | 'upgraded';
