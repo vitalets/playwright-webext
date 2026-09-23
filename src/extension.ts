@@ -54,8 +54,7 @@ export class Extension {
    * Installs the configured build, or a private copy of a custom build for later upgrade.
    */
   async install(path?: string): Promise<void> {
-    this.#id = await this.#installer.install(path);
-    await this.waitForReady();
+    [this.#id] = await Promise.all([this.#installer.install(path), this.waitForReady()]);
   }
 
   /**
@@ -119,11 +118,35 @@ export class Extension {
   }
 
   /**
+   * Enables the extension, waits for readiness, and closes Chromium's details page afterward.
+   */
+  async enable(): Promise<void> {
+    const detailsPage = await this.openDetailsPage();
+    try {
+      if (await detailsPage.isEnabled()) return;
+      await Promise.all([detailsPage.enable(), this.waitForReady()]);
+    } finally {
+      await detailsPage.close();
+    }
+  }
+
+  /**
+   * Disables the extension, waits for its worker to stop, and closes the details page afterward.
+   */
+  async disable(): Promise<void> {
+    const detailsPage = await this.openDetailsPage();
+    try {
+      await Promise.all([detailsPage.disable(), this.waitForStopped()]);
+    } finally {
+      await detailsPage.close();
+    }
+  }
+
+  /**
    * Replaces the loaded old extension with the configured current version and reloads it.
    */
   async upgrade(): Promise<void> {
-    await Promise.all([this.waitForStopped(), this.#installer.upgrade()]);
-    await this.waitForReady();
+    await Promise.all([this.#installer.upgrade(), this.waitForStopped(), this.waitForReady()]);
   }
 
   /**
@@ -141,14 +164,10 @@ export class Extension {
   }
 
   private async waitForReady(): Promise<void> {
-    const predicate = (worker: Worker) => worker.url().startsWith(`chrome-extension://${this.id}/`);
-    const existingWorker = this.context.serviceWorkers().find(predicate);
-    const worker =
-      existingWorker ??
-      (await this.context.waitForEvent('serviceworker', {
-        predicate,
-        timeout: this.options.timeout,
-      }));
+    const worker = await this.context.waitForEvent('serviceworker', {
+      predicate: (worker) => worker.url().startsWith('chrome-extension://'),
+      timeout: this.options.timeout,
+    });
     const manifest = await worker.evaluate(() => chrome.runtime.getManifest());
     this.#manifest = manifest as chrome.runtime.ManifestV3;
   }

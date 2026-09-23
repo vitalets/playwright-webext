@@ -191,7 +191,16 @@ gives it a normal tab lifecycle. Runtime messages from this directly opened page
 [options-page documentation](https://developer.chrome.com/docs/extensions/develop/ui/options-page)
 for the native embedded and full-page behaviors.
 
-Open Chromium's details page to disable or enable the extension through the same controls
+Disable or enable the extension with `extension.disable()` and `extension.enable()`. Each method
+opens Chromium's details page, changes the enabled state, and closes the page afterward.
+`disable()` waits for the worker to stop, and `enable()` waits for the extension to be ready:
+
+```ts
+await extension.disable();
+await extension.enable();
+```
+
+You can also open Chromium's details page to disable or enable the extension through the same controls
 available to users:
 
 ```ts
