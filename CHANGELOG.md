@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-09-23
+
 - Add `Extension.openOptions()` for interacting with the configured options document in a regular
   tab.
 - Add `Extension.openPopup()` for interacting with the configured popup document in a regular tab.
@@ -17,5 +19,6 @@
 
 - Initial release.
 
-[unreleased]: https://github.com/vitalets/playwright-webext/compare/v0.1.1...HEAD
+[unreleased]: https://github.com/vitalets/playwright-webext/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/vitalets/playwright-webext/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/vitalets/playwright-webext/releases/tag/v0.1.1
