@@ -30,10 +30,9 @@ npm install -D playwright-webext
 
 ## Configuration
 
-Add `extensionPath` option to the `use` section in the Playwright config:
+Add `extensionPath` option to the `use` section in the `playwright.config.ts`:
 
 ```ts
-// playwright.config.ts
 import { defineConfig } from '@playwright/test';
 import type { WebextOptions } from 'playwright-webext';
 
@@ -46,31 +45,40 @@ export default defineConfig<WebextOptions>({
 
 ## Usage
 
-Use `extension` fixture in tests:
+Import `test` from `playwright-webext` and use the `extension` fixture:
 
 ```ts
-import { test } from 'playwright-webext';
 import { expect } from '@playwright/test';
+import { test } from 'playwright-webext';
 
-test('opens an extension page', async ({ extension }) => {
-  const page = await extension.context.newPage();
-
-  await page.goto(extension.getURL('options.html'));
-  await expect(page).toHaveTitle(/Options/);
-
-  const runtimeId = await extension.evaluate(() => chrome.runtime.id);
-  expect(runtimeId).toBe(extension.id);
+test('extension', async ({ extension }) => {
   expect(extension.manifest.manifest_version).toBe(3);
 });
 ```
 
-Run code in the current extension service worker with `extension.evaluate()`. It accepts the same
-functions, expressions, and arguments as Playwright's `worker.evaluate()`.
+Or import `test` as `base` and call `base.extend()` to add custom fixtures:
 
-Read and update extension storage with `extension.storage`. The `local`, `sync`, `session`, and
-`managed` areas expose Promise-based `get`, `set`, `remove`, `clear`, and `getKeys` methods with
-Chrome's arguments and results. The extension needs the `storage` permission. Managed storage
-is read-only; mutation methods reject with Chrome's error. `getKeys` requires Chrome 130 or later.
+```ts
+import type { Page } from '@playwright/test';
+import { test as base } from 'playwright-webext';
+
+export const test = base.extend({
+  // ...custom fixtures
+});
+```
+
+Import your extended `test` to use both custom and built-in fixtures:
+
+```ts
+import { expect } from '@playwright/test';
+import { test } from './fixtures';
+
+test('extension', async ({ extension }) => {
+  expect(extension.manifest.manifest_version).toBe(3);
+});
+```
+
+Check-out API section for avaialble `extension` methods.
 
 ```ts
 await extension.storage.sync.set({ preferences: { colorScheme: 'dark' } });
