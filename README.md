@@ -44,58 +44,9 @@ export default defineConfig<WebextOptions>({
 });
 ```
 
-Extensions are installed automatically through Chromium's CDP API. To prepare the browser
-context before installation, turn off `extensionAutoInstall`:
-
-```ts
-test.use({ extensionAutoInstall: false });
-
-test('installs after setup', async ({ extension }) => {
-  await extension.context.addCookies([
-    { name: 'setup', value: 'ready', url: 'https://example.com' },
-  ]);
-  await extension.install();
-});
-```
-
-`extensionPath` remains required. Both it and custom paths passed to `extension.install(path)`
-are resolved relative to the Playwright configuration file. Installation is allowed once per
-fixture; calling it again, including after uninstall, throws. A failed load can be retried.
-The browser must support CDP `Extensions.loadUnpacked`; there is no launch-flag fallback.
-
-### Testing localization
-
-Use Playwright's built-in `locale` option to test an extension translation catalog:
-
-```ts
-test.describe('Spanish locale', () => {
-  test.use({ locale: 'es' });
-
-  test('shows translated content', async ({ extension }) => {
-    const message = await extension.worker.evaluate(() => chrome.i18n.getMessage('welcome'));
-    expect(message).toBe('Bienvenido');
-  });
-});
-```
-
-The extension fixture copies the configured extension into a temporary directory, selects the
-requested `_locales` catalog, and removes the copy after Chromium closes. Locale names use Chrome's
-underscore directory convention internally, and regional locales fall back to their base language;
-for example, `es-ES` uses `_locales/es` when `_locales/es_ES` is absent. The original extension is
-not modified.
-
-Playwright implicitly supplies `en-US`, so that value preserves the normal behavior and loads the
-original extension without creating a localized build. This means explicitly setting `en-US` also
-does not localize the build. Any other locale, including `en-GB`, requires an exact or base-language catalog
-and fails clearly when one is unavailable.
-
-The localized build controls the messages returned by the real `chrome.i18n` API, while Playwright
-continues to apply `locale` to `navigator.language`, request headers, and formatting. It does not
-change Chromium's own UI locale, `chrome.i18n.getUILanguage()`, or the `@@ui_locale` predefined
-message. Projected builds can also receive a different path-derived extension ID unless the
-manifest provides a stable `key`.
-
 ## Usage
+
+Use `extension` fixture in tests:
 
 ```ts
 import { test } from 'playwright-webext';
@@ -252,6 +203,38 @@ test('regular website', async ({ page }) => {
 
 The exported `test` can be extended or combined with other fixture modules
 using Playwright's `test.extend()` and `mergeTests()`.
+
+## Testing localization
+
+Use Playwright's built-in `locale` option to test an extension translation catalog:
+
+```ts
+test.describe('Spanish locale', () => {
+  test.use({ locale: 'es' });
+
+  test('shows translated content', async ({ extension }) => {
+    const message = await extension.worker.evaluate(() => chrome.i18n.getMessage('welcome'));
+    expect(message).toBe('Bienvenido');
+  });
+});
+```
+
+The extension fixture copies the configured extension into a temporary directory, selects the
+requested `_locales` catalog, and removes the copy after Chromium closes. Locale names use Chrome's
+underscore directory convention internally, and regional locales fall back to their base language;
+for example, `es-ES` uses `_locales/es` when `_locales/es_ES` is absent. The original extension is
+not modified.
+
+Playwright implicitly supplies `en-US`, so that value preserves the normal behavior and loads the
+original extension without creating a localized build. This means explicitly setting `en-US` also
+does not localize the build. Any other locale, including `en-GB`, requires an exact or base-language catalog
+and fails clearly when one is unavailable.
+
+The localized build controls the messages returned by the real `chrome.i18n` API, while Playwright
+continues to apply `locale` to `navigator.language`, request headers, and formatting. It does not
+change Chromium's own UI locale, `chrome.i18n.getUILanguage()`, or the `@@ui_locale` predefined
+message. Projected builds can also receive a different path-derived extension ID unless the
+manifest provides a stable `key`.
 
 ## License
 
