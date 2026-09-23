@@ -6,7 +6,7 @@
 
 import type { BrowserContext, Page, Worker } from '@playwright/test';
 import { ExtensionInstaller, type InstallOptions } from './install.js';
-import { ExtensionDetailsPage } from './internal-pages/extension-details.js';
+import { ExtensionsPage } from './extensions-page.js';
 import { createStorage } from './storage.js';
 
 type ExtensionOptions = InstallOptions & {
@@ -109,36 +109,29 @@ export class Extension {
   }
 
   /**
-   * Opens Chromium's management details for this extension.
-   */
-  async openDetailsPage(): Promise<ExtensionDetailsPage> {
-    const page = await this.context.newPage();
-    await page.goto(`chrome://extensions/?id=${this.id}`);
-    return new ExtensionDetailsPage(page);
-  }
-
-  /**
-   * Enables the extension, waits for readiness, and closes Chromium's details page afterward.
+   * Enables the extension, waits for readiness, and closes Chromium's extensions page afterward.
    */
   async enable(): Promise<void> {
-    const detailsPage = await this.openDetailsPage();
+    const extensionsPage = new ExtensionsPage(this.context);
     try {
-      if (await detailsPage.isEnabled()) return;
-      await Promise.all([detailsPage.enable(), this.waitForReady()]);
+      await extensionsPage.open();
+      if (await extensionsPage.isEnabled(this.id)) return;
+      await Promise.all([extensionsPage.enable(this.id), this.waitForReady()]);
     } finally {
-      await detailsPage.close();
+      await extensionsPage.close();
     }
   }
 
   /**
-   * Disables the extension, waits for its worker to stop, and closes the details page afterward.
+   * Disables the extension, waits for its worker to stop, and closes the extensions page afterward.
    */
   async disable(): Promise<void> {
-    const detailsPage = await this.openDetailsPage();
+    const extensionsPage = new ExtensionsPage(this.context);
     try {
-      await Promise.all([detailsPage.disable(), this.waitForStopped()]);
+      await extensionsPage.open();
+      await Promise.all([extensionsPage.disable(this.id), this.waitForStopped()]);
     } finally {
-      await detailsPage.close();
+      await extensionsPage.close();
     }
   }
 

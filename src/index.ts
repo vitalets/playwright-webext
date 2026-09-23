@@ -27,7 +27,6 @@ export type WebextFixtures = {
 };
 
 export { Extension } from './extension.js';
-export { ExtensionDetailsPage } from './internal-pages/extension-details.js';
 
 /**
  * Playwright test extended with extension configuration and fixtures.

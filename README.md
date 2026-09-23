@@ -192,33 +192,12 @@ gives it a normal tab lifecycle. Runtime messages from this directly opened page
 for the native embedded and full-page behaviors.
 
 Disable or enable the extension with `extension.disable()` and `extension.enable()`. Each method
-opens Chromium's details page, changes the enabled state, and closes the page afterward.
+opens Chromium's extensions page, changes the enabled state, and closes the page afterward.
 `disable()` waits for the worker to stop, and `enable()` waits for the extension to be ready:
 
 ```ts
 await extension.disable();
 await extension.enable();
-```
-
-You can also open Chromium's details page to disable or enable the extension through the same controls
-available to users:
-
-```ts
-test('toggles the extension', async ({ extension }) => {
-  const detailsPage = await extension.openDetailsPage();
-
-  await detailsPage.disable();
-  await expect(() => {
-    expect(() => extension.worker).toThrow('not available');
-  }).toPass();
-
-  await detailsPage.enable();
-  await expect(() => {
-    expect(extension.worker).toBeDefined();
-  }).toPass();
-  expect(await extension.worker.evaluate(() => chrome.runtime.id)).toBe(extension.id);
-  await detailsPage.close();
-});
 ```
 
 Remove the extension from its isolated browser profile:
@@ -251,9 +230,8 @@ No Developer Mode toggle is needed. The method is one-shot and requires installa
 path. With a non-default `locale`, the same catalog projection is applied to both builds.
 
 Installation and upgrade wait for the extension worker and refresh its manifest. Uninstall waits
-for worker shutdown. The details-page object waits only for the UI state; callers wait for worker
-availability through assertions, as shown above. `extension.worker` looks up the current worker on
-each access and throws when none is running. There is no permanent service-worker listener.
+for worker shutdown. `extension.worker` looks up the current worker on each access and throws when
+none is running. There is no permanent service-worker listener.
 
 The fixture is lazy. A test that does not request `extension` uses native
 Playwright fixtures and does not launch an extension browser:
