@@ -1,5 +1,10 @@
 # Rules for agents
 
+## Documentation
+
+For public documentation and README changes, use
+[writing-docs](.agents/skills/writing-docs/SKILL.md).
+
 ## Source file structure
 
 For TypeScript implementation files, follow `.agents/rules/ts-file-structure.md`.
