@@ -28,7 +28,10 @@
     "prettier:w": "prettier --write --ignore-unknown .",
     "test": "npx playwright test --config test/playwright.config.ts",
     "deps": "npx npm-check-updates -i --format group,dep,repo --cooldown 3",
-    "build": "rm -rf ./dist && tsc -p tsconfig.build.json"
+    "build": "rm -rf ./dist && tsc -p tsconfig.build.json",
+    "docs": "npm --prefix website run start --",
+    "docs:build": "npm --prefix website run build",
+    "docs:tsc": "npm --prefix website run typecheck"
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"

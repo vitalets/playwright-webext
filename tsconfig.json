@@ -11,5 +11,5 @@
     "types": ["chrome", "node"]
   },
   "include": ["**/*.ts", "**/*.tsx", "**/*.mts"],
-  "exclude": ["dist"]
+  "exclude": ["dist", "website"]
 }

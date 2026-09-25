@@ -5,32 +5,31 @@
 [![npm version](https://img.shields.io/npm/v/playwright-webext)](https://www.npmjs.com/package/playwright-webext)
 [![license](https://img.shields.io/npm/l/playwright-webext)](https://github.com/vitalets/playwright-webext/blob/main/LICENSE)
 
-A tool for testing browser extensions with [Playwright](https://playwright.dev/).
+A [Playwright](https://playwright.dev/) toolkit for testing browser extensions.
 
 ## Features
 
 - Auto-loading extension by `extensionPath` option.
-- A single `extension` fixture with useful methods.
+- An `extension` fixture for interacting with extension pages, background code, and storage.
 - Extension lifecycle controls for enabling, disabling, upgrading, and uninstalling.
 
-## Prerequisites
+## Documentation
 
-The package is ESM-only. Node `^20.19.0 || >=22.12.0` and Playwright Test are required:
+[Getting started](https://vitalets.github.io/playwright-webext/) ·
+[Testing guides](https://vitalets.github.io/playwright-webext/guides/welcome-page/) ·
+[API reference](https://vitalets.github.io/playwright-webext/api/extension/)
+
+## Quick start
+
+Requires an ESM project, Node.js `^20.19.0 || >=22.12.0` (or newer if required by your Playwright
+version), and an unpacked Chromium Manifest V3 extension with a background service worker.
 
 ```sh
-npm install -D @playwright/test
+npm install -D playwright-webext @playwright/test
 npx playwright install chromium
 ```
 
-## Installation
-
-```sh
-npm install -D playwright-webext
-```
-
-## Configuration
-
-Add `extensionPath` option to the `use` section in the `playwright.config.ts`:
+Point Playwright at your built extension directory, relative to the configuration file:
 
 ```ts
 import { defineConfig } from '@playwright/test';
@@ -43,206 +42,28 @@ export default defineConfig<WebextOptions>({
 });
 ```
 
-## Usage
-
-Import `test` from `playwright-webext` and use the `extension` fixture:
+Import the extended `test` and request the `extension` fixture:
 
 ```ts
 import { expect } from '@playwright/test';
 import { test } from 'playwright-webext';
 
-test('extension', async ({ extension }) => {
+test('loads the extension', async ({ extension }) => {
   expect(extension.manifest.manifest_version).toBe(3);
 });
 ```
 
-Or import `test` as `base` and call `base.extend()` to add custom fixtures:
-
-```ts
-import type { Page } from '@playwright/test';
-import { test as base } from 'playwright-webext';
-
-export const test = base.extend({
-  // ...custom fixtures
-});
+```sh
+npx playwright test
 ```
 
-Import your extended `test` to use both custom and built-in fixtures:
+The extension gets its own isolated browser context. Use `extension.context.newPage()` for pages
+that need the extension; Playwright's native `page` and `context` fixtures remain separate.
 
-```ts
-import { expect } from '@playwright/test';
-import { test } from './fixtures';
+## Contributing to the docs
 
-test('extension', async ({ extension }) => {
-  expect(extension.manifest.manifest_version).toBe(3);
-});
-```
-
-Check-out API section for avaialble `extension` methods.
-
-```ts
-await extension.storage.sync.set({ preferences: { colorScheme: 'dark' } });
-const { preferences } = await extension.storage.sync.get('preferences');
-const allValues = await extension.storage.local.get();
-const keys = await extension.storage.session.getKeys();
-await extension.storage.local.remove(['obsoleteKey', 'oldSettings']);
-await extension.storage.session.clear();
-```
-
-Use Playwright's `expect.poll` to wait for storage updates or match partial values:
-
-```ts
-await expect
-  .poll(() => extension.storage.local.get('settings'), { timeout: 10_000 })
-  .toEqual({ settings: expect.objectContaining({ theme: 'dark' }) });
-```
-
-`get` also accepts an array of keys, an object of defaults, or `null` for all values.
-Missing keys are omitted from its result.
-
-Open the extension's configured popup document and interact with it as a normal Playwright
-`Page`:
-
-```ts
-test('uses the popup', async ({ extension }) => {
-  const popupPage = await extension.openPopup();
-
-  await popupPage.getByRole('button', { name: 'Save' }).click();
-  await popupPage.close();
-});
-```
-
-`extension.openPopup()` opens the document declared by `action.default_popup` in a regular
-browser tab. It does not open Chromium's native toolbar popup. This makes the document available
-through `extension.context.pages()` and Playwright's `Page` API, but the environment is not fully
-equivalent to the native popup. This approach follows Chrome's
-[end-to-end testing guidance](https://developer.chrome.com/docs/extensions/how-to/test/end-to-end-testing),
-which also calls out the active-tab limitation:
-
-- The document uses a normal tab viewport and remains open when focus moves elsewhere. It does not
-  reproduce the native popup's automatic sizing, dismissal, or reload-on-open lifecycle.
-- The new tab becomes the active tab. Popup code that queries the active tab will therefore find
-  the popup document's tab rather than the web page that was active before it opened.
-- Opening the tab does not reproduce the toolbar action's user gesture or its temporary
-  `activeTab` permission grant.
-- Runtime messages sent by the document have `sender.tab` and `sender.tab.id` because the document
-  is hosted in a tab. Messages from the native toolbar popup do not normally have `sender.tab`.
-
-Calling Chromium's native `chrome.action.openPopup()` does open the actual toolbar popup in the
-loaded-extension browser and does not crash. However, that browser-owned surface does not appear
-in `extension.context.pages()` and is not interactable as a Playwright `Page`. Use
-`extension.openPopup()` when the test needs locators or other page interactions, and close the
-returned page explicitly when the test is finished.
-
-Open the extension's configured options document as a normal Playwright `Page`:
-
-```ts
-test('changes extension options', async ({ extension }) => {
-  const optionsPage = await extension.openOptions();
-
-  await optionsPage.getByLabel('Theme').selectOption('dark');
-  await optionsPage.close();
-});
-```
-
-`extension.openOptions()` uses `options_ui.page`, falling back to the legacy `options_page`
-declaration. It always opens a new regular tab and intentionally ignores `options_ui.open_in_tab`.
-It does not call `chrome.runtime.openOptionsPage()`.
-
-When `open_in_tab` is `false`, Chromium can open or focus its `chrome://extensions` management UI
-and embed the options document there. The management UI can be visible through
-`extension.context.pages()`, but the options document is not exposed as its own standalone
-Playwright `Page`. Opening the extension URL directly makes the document reliably interactable and
-gives it a normal tab lifecycle. Runtime messages from this directly opened page include
-`sender.tab`, unlike messages from embedded options. See Chrome's
-[options-page documentation](https://developer.chrome.com/docs/extensions/develop/ui/options-page)
-for the native embedded and full-page behaviors.
-
-Disable or enable the extension with `extension.disable()` and `extension.enable()`. Each method
-opens Chromium's extensions page, changes the enabled state, and closes the page afterward.
-`disable()` waits for the worker to stop, and `enable()` waits for the extension to be ready:
-
-```ts
-await extension.disable();
-await extension.enable();
-```
-
-Remove the extension from its isolated browser profile:
-
-```ts
-test('uninstalls the extension', async ({ extension }) => {
-  await extension.uninstall();
-});
-```
-
-Install an older build, then upgrade to `extensionPath` while preserving the extension ID and
-browser-profile state:
-
-```ts
-test.use({ extensionAutoInstall: false });
-
-test('migrates stored settings', async ({ extension }) => {
-  await extension.install('./dist-old');
-  expect(extension.manifest.version).toBe('1.0.0');
-
-  await extension.upgrade();
-
-  expect(extension.manifest.version).toBe('2.0.0');
-});
-```
-
-`extension.install(path)` loads a private copy of the old build. `extension.upgrade()` replaces
-that copy's contents at the same path and loads it again through CDP, preserving its ID and storage.
-No Developer Mode toggle is needed. The method is one-shot and requires installation with a custom
-path. With a non-default `locale`, the same catalog projection is applied to both builds.
-
-Installation and upgrade wait for the extension worker and refresh its manifest. Uninstall waits
-for worker shutdown. `extension.worker` looks up the current worker on each access and throws when
-none is running. There is no permanent service-worker listener.
-
-The fixture is lazy. A test that does not request `extension` uses native
-Playwright fixtures and does not launch an extension browser:
-
-```ts
-test('regular website', async ({ page }) => {
-  await page.goto('https://example.com');
-});
-```
-
-The exported `test` can be extended or combined with other fixture modules
-using Playwright's `test.extend()` and `mergeTests()`.
-
-## Testing localization
-
-Use Playwright's built-in `locale` option to test an extension translation catalog:
-
-```ts
-test.describe('Spanish locale', () => {
-  test.use({ locale: 'es' });
-
-  test('shows translated content', async ({ extension }) => {
-    const message = await extension.worker.evaluate(() => chrome.i18n.getMessage('welcome'));
-    expect(message).toBe('Bienvenido');
-  });
-});
-```
-
-The extension fixture copies the configured extension into a temporary directory, selects the
-requested `_locales` catalog, and removes the copy after Chromium closes. Locale names use Chrome's
-underscore directory convention internally, and regional locales fall back to their base language;
-for example, `es-ES` uses `_locales/es` when `_locales/es_ES` is absent. The original extension is
-not modified.
-
-Playwright implicitly supplies `en-US`, so that value preserves the normal behavior and loads the
-original extension without creating a localized build. This means explicitly setting `en-US` also
-does not localize the build. Any other locale, including `en-GB`, requires an exact or base-language catalog
-and fails clearly when one is unavailable.
-
-The localized build controls the messages returned by the real `chrome.i18n` API, while Playwright
-continues to apply `locale` to `navigator.language`, request headers, and formatting. It does not
-change Chromium's own UI locale, `chrome.i18n.getUILanguage()`, or the `@@ui_locale` predefined
-message. Projected builds can also receive a different path-derived extension ID unless the
-manifest provides a stable `key`.
+See [website/README.md](website/README.md) for local development and publishing. Upcoming documentation
+lives on `main`; the public site deploys from the `docs` branch after manual promotion.
 
 ## License
 

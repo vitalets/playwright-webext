@@ -1,0 +1,48 @@
+name: deploy-website
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, docs]
+  pull_request:
+    branches: [main, docs]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: website-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/docs' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: website/package-lock.json
+      - run: npm ci --prefix website
+      - run: npm run docs:typecheck
+      - run: npm run docs:build
+      - uses: actions/upload-pages-artifact@v4
+        if: github.ref == 'refs/heads/docs' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        with:
+          path: website/build
+
+  deploy:
+    if: github.ref == 'refs/heads/docs' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
