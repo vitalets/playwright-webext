@@ -49,6 +49,21 @@ After migration (v2):
 { "preferences": { "theme": "dark" } }
 ```
 
+In the version `2.0.0` background script, check `previousVersion` so the migration runs only
+when updating from version `1.x`. The extension needs the `storage` permission.
+
+```js title="background.js"
+chrome.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
+  if (reason === 'update' && previousVersion?.startsWith('1.')) {
+    const { theme } = await chrome.storage.local.get('theme');
+    if (theme !== undefined) {
+      await chrome.storage.local.set({ preferences: { theme } });
+      await chrome.storage.local.remove('theme');
+    }
+  }
+});
+```
+
 The migration test:
 
 ```ts title="tests/migration.spec.ts"
