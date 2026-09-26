@@ -8,7 +8,7 @@ requires upgrading an existing installation while keeping its stored data.
 
 ## Prepare the old build
 
-With `extensionAutoInstall: false`, `playwright-webext` lets you install an older build, seed its data, and upgrade it within one test.
+With `extensionAutoInstall: false`, playwright-webext lets you install an older build, seed its data, and upgrade it within one test.
 [`extension.upgrade()`](../api/extension.md#upgrade) loads the current build configured in
 `extensionPath` while preserving the extension ID and browser-profile state, so your test can check
 the migration's result.

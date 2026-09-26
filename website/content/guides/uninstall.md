@@ -6,7 +6,7 @@ description: Test the feedback page opened when your extension is uninstalled.
 Extensions often open a feedback page when uninstalled, asking users why they removed the extension.
 Register this page's URL in your extension with `chrome.runtime.setUninstallURL()`.
 
-`playwright-webext` lets you trigger uninstallation from your test with
+playwright-webext lets you trigger uninstallation from your test with
 [`extension.uninstall()`](../api/extension.md#uninstall), without navigating Chromium's extension
 management UI or handling a confirmation dialog. Capture the feedback page in the same browser
 context to check where users are sent.

@@ -6,7 +6,7 @@ description: Test the welcome tab your extension opens after its first installat
 An extension can open a welcome page from its `chrome.runtime.onInstalled` handler. Testing this
 first-install behavior requires a browser profile where the extension has not already been installed.
 
-`playwright-webext` installs the extension in a fresh profile for each test, so you can check the
+playwright-webext installs the extension in a fresh profile for each test, so you can check the
 welcome page without resetting a browser profile yourself. Keep automatic installation enabled and
 use `expect.poll` to check the open pages until the welcome URL appears.
 
