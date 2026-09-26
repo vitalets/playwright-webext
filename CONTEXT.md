@@ -24,6 +24,10 @@ _Avoid_: Installation Page
 The extension page declared by `action.default_popup`, which the harness can host in a regular browser tab for interaction without claiming to reproduce Chromium's native toolbar popup.
 _Avoid_: Popup Page, Emulated Popup, Real Popup
 
+**Side Panel Document**:
+The extension page declared by `side_panel.default_path`, which the harness can host in a regular browser tab for interaction without reproducing Chromium's native side panel.
+_Avoid_: Sidebar Page, Emulated Side Panel, Real Side Panel
+
 **Catalog Projection**:
 Testing a selected translation catalog through the extension's real i18n API without claiming to change the browser's actual locale.
 _Avoid_: Locale emulation, mocked locale

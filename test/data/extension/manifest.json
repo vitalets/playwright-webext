@@ -6,7 +6,10 @@
   "background": {
     "service_worker": "background.js"
   },
-  "permissions": ["storage"],
+  "permissions": ["storage", "sidePanel"],
+  "side_panel": {
+    "default_path": "side-panel.html"
+  },
   "action": {
     "default_popup": "popup.html"
   },

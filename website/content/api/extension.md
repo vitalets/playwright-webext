@@ -50,6 +50,14 @@ is declared or the extension is not ready.
 The full extension URL of `options_ui.page`, falling back to `options_page`, from the manifest
 snapshot. Throws when neither is declared or the extension is not ready.
 
+### sidePanelUrl
+
+**Type:** `string` (readonly).
+
+The full extension URL of `side_panel.default_path` from the manifest snapshot. Throws when no
+default path is declared or the extension is not ready. Ignores runtime `chrome.sidePanel.setOptions()`
+overrides, including per-tab settings.
+
 ### worker
 
 **Type:** [`Worker`](https://playwright.dev/docs/api/class-worker).
@@ -149,7 +157,23 @@ await options.getByLabel('Theme').selectOption('dark');
 await options.close();
 ```
 
-See the [Options page guide](../guides/options.md#tab-behavior) for differences from embedded options.
+See the [Options page guide](../guides/options.md#limitations) for differences from embedded options.
+
+### openSidePanel
+
+**Call:** `extension.openSidePanel()`  
+**Returns:** <code>Promise&lt;<a href="https://playwright.dev/docs/api/class-page">Page</a>&gt;</code>
+
+Opens `side_panel.default_path` in a new regular tab and returns it after navigation. Throws before
+creating a tab when the manifest has no default path. Ignores runtime side panel configuration.
+
+```ts
+const sidePanel = await extension.openSidePanel();
+await sidePanel.getByRole('button', { name: 'Save' }).click();
+await sidePanel.close();
+```
+
+See the [Side panel guide](../guides/side-panel.md#limitations) for differences from the native panel.
 
 ### disable
 

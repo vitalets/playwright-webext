@@ -33,9 +33,10 @@ const sidebars: SidebarsConfig = {
       collapsed: false,
       items: [
         'guides/storage',
-        'guides/welcome-page',
         'guides/popup',
         'guides/options',
+        'guides/welcome-page',
+        'guides/side-panel',
         'guides/i18n',
         'guides/migration',
         'guides/uninstall',

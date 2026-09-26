@@ -74,6 +74,18 @@ export class Extension {
   }
 
   /**
+   * Returns the side panel document URL declared by side_panel.default_path.
+   * Throws when no default path is declared. Runtime sidePanel overrides are ignored.
+   */
+  get sidePanelUrl(): string {
+    const sidePanelPath = this.manifest.side_panel?.default_path;
+    if (!sidePanelPath) {
+      throw new Error('Extension does not define side_panel.default_path.');
+    }
+    return this.getURL(sidePanelPath);
+  }
+
+  /**
    * Runs code in the current extension service worker using Playwright's evaluation API.
    */
   evaluate<R, Arg>(...args: Parameters<typeof this.worker.evaluate<R, Arg>>): Promise<R>;
@@ -126,6 +138,20 @@ export class Extension {
    */
   async openOptions(): Promise<Page> {
     const url = this.optionsUrl;
+    const page = await this.context.newPage();
+    await page.goto(url);
+
+    return page;
+  }
+
+  /**
+   * Opens the manifest's side panel document in a new regular browser tab.
+   *
+   * Uses normal tab viewport, lifecycle, active-tab, and message-sender behavior.
+   * Does not open the native side panel or use runtime sidePanel configuration.
+   */
+  async openSidePanel(): Promise<Page> {
+    const url = this.sidePanelUrl;
     const page = await this.context.newPage();
     await page.goto(url);
 

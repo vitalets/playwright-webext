@@ -15,7 +15,8 @@ your extension so you can test its pages, background behavior, storage, and life
 ## What you can test
 
 - Pages your extension opens, including its [welcome page](../guides/welcome-page.md),
-  [popup](../guides/popup.md), and [options page](../guides/options.md).
+  [popup](../guides/popup.md), [options page](../guides/options.md), and
+  [side panel](../guides/side-panel.md).
 - Background behavior and [saved settings](../guides/storage.md).
 - [Translations](../guides/i18n.md).
 - [Settings after an upgrade](../guides/migration.md) and

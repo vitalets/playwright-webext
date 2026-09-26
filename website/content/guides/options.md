@@ -30,14 +30,17 @@ test('saves the theme', async ({ extension }) => {
 You can also seed settings with [`extension.storage`](../api/storage.md) before opening the document,
 then assert the values displayed by your UI.
 
-## Tab behavior
+## Limitations
 
-Each call opens a new regular tab in `extension.context`, even if `options_ui.open_in_tab` is `false`.
-The helper opens the extension URL directly; it does not call `chrome.runtime.openOptionsPage()`.
+`openOptions()` opens the options document in a regular browser tab. Its extension APIs and storage
+are available, but some native options-page behaviors cannot be tested this way:
 
-This provides a standalone page for Playwright interactions. It does not reproduce options embedded
-inside Chromium's extension management UI, including their message-sender behavior: messages from
-the directly opened tab include `sender.tab`.
+- The document opens in its own tab even if `options_ui.open_in_tab` is `false`. Embedding inside
+  Chromium's extension management UI is not reproduced.
+- Each call creates a new tab. The helper does not call `chrome.runtime.openOptionsPage()` or
+  reproduce its behavior for an already-open options page.
+- Runtime messages from the directly opened document include `sender.tab`, which differs from
+  embedded options.
 
 See [Chrome's options-page documentation](https://developer.chrome.com/docs/extensions/develop/ui/options-page)
 for the native embedded and full-page behaviors.
