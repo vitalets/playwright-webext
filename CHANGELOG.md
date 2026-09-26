@@ -4,6 +4,9 @@
 
 ## [Unreleased]
 
+- Add readonly `extension.optionsUrl` and `extension.popupUrl` properties for the configured
+  options and popup page URLs.
+
 ## [0.1.2] - 2026-09-23
 
 - Add `Extension.openOptions()` for interacting with the configured options document in a regular

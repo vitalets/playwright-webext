@@ -35,6 +35,20 @@ Installation, upgrade, and re-enabling refresh the snapshot.
 expect(extension.manifest.version).toBe('1.0.0');
 ```
 
+### popupUrl
+
+**Type:** `string` (readonly).
+
+The full extension URL of `action.default_popup` from the manifest snapshot. Throws when no popup
+is declared or the extension is not ready.
+
+### optionsUrl
+
+**Type:** `string` (readonly).
+
+The full extension URL of `options_ui.page`, falling back to `options_page`, from the manifest
+snapshot. Throws when neither is declared or the extension is not ready.
+
 ### worker
 
 **Type:** [`Worker`](https://playwright.dev/docs/api/class-worker).

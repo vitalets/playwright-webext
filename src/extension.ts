@@ -51,6 +51,29 @@ export class Extension {
   }
 
   /**
+   * Returns the configured popup URL, or throws when no popup is declared.
+   */
+  get popupUrl(): string {
+    const popupPath = this.manifest.action?.default_popup;
+    if (!popupPath) {
+      throw new Error('Extension does not define action.default_popup.');
+    }
+    return this.getURL(popupPath);
+  }
+
+  /**
+   * Returns the configured options URL, preferring options_ui.page over options_page.
+   * Throws when no options page is declared.
+   */
+  get optionsUrl(): string {
+    const optionsPath = this.manifest.options_ui?.page ?? this.manifest.options_page;
+    if (!optionsPath) {
+      throw new Error('Extension does not define options_ui.page or options_page.');
+    }
+    return this.getURL(optionsPath);
+  }
+
+  /**
    * Runs code in the current extension service worker using Playwright's evaluation API.
    */
   evaluate<R, Arg>(...args: Parameters<typeof this.worker.evaluate<R, Arg>>): Promise<R>;
@@ -86,13 +109,9 @@ export class Extension {
    * `BrowserContext.pages()` and cannot be interacted with as a Playwright `Page`.
    */
   async openPopup(): Promise<Page> {
-    const popupPath = this.manifest.action?.default_popup;
-    if (!popupPath) {
-      throw new Error('Extension does not define action.default_popup.');
-    }
-
+    const url = this.popupUrl;
     const page = await this.context.newPage();
-    await page.goto(this.getURL(popupPath));
+    await page.goto(url);
 
     return page;
   }
@@ -106,13 +125,9 @@ export class Extension {
    * `sender.tab` for runtime messages.
    */
   async openOptions(): Promise<Page> {
-    const optionsPath = this.manifest.options_ui?.page ?? this.manifest.options_page;
-    if (!optionsPath) {
-      throw new Error('Extension does not define options_ui.page or options_page.');
-    }
-
+    const url = this.optionsUrl;
     const page = await this.context.newPage();
-    await page.goto(this.getURL(optionsPath));
+    await page.goto(url);
 
     return page;
   }
