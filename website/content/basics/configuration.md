@@ -74,10 +74,15 @@ values in `contextOptions`.
 
 `storageState` accepts an object or a JSON file path and is restored before extension installation.
 
-## Traces and videos
+## Traces, screenshots, and videos
 
-Playwright's [trace](https://playwright.dev/docs/api/class-testoptions#test-options-trace) setting
-applies to the extension context. The
+Playwright's [trace](https://playwright.dev/docs/api/class-testoptions#test-options-trace) and
+[screenshot](https://playwright.dev/docs/api/class-testoptions#test-options-screenshot) settings
+apply automatically to the extension context. For example, `screenshot: 'only-on-failure'` attaches
+screenshots to the report for failed tests. Pages must remain open until context teardown to appear
+in these screenshots.
+
+The
 [video](https://playwright.dev/docs/api/class-testoptions#test-options-video) setting controls video
 recording, including retention modes, retries, and recording size. Retained videos are attached to
 the test report after the extension context closes.
