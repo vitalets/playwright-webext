@@ -6,22 +6,50 @@ description: Test stored-data migration when upgrading from an older unpacked ex
 An extension update may need to migrate saved settings to a new format. Testing that migration
 requires upgrading an existing installation while keeping its stored data.
 
-`playwright-webext` lets you install an older build, seed its data, and upgrade it within one test.
+## Prepare the old build
+
+With `extensionAutoInstall: false`, `playwright-webext` lets you install an older build, seed its data, and upgrade it within one test.
 [`extension.upgrade()`](../api/extension.md#upgrade) loads the current build configured in
 `extensionPath` while preserving the extension ID and browser-profile state, so your test can check
 the migration's result.
 
-## Prepare the old build
+A typical migration test follows this structure:
 
-Place an older unpacked build in `./dist-v1`. The current build is already configured in
+```ts
+test.use({ extensionAutoInstall: false });
+
+test('migration v1 -> v2', async () => {
+  await extension.install('./path/to/old/dist');
+
+  // ...set up state in extension v1
+
+  await extension.upgrade();
+
+  // ...validate state after upgrading to v2
+});
+```
+
+## Example
+
+This example upgrades from version `1.0.0` in `./dist-v1` to version `2.0.0`, configured in
 `extensionPath`.
 
-This example assumes the old build has version `1.0.0`, the current build has version `2.0.0`, and the
-current extension migrates `{ theme: 'dark' }` into `{ preferences: { colorScheme: 'dark' } }` from its
-`chrome.runtime.onInstalled` update handler. Both builds need a background service worker and the
-`storage` permission. The migration itself belongs to your extension.
+During the update, the extension's `chrome.runtime.onInstalled` handler moves the saved `theme`
+into `preferences`:
 
-## Verify the migration
+Before migration (v1):
+
+```json
+{ "theme": "dark" }
+```
+
+After migration (v2):
+
+```json
+{ "preferences": { "theme": "dark" } }
+```
+
+The migration test:
 
 ```ts title="tests/migration.spec.ts"
 import { expect } from '@playwright/test';
@@ -41,25 +69,24 @@ test('migrates preferences from the old version', async ({ extension }) => {
   await expect
     .poll(() => extension.storage.local.get('preferences'))
     .toEqual({
-      preferences: { colorScheme: 'dark' },
+      preferences: { theme: 'dark' },
     });
 });
 ```
 
-Custom install paths, like `extensionPath`, resolve relative to your Playwright configuration file.
-Wait for any old-build initialization before seeding data if that initialization also writes storage.
+## Under the hood
 
-## Upgrade behavior
+`extension.install(path)` copies the old build to a temporary directory and loads it into Chromium.
+`extension.upgrade()` replaces that copy with the current build from `extensionPath` and reloads
+the extension from the same directory. This preserves the extension ID and browser-profile state.
 
-The package copies the old build to a temporary directory and installs it from there. During the
-upgrade, it replaces that directory's contents with the current build.
-The extension ID and browser-profile state are preserved. The worker is replaced and
-`extension.manifest` is refreshed; previously captured manifest objects remain snapshots of the old
-version. Read `extension.worker` again after upgrading rather than retaining an old worker handle.
+The reload replaces the service worker. `upgrade()` waits for the new worker and refreshes
+`extension.manifest` before returning. Previously captured worker handles and manifest objects still
+refer to the old version, so read `extension.worker` and `extension.manifest` again after upgrading.
 
-`upgrade()` waits for worker replacement and the new manifest, not completion of your migration
-handler. Use [`expect.poll`](https://playwright.dev/docs/test-assertions#expectpoll) to wait for migrated data.
+Worker readiness does not mean the extension's migration handler has finished. Use
+[`expect.poll`](https://playwright.dev/docs/test-assertions#expectpoll) to wait for migrated data.
 
-An upgrade requires an explicit `install(path)` and can run only once per test's extension instance.
-It tests an unpacked upgrade, not store delivery. A configured translation catalog is applied to
-both builds; see [i18n](i18n.md).
+This process tests an unpacked extension upgrade; it does not use store delivery. It requires an
+explicit `install(path)` and supports one upgrade per test's extension instance. If a translation
+catalog is configured, it is applied to both builds; see [i18n](i18n.md).

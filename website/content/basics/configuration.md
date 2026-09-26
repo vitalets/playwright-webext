@@ -22,7 +22,8 @@ export default defineConfig<WebextOptions>({
 
 ### extensionPath
 
-**Type:** `string`. **Default:** `''`; a non-empty path is required when requesting `extension`.
+**Type:** `string`.  
+**Default:** `''`; a non-empty path is required when requesting `extension`.
 
 The directory containing your unpacked extension. Relative paths resolve from
 the Playwright configuration file's directory, or the current working directory when there is no
@@ -34,7 +35,8 @@ and have a background service worker. This path is also the current build used b
 
 ### extensionAutoInstall
 
-**Type:** `boolean`. **Default:** `true`.
+**Type:** `boolean`.  
+**Default:** `true`.
 
 Installs the configured extension before the test body runs. Set it to `false` when a test needs to
 control installation, such as installing an older build for a migration test:
