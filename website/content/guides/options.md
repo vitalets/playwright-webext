@@ -3,7 +3,8 @@ title: Options page
 description: Open your extension's options document and verify that settings are saved.
 ---
 
-Use [`extension.openOptions()`](../api/extension.md#openoptions) to open the document declared by
+An options page lets users change extension settings. Use
+[`extension.openOptions()`](../api/extension.md#openoptions) to open the document declared by
 `options_ui.page`, falling back to the legacy `options_page` declaration.
 
 ## Change a setting

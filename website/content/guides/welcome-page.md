@@ -19,8 +19,6 @@ chrome.runtime.onInstalled.addListener(({ reason }) => {
 });
 ```
 
-The welcome page is behavior supplied by your extension, not a page created by `playwright-webext`.
-
 ## Check the open pages
 
 ```ts title="tests/welcome.spec.ts"
@@ -36,8 +34,7 @@ test('opens the welcome page on first install', async ({ extension }) => {
 
 The fixture installs the extension before the test body runs. Polling the currently open pages works
 whether the welcome tab opened during fixture setup or afterward, and retries while its initial
-navigation finishes. It also works when the extension opens other tabs: the assertion checks for the
-welcome URL among all open pages.
+navigation finishes.
 
 This checks a welcome page that remains open; it does not capture tabs that have already closed.
 See Playwright's [`expect.poll`](https://playwright.dev/docs/test-assertions#expectpoll) and

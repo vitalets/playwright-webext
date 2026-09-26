@@ -3,8 +3,9 @@ title: Popup
 description: Test your extension's popup document with Playwright locators and assertions.
 ---
 
-Use [`extension.openPopup()`](../api/extension.md#openpopup) to open the document declared by
-`action.default_popup`. It returns a normal Playwright `Page`.
+Extensions can show a popup when users click their toolbar icon. Use
+[`extension.openPopup()`](../api/extension.md#openpopup) to test the document declared by
+`action.default_popup` in a regular browser tab.
 
 ## Interact with the popup document
 
@@ -24,8 +25,8 @@ test('saves preferences from the popup', async ({ extension }) => {
 });
 ```
 
-Prefer accessible [locators](https://playwright.dev/docs/locators) and retrying assertions over fixed
-waits. Close the page when you finish using it, or let fixture teardown close the context.
+Use Playwright's [locators](https://playwright.dev/docs/locators) and
+[retrying assertions](https://playwright.dev/docs/test-assertions) to interact with the document.
 
 ## What this tests
 

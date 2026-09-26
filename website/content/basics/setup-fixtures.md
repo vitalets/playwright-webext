@@ -5,9 +5,9 @@ description: Extend the extension test fixture or merge it with fixtures from ot
 
 ## Extend with custom fixtures
 
-You’ll often have your own custom fixtures that extend Playwright’s default `test`. Define them in a
-separate file, such as `tests/fixtures.ts`, and extend the `test` exported by `playwright-webext` to
-make the `extension` fixture available alongside your custom fixtures.
+Define your custom fixtures in a separate file and extend `test` from `playwright-webext`.
+This makes `extension` available alongside your custom fixtures. See
+[Playwright's fixture guide](https://playwright.dev/docs/test-fixtures#creating-a-fixture) for defining fixtures.
 
 ```ts title="tests/fixtures.ts"
 import { test as base } from 'playwright-webext';
@@ -21,7 +21,8 @@ Import your extended `test` from this file in your tests.
 
 ## Combine fixtures with mergeTests
 
-Use Playwright's `mergeTests()` to combine fixtures from multiple packages:
+Use Playwright's [`mergeTests()`](https://playwright.dev/docs/test-fixtures#combine-custom-fixtures-from-multiple-modules)
+to combine fixtures from multiple packages:
 
 ```ts title="tests/fixtures.ts"
 import { mergeTests } from '@playwright/test';

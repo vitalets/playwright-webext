@@ -3,13 +3,10 @@ title: Storage
 description: Read and write extension storage in your tests.
 ---
 
-`extension.storage` is a shortcut for reading and writing your extension's storage from a test.
-Use it to prepare stored settings or check data saved by the extension. Your extension needs the
-`storage` permission.
+Use `extension.storage` to prepare saved settings or check data written by your extension.
+Your extension needs the `storage` permission.
 
 ## Write and read storage
-
-Use `set()` to write values and `get()` to read them:
 
 ```ts
 await extension.storage.local.set({ theme: 'dark' });
@@ -24,7 +21,9 @@ You can also use `extension.storage.sync` and `extension.storage.session`.
 ## Prepare settings for a test
 
 Write settings before opening an extension page to test how it displays saved values. This example
-assumes your options page reads `theme` from local storage and displays it in a “Theme” select:
+assumes your options page reads `theme` from local storage and displays it in a “Theme” select.
+If your extension initializes storage asynchronously, wait for that initialization before seeding
+settings so it cannot overwrite them.
 
 ```ts title="tests/storage.spec.ts"
 import { expect } from '@playwright/test';

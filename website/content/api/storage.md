@@ -18,19 +18,19 @@ The examples below use `local`. The same read methods work with the other availa
 
 ### local
 
-Access the extension's local storage with `extension.storage.local`.
+**Type:** `StorageArea`.
 
 ### sync
 
-Access the extension's sync storage with `extension.storage.sync`.
+**Type:** `StorageArea`.
 
 ### session
 
-Access the extension's session storage with `extension.storage.session`.
+**Type:** `StorageArea`.
 
 ### managed
 
-Read the extension's managed storage with `extension.storage.managed`. This area is read-only.
+**Type:** `StorageArea`. This area is read-only.
 
 ## Methods
 

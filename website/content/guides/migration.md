@@ -3,7 +3,8 @@ title: Migration
 description: Test stored-data migration when upgrading from an older unpacked extension build.
 ---
 
-Install an older build, seed its stored data, then call [`extension.upgrade()`](../api/extension.md#upgrade)
+An extension update may need to migrate saved settings to a new format. Install an older build,
+seed its stored data, then call [`extension.upgrade()`](../api/extension.md#upgrade)
 to replace it with the build configured in `extensionPath`.
 
 ## Prepare two builds
@@ -27,12 +28,10 @@ test.use({ extensionAutoInstall: false });
 test('migrates preferences from the old version', async ({ extension }) => {
   await extension.install('./dist-old');
   expect(extension.manifest.version).toBe('1.0.0');
-  const oldId = extension.id;
   await extension.storage.local.set({ theme: 'dark' });
 
   await extension.upgrade();
 
-  expect(extension.id).toBe(oldId);
   expect(extension.manifest.version).toBe('2.0.0');
   await expect
     .poll(() => extension.storage.local.get('preferences'))
@@ -53,7 +52,7 @@ The extension ID and browser-profile state are preserved. The worker is replaced
 version. Read `extension.worker` again after upgrading rather than retaining an old worker handle.
 
 `upgrade()` waits for worker replacement and the new manifest, not completion of your migration
-handler. Use `expect.poll` to wait for migrated data.
+handler. Use [`expect.poll`](https://playwright.dev/docs/test-assertions#expectpoll) to wait for migrated data.
 
 An upgrade requires an explicit `install(path)` and can run only once per test's extension instance.
 It tests an unpacked upgrade, not store delivery. A configured translation catalog is applied to

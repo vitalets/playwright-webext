@@ -45,8 +45,10 @@ Read it again after an upgrade or enable operation instead of retaining an old h
 
 ### storage
 
-Provides helpers for easy access to `chrome.storage.local`, `sync`, `session`, and `managed` through
-the current worker. See the [ExtensionStorage](storage.md) for methods and examples.
+**Type:** [`ExtensionStorage`](storage.md).
+
+Provides access to `chrome.storage.local`, `sync`, `session`, and the read-only `managed` area through
+the current worker. See [ExtensionStorage](storage.md) for methods.
 
 ## Methods
 
@@ -91,7 +93,7 @@ that build so it can later be replaced by `upgrade()`. Relative paths use the sa
 
 Waits for the extension worker and refreshes the manifest. It does not wait for all application
 startup handlers to finish. Use with [`extensionAutoInstall: false`](../basics/configuration.md#extensionautoinstall)
-to control initial installation. A successful installation consumes the instance's installation slot;
+to control initial installation. Each instance supports one successful installation;
 calling `install()` again, including after uninstalling, rejects.
 
 ```ts

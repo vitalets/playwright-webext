@@ -3,19 +3,17 @@ title: Writing tests
 description: Use the extension fixture to test background behavior and the popup.
 ---
 
-Your tests have access to the `extension` fixture, which provides methods for interacting with
-your extension. Use it to run background code, open extension pages, and read or update storage.
-See the [Extension API](../api/extension.md) for all available methods.
-
-Import `test` from `playwright-webext` and request `extension` in your test callback, as shown below.
+Import `test` from `playwright-webext` and request the `extension` fixture in your test callback.
+Use it to test background behavior and extension pages, as shown below. See the
+[Extension API](../api/extension.md) for all available methods.
 If you have [set up custom or merged fixtures](../basics/setup-fixtures.md), import `test` from your
 fixture module instead.
 
 ## Test background
 
-Use `extension.evaluate()` to run code in the extension's service worker. This example checks that
-the background script schedules a synchronization alarm every 30 minutes. It assumes the extension
-declares the `alarms` permission and has registered the alarm during startup.
+An extension can schedule background work with Chrome's alarms API. Use `extension.evaluate()` to
+check an alarm in its service worker. This example assumes the extension declares the `alarms`
+permission and has already registered a synchronization alarm that runs every 30 minutes.
 
 ```ts title="tests/background.spec.ts"
 import { expect } from '@playwright/test';
@@ -36,9 +34,8 @@ argument rather than referring to variables from the test's scope. See
 
 ## Test the popup
 
-Use the `extension.openPopup()` method to open your extension's popup and get a Playwright
-`Page` for interacting with it. This example checks its heading and assumes an `action.default_popup`
-declaration in your manifest and a heading containing “popup”.
+Extensions can show a popup when users click their toolbar icon. This example assumes an
+`action.default_popup` declaration in your manifest and a heading containing “popup”.
 
 ```ts title="tests/popup.spec.ts"
 import { expect } from '@playwright/test';

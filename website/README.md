@@ -11,7 +11,7 @@ From the repository root, using Node.js 24:
 ```bash
 npm ci
 npm ci --prefix website
-npm run docs:start
+npm run docs
 ```
 
 Open `http://localhost:3000/playwright-webext/`. The website has an independent package and lockfile;
@@ -22,11 +22,11 @@ Before submitting changes:
 ```bash
 npm run prettier
 npm run tsc
-npm run docs:typecheck
+npm run docs:tsc
 npm run docs:build
 ```
 
-The production build fails on broken internal links. To preview that build, run `npm run docs:serve`.
+The production build fails on broken internal links. To preview that build, run `npm --prefix website run serve`.
 Keep examples aligned with the source and focused package tests. Include behavioral caveats next to
 the relevant example rather than on a separate limitations page.
 
