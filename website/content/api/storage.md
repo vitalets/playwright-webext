@@ -14,6 +14,24 @@ They cannot be used when the worker is unavailable, such as after disabling or u
 
 The examples below use `local`. The same read methods work with the other available areas.
 
+## Properties
+
+### local
+
+Access the extension's local storage with `extension.storage.local`.
+
+### sync
+
+Access the extension's sync storage with `extension.storage.sync`.
+
+### session
+
+Access the extension's session storage with `extension.storage.session`.
+
+### managed
+
+Read the extension's managed storage with `extension.storage.managed`. This area is read-only.
+
 ## Methods
 
 These methods are available on each storage area, except that `managed` only supports reads.
@@ -93,21 +111,3 @@ Lists keys in the area.
 ```ts
 const keys = await extension.storage.local.getKeys();
 ```
-
-## Properties
-
-### local
-
-Access the extension's local storage with `extension.storage.local`.
-
-### sync
-
-Access the extension's sync storage with `extension.storage.sync`.
-
-### session
-
-Access the extension's session storage with `extension.storage.session`.
-
-### managed
-
-Read the extension's managed storage with `extension.storage.managed`. This area is read-only.

@@ -6,6 +6,52 @@ description: API reference for extension metadata, worker evaluation, pages, and
 
 Access an `Extension` through the `extension` fixture in your tests.
 
+## Properties
+
+### context
+
+**Type:** [`BrowserContext`](https://playwright.dev/docs/api/class-browsercontext).
+
+The isolated persistent Chromium context hosting the extension. Available even before installation
+when `extensionAutoInstall` is `false`.
+
+```ts
+const page = await extension.context.newPage();
+await page.goto('https://example.com');
+```
+
+### id
+
+**Type:** `string`.
+
+The installed extension's ID. Throws before installation. Paths can affect IDs; a manifest `key`
+can provide a stable ID. The ID is preserved during [unpacked upgrades](../guides/migration.md).
+
+### manifest
+
+**Type:** `chrome.runtime.ManifestV3`.
+
+A manifest snapshot read through `chrome.runtime.getManifest()` when the extension becomes ready.
+Throws before readiness. Installation, upgrade, and re-enabling refresh the snapshot; an object you
+previously captured remains unchanged.
+
+```ts
+expect(extension.manifest.version).toBe('1.0.0');
+```
+
+### worker
+
+**Type:** [`Worker`](https://playwright.dev/docs/api/class-worker).
+
+Looks up the currently running extension service worker on each access. Throws when no worker is
+available, including after disabling or uninstalling.
+Read it again after an upgrade or enable operation instead of retaining an old handle.
+
+### storage
+
+Provides Promise-based access to `chrome.storage.local`, `sync`, `session`, and `managed` through
+the current worker. See the [ExtensionStorage](storage.md) for methods and examples.
+
 ## Methods
 
 ### evaluate
@@ -148,49 +194,3 @@ await extension.uninstall();
 ```
 
 See [Uninstall](../guides/uninstall.md) for checking the feedback page.
-
-## Properties
-
-### context
-
-**Type:** [`BrowserContext`](https://playwright.dev/docs/api/class-browsercontext).
-
-The isolated persistent Chromium context hosting the extension. Available even before installation
-when `extensionAutoInstall` is `false`.
-
-```ts
-const page = await extension.context.newPage();
-await page.goto('https://example.com');
-```
-
-### id
-
-**Type:** `string`.
-
-The installed extension's ID. Throws before installation. Paths can affect IDs; a manifest `key`
-can provide a stable ID. The ID is preserved during [unpacked upgrades](../guides/migration.md).
-
-### manifest
-
-**Type:** `chrome.runtime.ManifestV3`.
-
-A manifest snapshot read through `chrome.runtime.getManifest()` when the extension becomes ready.
-Throws before readiness. Installation, upgrade, and re-enabling refresh the snapshot; an object you
-previously captured remains unchanged.
-
-```ts
-expect(extension.manifest.version).toBe('1.0.0');
-```
-
-### worker
-
-**Type:** [`Worker`](https://playwright.dev/docs/api/class-worker).
-
-Looks up the currently running extension service worker on each access. Throws when no worker is
-available, including after disabling or uninstalling.
-Read it again after an upgrade or enable operation instead of retaining an old handle.
-
-### storage
-
-Provides Promise-based access to `chrome.storage.local`, `sync`, `session`, and `managed` through
-the current worker. See the [ExtensionStorage](storage.md) for methods and examples.
