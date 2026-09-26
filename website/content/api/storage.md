@@ -20,9 +20,8 @@ These methods are available on each storage area, except that `managed` only sup
 
 ### get
 
-**Call:** `extension.storage.local.get<T>(keys?)`.
-
-**Returns:** `Promise<T>`.
+**Call:** `extension.storage.local.get<T>(keys?)`  
+**Returns:** `Promise<T>`
 
 Accepts a key, an array of keys, an object of defaults, `null`, or no argument. Omit the argument or
 pass `null` to read all values. Missing keys are omitted unless you supply defaults.
@@ -52,9 +51,8 @@ Import `expect` from `@playwright/test` and use this snippet inside a test reque
 
 ### set
 
-**Call:** `extension.storage.local.set<T>(items: Partial<T>)`.
-
-**Returns:** `Promise<void>`.
+**Call:** `extension.storage.local.set<T>(items: Partial<T>)`  
+**Returns:** `Promise<void>`
 
 Writes the supplied keys without replacing other stored values.
 
@@ -64,9 +62,8 @@ await extension.storage.local.set({ preferences: { colorScheme: 'dark' } });
 
 ### remove
 
-**Call:** `extension.storage.local.remove<T>(keys: keyof T | Array<keyof T>)`.
-
-**Returns:** `Promise<void>`.
+**Call:** `extension.storage.local.remove<T>(keys: keyof T | Array<keyof T>)`  
+**Returns:** `Promise<void>`
 
 Removes one key or a list of keys.
 
@@ -77,9 +74,8 @@ await extension.storage.local.remove(['oldTheme', 'oldLanguage']);
 
 ### clear
 
-**Call:** `extension.storage.local.clear()`.
-
-**Returns:** `Promise<void>`.
+**Call:** `extension.storage.local.clear()`  
+**Returns:** `Promise<void>`
 
 Removes every value in the area.
 
@@ -89,9 +85,8 @@ await extension.storage.session.clear();
 
 ### getKeys
 
-**Call:** `extension.storage.local.getKeys()`.
-
-**Returns:** `Promise<string[]>`.
+**Call:** `extension.storage.local.getKeys()`  
+**Returns:** `Promise<string[]>`
 
 Lists keys in the area.
 
