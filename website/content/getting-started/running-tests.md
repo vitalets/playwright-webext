@@ -18,5 +18,4 @@ npx playwright test
 ```
 
 Each test requesting `extension` gets a fresh Chromium profile with the extension installed.
-Installation waits for the service worker to become ready, but asynchronous startup work may still
-be running. The fixture closes the browser context after the test.
+Installation waits for the service worker to become ready. The fixture closes the browser context after the test.

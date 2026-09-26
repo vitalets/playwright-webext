@@ -3,8 +3,10 @@ title: Storage
 description: Read and write extension storage in your tests.
 ---
 
-Use `extension.storage` to prepare saved settings or check data written by your extension.
-Your extension needs the `storage` permission.
+Tests often need to start with saved settings or check data written by an extension.
+`playwright-webext` provides `extension.storage` to read and write that data directly from your test,
+without writing service-worker evaluation code for each operation. You can prepare settings before
+opening a page and check what a UI action saved. Your extension needs the `storage` permission.
 
 ## Write and read storage
 

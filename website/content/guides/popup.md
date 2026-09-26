@@ -3,9 +3,13 @@ title: Popup
 description: Test your extension's popup document with Playwright locators and assertions.
 ---
 
-Extensions can show a popup when users click their toolbar icon. Use
-[`extension.openPopup()`](../api/extension.md#openpopup) to test the document declared by
-`action.default_popup` in a regular browser tab.
+Extensions can show a popup when users click their toolbar icon, but Playwright cannot interact with
+the native toolbar popup as a `Page`.
+
+`playwright-webext` provides [`extension.openPopup()`](../api/extension.md#openpopup) to open the
+document declared by `action.default_popup` in a regular browser tab. This lets you test its UI with
+Playwright locators while using the extension's APIs and storage. See [Limitations](#limitations)
+for differences from the native popup.
 
 ## Interact with the popup document
 

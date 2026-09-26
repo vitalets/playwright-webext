@@ -3,9 +3,13 @@ title: Migration
 description: Test stored-data migration when upgrading from an older unpacked extension build.
 ---
 
-An extension update may need to migrate saved settings to a new format. Install an older build,
-seed its stored data, then call [`extension.upgrade()`](../api/extension.md#upgrade)
-to replace it with the build configured in `extensionPath`.
+An extension update may need to migrate saved settings to a new format. Testing that migration
+requires upgrading an existing installation while keeping its stored data.
+
+`playwright-webext` lets you install an older build, seed its data, and upgrade it within one test.
+[`extension.upgrade()`](../api/extension.md#upgrade) loads the current build configured in
+`extensionPath` while preserving the extension ID and browser-profile state, so your test can check
+the migration's result.
 
 ## Prepare the old build
 

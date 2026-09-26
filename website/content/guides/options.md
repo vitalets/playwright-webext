@@ -3,9 +3,10 @@ title: Options page
 description: Open your extension's options document and verify that settings are saved.
 ---
 
-An options page lets users change extension settings. Use
-[`extension.openOptions()`](../api/extension.md#openoptions) to open the document declared by
-`options_ui.page`, falling back to the legacy `options_page` declaration.
+An options page lets users change extension settings. With `playwright-webext`, you can open it
+directly in a test without navigating Chromium's extension management UI.
+[`extension.openOptions()`](../api/extension.md#openoptions) reads the page path from your manifest
+and opens it in a regular tab, where you can change settings and check that they are saved.
 
 ## Change a setting
 
