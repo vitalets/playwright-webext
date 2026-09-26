@@ -7,13 +7,13 @@ An extension update may need to migrate saved settings to a new format. Install 
 seed its stored data, then call [`extension.upgrade()`](../api/extension.md#upgrade)
 to replace it with the build configured in `extensionPath`.
 
-## Prepare two builds
+## Prepare the old build
 
-Keep an older unpacked build in `dist-old/` and the current build in `dist/`. Configure
-`extensionPath: './dist'` as shown in [Configuration options](../basics/configuration.md).
+Place an older unpacked build in `./dist-v1`. The current build is already configured in
+`extensionPath`.
 
-This example assumes the old build has version `1.0.0`, the new build has version `2.0.0`, and the
-new extension migrates `{ theme: 'dark' }` into `{ preferences: { colorScheme: 'dark' } }` from its
+This example assumes the old build has version `1.0.0`, the current build has version `2.0.0`, and the
+current extension migrates `{ theme: 'dark' }` into `{ preferences: { colorScheme: 'dark' } }` from its
 `chrome.runtime.onInstalled` update handler. Both builds need a background service worker and the
 `storage` permission. The migration itself belongs to your extension.
 
@@ -26,7 +26,8 @@ import { test } from 'playwright-webext';
 test.use({ extensionAutoInstall: false });
 
 test('migrates preferences from the old version', async ({ extension }) => {
-  await extension.install('./dist-old');
+  await extension.install('./dist-v1');
+
   expect(extension.manifest.version).toBe('1.0.0');
   await extension.storage.local.set({ theme: 'dark' });
 
@@ -46,7 +47,8 @@ Wait for any old-build initialization before seeding data if that initialization
 
 ## Upgrade behavior
 
-The package installs a private copy of the old build, then replaces its contents at the same path.
+The package copies the old build to a temporary directory and installs it from there. During the
+upgrade, it replaces that directory's contents with the current build.
 The extension ID and browser-profile state are preserved. The worker is replaced and
 `extension.manifest` is refreshed; previously captured manifest objects remain snapshots of the old
 version. Read `extension.worker` again after upgrading rather than retaining an old worker handle.

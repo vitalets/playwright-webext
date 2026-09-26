@@ -28,10 +28,10 @@ test('saves preferences from the popup', async ({ extension }) => {
 Use Playwright's [locators](https://playwright.dev/docs/locators) and
 [retrying assertions](https://playwright.dev/docs/test-assertions) to interact with the document.
 
-## What this tests
+## Limitations
 
-The popup document runs inside the real extension, with its extension APIs and storage. However,
-`openPopup()` hosts it in a **regular browser tab**, rather than Chromium's native toolbar popup:
+`openPopup()` opens the popup document in a regular browser tab. Its extension APIs and storage
+are available, but some native toolbar popup behaviors cannot be tested this way:
 
 - The document uses a normal tab viewport and does not close when focus moves elsewhere. Native
   popup sizing and dismissal are not reproduced.
@@ -43,5 +43,5 @@ The popup document runs inside the real extension, with its extension APIs and s
   normally do not.
 
 Chromium's native `chrome.action.openPopup()` surface is not exposed as an interactable Playwright
-`Page`. This guide follows the document-in-a-tab approach described in
+`Page`, so it cannot be used to test these behaviors with Playwright locators. See
 [Chrome's extension testing guidance](https://developer.chrome.com/docs/extensions/how-to/test/end-to-end-testing).

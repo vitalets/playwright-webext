@@ -117,7 +117,7 @@ await popup.close();
 ```
 
 This hosts the popup document in a tab, not the native toolbar popup. See the
-[Popup guide](../guides/popup.md#what-this-tests) for active-tab, focus, and permission differences.
+[Popup guide](../guides/popup.md#limitations) for active-tab, focus, and permission differences.
 
 ### openOptions
 
