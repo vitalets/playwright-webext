@@ -61,11 +61,11 @@ argument serialization and return-value behavior. Functions run outside the test
 pass values as the optional argument.
 
 ```ts
-const name = await extension.evaluate(() => chrome.runtime.getManifest().name);
+await extension.evaluate(() => chrome.tabs.create({ url: 'https://example.com' }));
 ```
 
 Requires a running worker and the permissions needed by the Chrome API being called. A worker has
-no page DOM; use a Playwright `Page` to interact with extension UI.
+no page DOM; use a Playwright [`Page`](https://playwright.dev/docs/api/class-page) to interact with extension UI.
 
 ### getURL
 
@@ -103,7 +103,7 @@ See [Welcome page](../guides/welcome-page.md) for checking pages opened during a
 ### openPopup
 
 **Call:** `extension.openPopup()`  
-**Returns:** `Promise<Page>`
+**Returns:** <code>Promise&lt;<a href="https://playwright.dev/docs/api/class-page">Page</a>&gt;</code>
 
 Opens `action.default_popup` in a new regular tab and navigates to its extension URL. Throws when the
 manifest has no popup declaration.
@@ -120,7 +120,7 @@ This hosts the popup document in a tab, not the native toolbar popup. See the
 ### openOptions
 
 **Call:** `extension.openOptions()`  
-**Returns:** `Promise<Page>`
+**Returns:** <code>Promise&lt;<a href="https://playwright.dev/docs/api/class-page">Page</a>&gt;</code>
 
 Opens `options_ui.page`, falling back to `options_page`, in a new regular tab. Throws when neither
 is declared. Ignores `options_ui.open_in_tab` and does not invoke
