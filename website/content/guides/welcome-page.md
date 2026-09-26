@@ -29,10 +29,14 @@ chrome.runtime.onInstalled.addListener(({ reason }) => {
 import { expect } from '@playwright/test';
 import { test } from 'playwright-webext';
 
-test('opens the welcome page on first install', async ({ extension }) => {
-  await expect
-    .poll(() => extension.context.pages().map((page) => page.url()))
-    .toContain(extension.getURL('welcome.html'));
+test('opens the welcome page on install', async ({ extension }) => {
+  const welcomeUrl = extension.getURL('welcome.html');
+  const getWelcomePage = () => extension.context.pages().find((page) => page.url() === welcomeUrl);
+
+  await expect.poll(getWelcomePage).toBeDefined();
+  const welcomePage = getWelcomePage()!;
+
+  // ...check welcome page
 });
 ```
 
