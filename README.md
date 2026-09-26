@@ -1,7 +1,5 @@
 <div align="center">
-  <a href="https://vitalets.github.io/playwright-webext">
-    <img width="128" alt="playwright-webext" src="website/static/img/brand/logo.svg">
-  </a>
+  <img width="128" alt="playwright-webext" src="website/static/img/brand/logo.svg">
 </div>
 
 <h2 align="center">playwright-webext</h2>
