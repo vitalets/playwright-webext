@@ -5,7 +5,7 @@
 /// <reference types="chrome" preserve="true" />
 
 import { dirname, isAbsolute, resolve } from 'node:path';
-import { test as base } from '@playwright/test';
+import { test as base, type BrowserContextOptions } from '@playwright/test';
 import { Extension } from './extension.js';
 import { ExtensionCopy } from './copy.js';
 import { launchContextWithExtension } from './launch.js';
@@ -35,7 +35,37 @@ export const test = base.extend<WebextOptions & WebextFixtures>({
   extensionPath: ['', { option: true }],
   extensionAutoInstall: [true, { option: true }],
   extension: async (
-    { browserName, extensionPath, headless, launchOptions, locale, extensionAutoInstall, viewport },
+    {
+      extensionPath,
+      extensionAutoInstall,
+      // playwright fixtures
+      browserName,
+      headless,
+      launchOptions,
+      contextOptions,
+      acceptDownloads,
+      baseURL,
+      bypassCSP,
+      clientCertificates,
+      colorScheme,
+      deviceScaleFactor,
+      extraHTTPHeaders,
+      geolocation,
+      hasTouch,
+      httpCredentials,
+      ignoreHTTPSErrors,
+      isMobile,
+      javaScriptEnabled,
+      locale,
+      offline,
+      permissions,
+      proxy,
+      serviceWorkers,
+      storageState,
+      timezoneId,
+      userAgent,
+      viewport,
+    },
     use,
     testInfo,
   ) => {
@@ -53,8 +83,30 @@ export const test = base.extend<WebextOptions & WebextFixtures>({
       const context = await launchContextWithExtension({
         headless,
         launchOptions,
-        locale,
-        viewport,
+        contextOptions: buildContextOptions(contextOptions, {
+          acceptDownloads,
+          baseURL,
+          bypassCSP,
+          clientCertificates,
+          colorScheme,
+          deviceScaleFactor,
+          extraHTTPHeaders,
+          geolocation,
+          hasTouch,
+          httpCredentials,
+          ignoreHTTPSErrors,
+          isMobile,
+          javaScriptEnabled,
+          locale,
+          offline,
+          permissions,
+          proxy,
+          serviceWorkers,
+          storageState,
+          timezoneId,
+          userAgent,
+          viewport,
+        }),
       });
 
       try {
@@ -85,4 +137,16 @@ function resolvePath<T extends string | undefined>(extensionPath: T, configFile?
 
   const baseDir = configFile ? dirname(configFile) : process.cwd();
   return resolve(baseDir, extensionPath);
+}
+
+function buildContextOptions(
+  contextOptions: BrowserContextOptions,
+  individualOptions: BrowserContextOptions,
+): BrowserContextOptions {
+  return {
+    ...contextOptions,
+    ...Object.fromEntries(
+      Object.entries(individualOptions).filter(([, value]) => value !== undefined),
+    ),
+  };
 }

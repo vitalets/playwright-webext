@@ -54,10 +54,9 @@ With this override, requesting `page` or `context` also initializes `extension`.
 to the extension fixture; do not close its context inside the override. If you already extend `test`
 with custom fixtures, add this `context` override to the same `extend()` call.
 
-The override changes fixture routing, not the launch configuration. Only the
-[forwarded Playwright options](configuration.md#forwarded-playwright-options) are forwarded to the extension context;
-settings such as `baseURL` are not automatically applied. The native `browser` fixture still does
-not represent the extension's browser.
+The extension context uses the [configured Playwright options](configuration.md#forwarded-playwright-options),
+including `baseURL`, with or without this override. The native `browser` fixture does not represent
+the extension's browser.
 
 See [overriding Playwright fixtures](https://playwright.dev/docs/test-fixtures#overriding-fixtures)
 for more on fixture overrides.

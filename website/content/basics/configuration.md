@@ -66,8 +66,13 @@ exists before installation, but metadata and worker operations require an instal
 - [browserName](https://playwright.dev/docs/api/class-testoptions#test-options-browser-name) (Chromium only)
 - [headless](https://playwright.dev/docs/api/class-testoptions#test-options-headless)
 - [launchOptions](https://playwright.dev/docs/api/class-testoptions#test-options-launch-options)
-- [locale](https://playwright.dev/docs/api/class-testoptions#test-options-locale)
-- [viewport](https://playwright.dev/docs/api/class-testoptions#test-options-viewport)
+
+[Context options](https://playwright.dev/docs/api/class-testoptions), including `baseURL`,
+`storageState`, `permissions`, `locale`, and `viewport`, also apply to `extension.context`.
+Set them directly in `use` or through `use.contextOptions`. Individual options take precedence over
+values in `contextOptions`.
+
+`storageState` accepts an object or a JSON file path and is restored before extension installation.
 
 ## Test timeout
 
@@ -76,7 +81,5 @@ for worker readiness and shutdown waits during installation and lifecycle operat
 
 ## Context settings
 
-Other context options, such as `baseURL`, `storageState`, and `permissions`, are not automatically
-forwarded to `extension.context`. Likewise, do not assume native fixture tracing or video settings
-apply to this separately created context. See [Using context](using-context.md) for direct access and
-mapping the `context` fixture; that mapping does not change which options are forwarded.
+Do not assume native fixture tracing or video settings apply to this separately created context.
+See [Using context](using-context.md) for direct access and mapping the `context` fixture.

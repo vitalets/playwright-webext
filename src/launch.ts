@@ -3,13 +3,12 @@
  */
 
 import { chromium } from '@playwright/test';
-import type { BrowserContext, LaunchOptions, ViewportSize } from '@playwright/test';
+import type { BrowserContext, BrowserContextOptions, LaunchOptions } from '@playwright/test';
 
 type LaunchExtensionOptions = {
   headless: boolean;
   launchOptions: Omit<LaunchOptions, 'tracesDir'>;
-  locale?: string;
-  viewport: ViewportSize | null;
+  contextOptions: BrowserContextOptions;
 };
 
 /**
@@ -18,10 +17,9 @@ type LaunchExtensionOptions = {
 export async function launchContextWithExtension({
   headless,
   launchOptions: { args = [], ignoreDefaultArgs, ...launchOptions },
-  locale,
-  viewport,
+  contextOptions: { storageState, ...contextOptions },
 }: LaunchExtensionOptions): Promise<BrowserContext> {
-  return chromium.launchPersistentContext('', {
+  const context = await chromium.launchPersistentContext('', {
     ...launchOptions,
     channel: 'chromium',
     /**
@@ -34,7 +32,13 @@ export async function launchContextWithExtension({
     ignoreDefaultArgs:
       ignoreDefaultArgs === true ? true : [...(ignoreDefaultArgs || []), '--disable-extensions'],
     headless,
-    locale,
-    viewport,
+    ...contextOptions,
   });
+  try {
+    if (storageState !== undefined) await context.setStorageState(storageState);
+    return context;
+  } catch (error) {
+    await context.close();
+    throw error;
+  }
 }
