@@ -28,3 +28,50 @@
 .theme-doc-toc-desktop .table-of-contents__link[href='#properties'] {
   font-weight: 700;
 }
+
+:root {
+  --brand-ink: #163e31;
+  --ifm-heading-color: #163e31;
+  --ifm-background-color: #fcfdfc;
+  --ifm-navbar-shadow: 0 1px 0 #216e551a;
+  --ifm-global-radius: 0.5rem;
+}
+
+[data-theme='dark'] {
+  --brand-ink: #dbf5e9;
+  --ifm-heading-color: #dbf5e9;
+  --ifm-background-color: #101c17;
+  --ifm-navbar-background-color: #14231c;
+  --ifm-background-surface-color: #192b23;
+}
+
+.footer--dark {
+  --ifm-footer-background-color: #142b22;
+}
+
+.brand-lockup {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  margin: 2rem 0 2.5rem;
+  color: var(--brand-ink);
+}
+
+.brand-lockup > img {
+  flex-shrink: 0;
+  height: auto;
+}
+
+.brand-wordmark {
+  font-size: clamp(1.125rem, 3.6vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.2;
+}
+
+@media (max-width: 600px) {
+  .brand-lockup > img {
+    width: 80px;
+  }
+}

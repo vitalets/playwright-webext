@@ -16,6 +16,7 @@ const sourceBranch = process.env.GITHUB_REF_NAME === 'docs' ? 'docs' : 'main';
  */
 const config: Config = {
   title: 'playwright-webext',
+  favicon: 'img/brand/logo.svg',
   tagline: 'Test your browser extension with Playwright',
   url: 'https://vitalets.github.io',
   baseUrl: '/playwright-webext/',
@@ -44,6 +45,7 @@ const config: Config = {
     colorMode: { respectPrefersColorScheme: true },
     navbar: {
       title: 'playwright-webext',
+      logo: { alt: 'playwright-webext logo', src: 'img/brand/logo.svg' },
       items: [
         { type: 'docSidebar', sidebarId: 'guides', label: 'Docs', position: 'left' },
         { type: 'docSidebar', sidebarId: 'api', label: 'API', position: 'left' },
