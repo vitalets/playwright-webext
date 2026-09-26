@@ -27,7 +27,7 @@ test('forwards baseURL and restores cookies', async ({ extension }) => {
   await page.goto('/');
   await expect(page).toHaveURL('https://example.test/');
 
-  expect(await extension.context.cookies(origin)).toEqual([
+  expect(await extension.context.cookies('https://example.test')).toEqual([
     expect.objectContaining({ name: 'session', value: 'signed-in' }),
   ]);
 });

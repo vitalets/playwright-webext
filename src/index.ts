@@ -9,6 +9,7 @@ import { test as base, type BrowserContextOptions } from '@playwright/test';
 import { Extension } from './extension.js';
 import { ExtensionCopy } from './copy.js';
 import { launchContextWithExtension } from './launch.js';
+import { createVideoRecording } from './video.js';
 import { throwIf } from './utils.js';
 
 /**
@@ -65,6 +66,7 @@ export const test = base.extend<WebextOptions & WebextFixtures>({
       timezoneId,
       userAgent,
       viewport,
+      video,
     },
     use,
     testInfo,
@@ -78,12 +80,14 @@ export const test = base.extend<WebextOptions & WebextFixtures>({
     const { configFile } = testInfo.config;
     extensionPath = resolvePath(extensionPath, configFile);
     const extensionCopy = new ExtensionCopy();
+    const videoRecording = await createVideoRecording(video, testInfo);
 
     try {
       const context = await launchContextWithExtension({
         headless,
         launchOptions,
         contextOptions: buildContextOptions(contextOptions, {
+          recordVideo: videoRecording?.options,
           acceptDownloads,
           baseURL,
           bypassCSP,
@@ -110,6 +114,7 @@ export const test = base.extend<WebextOptions & WebextFixtures>({
       });
 
       try {
+        videoRecording?.track(context);
         const extension = new Extension(context, {
           extensionPath,
           extensionCopy,
@@ -123,7 +128,11 @@ export const test = base.extend<WebextOptions & WebextFixtures>({
         await context.close();
       }
     } finally {
-      await extensionCopy.cleanup();
+      try {
+        await videoRecording?.finish();
+      } finally {
+        await extensionCopy.cleanup();
+      }
     }
   },
 });

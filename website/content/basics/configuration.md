@@ -74,12 +74,12 @@ values in `contextOptions`.
 
 `storageState` accepts an object or a JSON file path and is restored before extension installation.
 
-## Test timeout
+## Traces and videos
 
-The extension fixture uses the [test timeout](https://playwright.dev/docs/test-timeouts#test-timeout)
-for worker readiness and shutdown waits during installation and lifecycle operations.
+Playwright's [trace](https://playwright.dev/docs/api/class-testoptions#test-options-trace) setting
+applies to the extension context. The
+[video](https://playwright.dev/docs/api/class-testoptions#test-options-video) setting controls video
+recording, including retention modes, retries, and recording size. Retained videos are attached to
+the test report after the extension context closes.
 
-## Context settings
-
-Do not assume native fixture tracing or video settings apply to this separately created context.
 See [Using context](using-context.md) for direct access and mapping the `context` fixture.
