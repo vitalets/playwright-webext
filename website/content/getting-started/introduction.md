@@ -9,8 +9,8 @@ import ProjectBrand from '@site/src/components/ProjectBrand';
 
 <ProjectBrand />
 
-`playwright-webext` is a toolkit for testing Chromium browser extensions with Playwright. It loads your
-extension into an isolated browser context and provides APIs for interacting with extension pages,
+`playwright-webext` is a toolkit for testing browser extensions with Playwright. It automaically loads your
+extension and provides APIs for interacting with extension pages,
 background code, and storage, as well as installing, updating, and uninstalling the extension.
 
 ## What you can test
