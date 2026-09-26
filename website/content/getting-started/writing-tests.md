@@ -42,9 +42,9 @@ import { expect } from '@playwright/test';
 import { test } from 'playwright-webext';
 
 test('shows the popup', async ({ extension }) => {
-  const popup = await extension.openPopup();
-  await expect(popup.getByRole('heading')).toContainText('popup');
-  await popup.close();
+  const popupPage = await extension.openPopup();
+  await expect(popupPage.getByRole('heading')).toContainText('popup');
+  await popupPage.close();
 });
 ```
 

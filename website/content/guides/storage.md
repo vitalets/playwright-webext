@@ -34,11 +34,10 @@ import { test } from 'playwright-webext';
 test('displays the saved theme', async ({ extension }) => {
   await extension.storage.local.set({ theme: 'dark' });
 
-  const options = await extension.openOptions();
-  await expect(options.getByLabel('Theme')).toHaveValue('dark');
-  await options.close();
+  const optionsPage = await extension.openOptions();
+  await expect(optionsPage.getByLabel('Theme')).toHaveValue('dark');
 });
 ```
 
-See the [Options page guide](options.md#change-a-setting) for checking storage after a UI action, and
+See the [Options page guide](options.md#example) for checking storage after a UI action, and
 the [ExtensionStorage API](../api/storage.md) for all available methods and storage areas.

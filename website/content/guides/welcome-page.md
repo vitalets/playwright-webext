@@ -10,10 +10,27 @@ first-install behavior requires a browser profile where the extension has not al
 welcome page without resetting a browser profile yourself. Keep automatic installation enabled and
 use `expect.poll` to check the open pages until the welcome URL appears.
 
-## Open a welcome page on installation
+```ts
+test('welcome page', async ({ extension }) => {
+  const welcomeUrl = extension.getURL('welcome.html');
+  const getWelcomePage = () =>
+    extension.context.pages().find((openPage) => openPage.url() === welcomeUrl);
 
-This example assumes your extension includes `welcome.html` and its background service worker opens
-it on first installation:
+  await expect.poll(getWelcomePage).toBeDefined();
+  const welcomePage = getWelcomePage()!;
+  // ...check welcome page
+});
+```
+
+The welcome tab may already be open when your test starts. Polling the open pages handles both a tab
+that has already loaded and one that is still opening. See Playwright's
+[`expect.poll`](https://playwright.dev/docs/test-assertions#expectpoll) and
+[pages guide](https://playwright.dev/docs/pages).
+
+## Example
+
+This example assumes `welcome.html` displays a “Welcome” heading and the background service worker
+opens it on first installation:
 
 ```js title="background.js"
 chrome.runtime.onInstalled.addListener(({ reason }) => {
@@ -23,27 +40,18 @@ chrome.runtime.onInstalled.addListener(({ reason }) => {
 });
 ```
 
-## Check the open pages
-
 ```ts title="tests/welcome.spec.ts"
 import { expect } from '@playwright/test';
 import { test } from 'playwright-webext';
 
 test('opens the welcome page on install', async ({ extension }) => {
   const welcomeUrl = extension.getURL('welcome.html');
-  const getWelcomePage = () => extension.context.pages().find((page) => page.url() === welcomeUrl);
+  const getWelcomePage = () =>
+    extension.context.pages().find((openPage) => openPage.url() === welcomeUrl);
 
   await expect.poll(getWelcomePage).toBeDefined();
   const welcomePage = getWelcomePage()!;
 
-  // ...check welcome page
+  await expect(welcomePage.getByRole('heading', { name: 'Welcome' })).toBeVisible();
 });
 ```
-
-The fixture installs the extension before the test body runs. Polling the currently open pages works
-whether the welcome tab opened during fixture setup or afterward, and retries while its initial
-navigation finishes.
-
-This checks a welcome page that remains open; it does not capture tabs that have already closed.
-See Playwright's [`expect.poll`](https://playwright.dev/docs/test-assertions#expectpoll) and
-[pages guide](https://playwright.dev/docs/pages).

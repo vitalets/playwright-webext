@@ -8,7 +8,14 @@ directly in a test without navigating Chromium's extension management UI.
 [`extension.openOptions()`](../api/extension.md#openoptions) reads the page path from your manifest
 and opens it in a regular tab, where you can change settings and check that they are saved.
 
-## Change a setting
+```ts
+test('options page', async ({ extension }) => {
+  const optionsPage = await extension.openOptions();
+  // ...check options page
+});
+```
+
+## Example
 
 This example assumes an options document with a “Theme” select, a “Save” button, and code that stores
 the chosen value under `theme`. The extension needs the `storage` permission.
@@ -18,12 +25,12 @@ import { expect } from '@playwright/test';
 import { test } from 'playwright-webext';
 
 test('saves the theme', async ({ extension }) => {
-  const options = await extension.openOptions();
-  await options.getByLabel('Theme').selectOption('dark');
-  await options.getByRole('button', { name: 'Save' }).click();
+  const optionsPage = await extension.openOptions();
+
+  await optionsPage.getByLabel('Theme').selectOption('dark');
+  await optionsPage.getByRole('button', { name: 'Save' }).click();
 
   await expect.poll(() => extension.storage.local.get('theme')).toEqual({ theme: 'dark' });
-  await options.close();
 });
 ```
 

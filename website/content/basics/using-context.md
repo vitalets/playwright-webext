@@ -16,8 +16,8 @@ import { expect } from '@playwright/test';
 import { test } from 'playwright-webext';
 
 test('opens a website with the extension loaded', async ({ extension }) => {
-  const page = await extension.context.newPage();
-  await page.goto('https://example.com');
+  const websitePage = await extension.context.newPage();
+  await websitePage.goto('https://example.com');
   // The extension can interact with this page.
 });
 ```

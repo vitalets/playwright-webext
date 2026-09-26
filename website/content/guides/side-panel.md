@@ -7,6 +7,15 @@ Extensions can display a side panel alongside a website. With
 [`extension.openSidePanel()`](../api/extension.md#opensidepanel), you can test the document declared
 by `side_panel.default_path` in a regular browser tab using Playwright locators and assertions.
 
+```ts
+test('side panel', async ({ extension }) => {
+  const sidePanelPage = await extension.openSidePanel();
+  // ...check side panel page
+});
+```
+
+## Example
+
 This example assumes your side panel displays a “Notes” heading:
 
 ```ts title="tests/side-panel.spec.ts"
@@ -14,10 +23,9 @@ import { expect } from '@playwright/test';
 import { test } from 'playwright-webext';
 
 test('shows the notes panel', async ({ extension }) => {
-  const sidePanel = await extension.openSidePanel();
+  const sidePanelPage = await extension.openSidePanel();
 
-  await expect(sidePanel.getByRole('heading', { name: 'Notes' })).toBeVisible();
-  await sidePanel.close();
+  await expect(sidePanelPage.getByRole('heading', { name: 'Notes' })).toBeVisible();
 });
 ```
 

@@ -134,9 +134,9 @@ Opens `action.default_popup` in a new regular tab and navigates to its extension
 manifest has no popup declaration.
 
 ```ts
-const popup = await extension.openPopup();
-await popup.getByRole('button', { name: 'Save' }).click();
-await popup.close();
+const popupPage = await extension.openPopup();
+await popupPage.getByRole('button', { name: 'Save' }).click();
+await popupPage.close();
 ```
 
 This hosts the popup document in a tab, not the native toolbar popup. See the
@@ -152,9 +152,9 @@ is declared. Ignores `options_ui.open_in_tab` and does not invoke
 `chrome.runtime.openOptionsPage()`.
 
 ```ts
-const options = await extension.openOptions();
-await options.getByLabel('Theme').selectOption('dark');
-await options.close();
+const optionsPage = await extension.openOptions();
+await optionsPage.getByLabel('Theme').selectOption('dark');
+await optionsPage.close();
 ```
 
 See the [Options page guide](../guides/options.md#limitations) for differences from embedded options.
@@ -168,9 +168,9 @@ Opens `side_panel.default_path` in a new regular tab and returns it after naviga
 creating a tab when the manifest has no default path. Ignores runtime side panel configuration.
 
 ```ts
-const sidePanel = await extension.openSidePanel();
-await sidePanel.getByRole('button', { name: 'Save' }).click();
-await sidePanel.close();
+const sidePanelPage = await extension.openSidePanel();
+await sidePanelPage.getByRole('button', { name: 'Save' }).click();
+await sidePanelPage.close();
 ```
 
 See the [Side panel guide](../guides/side-panel.md#limitations) for differences from the native panel.
