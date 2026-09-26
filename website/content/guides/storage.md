@@ -6,21 +6,30 @@ description: Read and write extension storage in your tests.
 Tests often need to start with saved settings or check data written by an extension.
 playwright-webext provides `extension.storage` to read and write that data directly from your test,
 without writing service-worker evaluation code for each operation. You can prepare settings before
-opening a page and check what a UI action saved. Your extension needs the `storage` permission.
+opening a page and check what a UI action saved.
 
-## Write and read storage
+The storage methods mirror the original
+[Chrome Extensions Storage API](https://developer.chrome.com/docs/extensions/reference/api/storage),
+using the same arguments and return values with promises. Your extension needs the `storage` permission.
+
+Read saved settings with `get()`:
 
 ```ts
-await extension.storage.local.set({ theme: 'dark' });
-
 const settings = await extension.storage.local.get('theme');
-expect(settings).toEqual({ theme: 'dark' });
+// settings: { theme: 'dark' }
 ```
 
 `get()` returns an object containing the requested keys. Omit the argument to read all values.
+
+Write settings with `set()`:
+
+```ts
+await extension.storage.local.set({ theme: 'dark' });
+```
+
 You can also use `extension.storage.sync` and `extension.storage.session`.
 
-## Prepare settings for a test
+## Example
 
 Write settings before opening an extension page to test how it displays saved values. This example
 assumes your options page reads `theme` from local storage and displays it in a “Theme” select.

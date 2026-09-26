@@ -8,8 +8,18 @@ Register this page's URL in your extension with `chrome.runtime.setUninstallURL(
 
 playwright-webext lets you trigger uninstallation from your test with
 [`extension.uninstall()`](../api/extension.md#uninstall), without navigating Chromium's extension
-management UI or handling a confirmation dialog. Capture the feedback page in the same browser
-context to check where users are sent.
+management UI or handling a confirmation dialog.
+
+```ts
+test('uninstall', async ({ extension }) => {
+  await extension.uninstall();
+  // ...check uninstall action
+});
+```
+
+## Example
+
+Capture the feedback page in the same browser context to check where users are sent.
 
 ```ts title="tests/uninstall.spec.ts"
 import { expect } from '@playwright/test';
