@@ -12,28 +12,24 @@ Access an `Extension` through the `extension` fixture in your tests.
 
 **Type:** [`BrowserContext`](https://playwright.dev/docs/api/class-browsercontext).
 
-The isolated persistent Chromium context hosting the extension. Available even before installation
-when `extensionAutoInstall` is `false`.
+The isolated persistent Chromium context hosting the extension.
 
 ```ts
 const page = await extension.context.newPage();
-await page.goto('https://example.com');
 ```
 
 ### id
 
 **Type:** `string`.
 
-The installed extension's ID. Throws before installation. Paths can affect IDs; a manifest `key`
-can provide a stable ID. The ID is preserved during [unpacked upgrades](../guides/migration.md).
+The installed extension's ID. The ID is preserved during [unpacked upgrades](../guides/migration.md).
 
 ### manifest
 
 **Type:** `chrome.runtime.ManifestV3`.
 
 A manifest snapshot read through `chrome.runtime.getManifest()` when the extension becomes ready.
-Throws before readiness. Installation, upgrade, and re-enabling refresh the snapshot; an object you
-previously captured remains unchanged.
+Installation, upgrade, and re-enabling refresh the snapshot.
 
 ```ts
 expect(extension.manifest.version).toBe('1.0.0');
@@ -49,7 +45,7 @@ Read it again after an upgrade or enable operation instead of retaining an old h
 
 ### storage
 
-Provides Promise-based access to `chrome.storage.local`, `sync`, `session`, and `managed` through
+Provides helpers for easy access to `chrome.storage.local`, `sync`, `session`, and `managed` through
 the current worker. See the [ExtensionStorage](storage.md) for methods and examples.
 
 ## Methods
