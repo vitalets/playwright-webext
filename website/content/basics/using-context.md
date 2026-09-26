@@ -18,7 +18,7 @@ import { test } from 'playwright-webext';
 test('opens a website with the extension loaded', async ({ extension }) => {
   const page = await extension.context.newPage();
   await page.goto('https://example.com');
-  await expect(page.getByRole('heading', { name: 'Example Domain' })).toBeVisible();
+  // The extension can interact with this page.
 });
 ```
 
@@ -33,9 +33,7 @@ override `context` in your own fixture module:
 import { test as base } from 'playwright-webext';
 
 export const test = base.extend({
-  context: async ({ extension }, use) => {
-    await use(extension.context);
-  },
+  context: async ({ extension }, use) => use(extension.context),
 });
 ```
 
