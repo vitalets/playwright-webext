@@ -4,7 +4,8 @@ toc_max_heading_level: 3
 description: API reference for extension metadata, worker evaluation, pages, and lifecycle controls.
 ---
 
-Access an `Extension` through the `extension` fixture in your tests.
+The `extension` fixture is available in your tests and lets you open extension pages, run code in the
+service worker, access storage, and manage the extension's lifecycle.
 
 ## Properties
 
