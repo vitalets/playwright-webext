@@ -61,7 +61,6 @@ export class SidePanel {
 
   async close() {
     await this.page.close();
-    this.#page = undefined;
   }
 }
 ```

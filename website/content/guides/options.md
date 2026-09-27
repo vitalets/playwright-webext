@@ -64,7 +64,6 @@ export class OptionsPage {
 
   async close() {
     await this.page.close();
-    this.#page = undefined;
   }
 
   async selectTheme(theme: string) {

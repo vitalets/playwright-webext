@@ -85,7 +85,6 @@ export class WelcomePage {
 
   async close() {
     await this.page.close();
-    this.#page = undefined;
   }
 
   heading() {

@@ -65,7 +65,6 @@ export class Popup {
 
   async close() {
     await this.page.close();
-    this.#page = undefined;
   }
 
   saveButton() {
