@@ -5,12 +5,12 @@
 /// <reference types="chrome" preserve="true" />
 
 import { dirname, isAbsolute, resolve } from 'node:path';
-import { test as base, type BrowserContextOptions } from '@playwright/test';
+import { test as base, type BrowserContext, type BrowserContextOptions } from '@playwright/test';
 import { Extension } from './extension.js';
 import { ExtensionCopy } from './copy.js';
 import { launchContextWithExtension } from './launch.js';
 import { createVideoRecording } from './video.js';
-import { throwIf } from './utils.js';
+import { runAll, throwIf } from './utils.js';
 
 /**
  * Configuration accepted by the extension test fixtures.
@@ -83,8 +83,9 @@ export const test = base.extend<WebextOptions & WebextFixtures>({
     const extensionCopy = new ExtensionCopy();
     const videoRecording = await createVideoRecording(video, testInfo);
 
+    let context: BrowserContext | undefined;
     try {
-      const context = await launchContextWithExtension({
+      context = await launchContextWithExtension({
         headless,
         launchOptions,
         contextOptions: buildContextOptions(contextOptions, {
@@ -114,27 +115,22 @@ export const test = base.extend<WebextOptions & WebextFixtures>({
         }),
       });
 
-      try {
-        videoRecording?.track(context);
-        const extension = new Extension(context, {
-          extensionPath,
-          extensionCopy,
-          baseDir: configFile ? dirname(configFile) : process.cwd(),
-          locale,
-          timeout: testInfo.timeout,
-        });
-        // eslint-disable-next-line max-depth -- Nested cleanup guarantees context, video, and copy teardown in order.
-        if (extensionAutoInstall) await extension.install();
-        await use(extension);
-      } finally {
-        await context.close();
-      }
+      videoRecording?.track(context);
+      const extension = new Extension(context, {
+        extensionPath,
+        extensionCopy,
+        baseDir: configFile ? dirname(configFile) : process.cwd(),
+        locale,
+        timeout: testInfo.timeout,
+      });
+      if (extensionAutoInstall) await extension.install();
+      await use(extension);
     } finally {
-      try {
-        await videoRecording?.finish();
-      } finally {
-        await extensionCopy.cleanup();
-      }
+      await runAll([
+        () => context?.close(),
+        () => videoRecording?.finish(),
+        () => extensionCopy.cleanup(),
+      ]);
     }
   },
 });

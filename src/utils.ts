@@ -1,5 +1,5 @@
 /**
- * Provides small assertion utilities shared by the extension test harness.
+ * Provides small assertion and cleanup utilities shared by the extension test harness.
  */
 
 /**
@@ -9,4 +9,20 @@ export function throwIf(condition: unknown, message: string): void {
   if (condition) {
     throw new Error(message);
   }
+}
+
+/**
+ * Runs every function in order, then throws the first error, if any.
+ */
+// eslint-disable-next-line visual/complexity
+export async function runAll(functions: readonly (() => unknown)[]): Promise<void> {
+  let firstError: Error | undefined;
+  for (const fn of functions) {
+    try {
+      await fn();
+    } catch (error) {
+      firstError ??= error instanceof Error ? error : new Error(String(error), { cause: error });
+    }
+  }
+  if (firstError) throw firstError;
 }
