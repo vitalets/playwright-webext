@@ -29,8 +29,8 @@
 - Set up browser state [before installing your extension](https://vitalets.github.io/playwright-webext/basics/configuration/#extensionautoinstall).
 - Test [internationalization (i18n)](https://vitalets.github.io/playwright-webext/guides/i18n/) without changing your system language.
 - Test [data migrations](https://vitalets.github.io/playwright-webext/guides/migration/) between extension versions.
-- Test scenarios when your extension is [disabled](https://vitalets.github.io/playwright-webext/api/extension/#disable), [re-enabled](https://vitalets.github.io/playwright-webext/api/extension/#enable) and
-  [uninstalled](https://vitalets.github.io/playwright-webext/guides/uninstall/).
+- Test extension [disabling](https://vitalets.github.io/playwright-webext/api/extension/#disable), [re-enabling](https://vitalets.github.io/playwright-webext/api/extension/#enable) and
+  [uninstall](https://vitalets.github.io/playwright-webext/guides/uninstall/).
 
 ## Documentation
 
@@ -42,10 +42,9 @@ Check out the [documentation](https://vitalets.github.io/playwright-webext/).
 browser with an extension, wait for its service worker, and find its ID. That gives you a working
 starting point, but leaves you to maintain the setup fixtures and write helpers for extension tasks.
 
-**playwright-webext** provides multiple helpers for extension end-to-end testing,
-covering scenarios beyond the guide: preparing stored data, switching translation catalogs,
-and upgrading an older build while preserving its data. You can focus your tests on the extension's
-behavior while continuing to use Playwright pages, locators, and assertions.
+**playwright-webext** provides helpers beyond the default guide: storage setup, localization
+testing, migrations and much more. These helpers let you focus on your extension's
+behavior using familiar Playwright pages, locators, and assertions.
 
 Start with [Installation](https://vitalets.github.io/playwright-webext/getting-started/installation/), then [configure your tests](https://vitalets.github.io/playwright-webext/getting-started/configuration/).
 
