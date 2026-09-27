@@ -17,7 +17,7 @@ type LaunchExtensionOptions = {
 export async function launchContextWithExtension({
   headless,
   launchOptions: { args = [], ignoreDefaultArgs, ...launchOptions },
-  contextOptions: { storageState, ...contextOptions },
+  contextOptions,
 }: LaunchExtensionOptions): Promise<BrowserContext> {
   const context = await chromium.launchPersistentContext('', {
     ...launchOptions,
@@ -34,8 +34,11 @@ export async function launchContextWithExtension({
     headless,
     ...contextOptions,
   });
+
   try {
-    if (storageState !== undefined) await context.setStorageState(storageState);
+    if (contextOptions.storageState !== undefined) {
+      await context.setStorageState(contextOptions.storageState);
+    }
     return context;
   } catch (error) {
     await context.close();

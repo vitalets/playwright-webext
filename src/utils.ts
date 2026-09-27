@@ -1,6 +1,15 @@
 /**
- * Provides small assertion and cleanup utilities shared by the extension test harness.
+ * Provides shared helpers for options, assertions, and cleanup.
  */
+
+/**
+ * Copies an object's enumerable string-keyed properties, omitting values that are undefined.
+ */
+export function removeUndefined<T extends object>(value: T): Partial<T> {
+  return Object.fromEntries(
+    Object.entries(value).filter(([, value]) => value !== undefined),
+  ) as Partial<T>;
+}
 
 /**
  * Throws an error with the provided message when the condition is truthy.
