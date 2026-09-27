@@ -21,6 +21,8 @@ context; ask only when a missing answer would change the result. For structure c
 
 ## Editorial rules
 
+- Omit information the intended reader can reasonably be expected to know or infer from context.
+  Keep explanations that add necessary context or prevent a likely misunderstanding.
 - Lead with what the reader wants to do. Introduce the extension feature before the method that tests
   it. Explain the underlying problem when it makes the solution understandable, as with localization.
 - Use familiar words, concrete subjects, and direct verbs. Prefer “use”, “open”, “read”, and “set”.

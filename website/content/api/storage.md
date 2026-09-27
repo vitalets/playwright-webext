@@ -58,20 +58,22 @@ Without a generic, values are typed as `unknown`.
 **Call:** `extension.storage.local.expect(key?: string)`
 
 Returns Playwright's retrying assertions for a key's value. Chain a matcher and await the assertion.
-Omit the key or pass `undefined` to assert against all values in the storage area.
 Uses [`expect.poll`](https://playwright.dev/docs/test-assertions#expectpoll) with its configured
-timeout, so you can assert values written asynchronously. A missing key has the value `undefined`.
+timeout, so you can assert values written asynchronously:
 
 ```ts
 await extension.storage.local.expect('saved').toEqual(true);
 await extension.storage.local.expect('theme').not.toEqual('light');
-await extension.storage.local.expect().toEqual({ saved: true, theme: 'dark' });
 await extension.storage.local
   .expect('preferences')
-  .toEqual(expect.objectContaining({ colorScheme: 'dark' }));
+  .toEqual(expect.objectContaining({ theme: 'dark' }));
 ```
 
-Import `expect` from `@playwright/test` when using matchers such as `expect.objectContaining`.
+Omit the key to assert against all values in the storage area:
+
+```ts
+await extension.storage.local.expect().toEqual({ saved: true, theme: 'dark' });
+```
 
 ### set
 
