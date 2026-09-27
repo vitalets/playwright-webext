@@ -6,8 +6,9 @@ set -euo pipefail
 if [[ -n "${SKIP_GIT_HOOKS-}" ]]; then exit 0; fi
 
 npm run prettier
+npm run lint
 npm run tsc
 npm run build
 npm test
 
-# todo: lint, knip
+# todo: knip

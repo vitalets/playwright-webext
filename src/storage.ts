@@ -58,7 +58,7 @@ class StorageArea {
   /**
    * Updates the supplied keys without replacing other stored values.
    */
-  async set<T = { [key: string]: any }>(items: Partial<T>): Promise<void> {
+  async set<T = { [key: string]: unknown }>(items: Partial<T>): Promise<void> {
     await this.getWorker().evaluate(
       ({ area, items }) => chrome.storage[area].set<T>(items as Partial<T>),
       {
@@ -71,7 +71,7 @@ class StorageArea {
   /**
    * Removes one or more stored keys.
    */
-  async remove<T = { [key: string]: any }>(keys: keyof T | Array<keyof T>): Promise<void> {
+  async remove<T = { [key: string]: unknown }>(keys: keyof T | Array<keyof T>): Promise<void> {
     await this.getWorker().evaluate(
       ({ area, keys }) => chrome.storage[area].remove<T>(keys as keyof T | Array<keyof T>),
       {

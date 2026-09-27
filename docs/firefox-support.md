@@ -26,6 +26,8 @@ The current [`backgroundPages()` documentation](https://playwright.dev/docs/api/
 
 The bundled Firefox Juggler `TargetRegistry.js` was also inspected inside the local `firefox-1532` browser archive: target discovery follows browser tabs through `gBrowser.tabs` and `TabOpen`. A hidden background document does not become a native Playwright page merely because it is a document. The [upstream target registry](https://github.com/microsoft/playwright/blob/main/browser_patches/firefox/juggler/TargetRegistry.js) is the corresponding source location; that link tracks future changes.
 
+There is also an explicit filter in [JugglerFrameChild](https://github.com/microsoft/playwright/blob/main/browser_patches/firefox/juggler/content/JugglerFrameChild.jsm): `actorCreated()` returns early for `moz-extension://` documents. Opening a popup or options document in a tab therefore also needs investigation; successful installation does not establish native Playwright access to those documents.
+
 Relevant Playwright issues, all closed when reviewed:
 
 - [2874: Enable background page access of browser extension in Firefox](https://github.com/microsoft/playwright/issues/2874) is the exact request. A [maintainer response](https://github.com/microsoft/playwright/issues/2874#issuecomment-788561868) explains that Firefox support requires substantial work and welcomes contributions. Its [closure](https://github.com/microsoft/playwright/issues/2874#issuecomment-1615112984) cites limited engagement, activity, and actionability, not a shipped implementation, and invites a new issue referencing it.
@@ -53,10 +55,24 @@ Inspected [ueokande/playwright-webextext](https://github.com/ueokande/playwright
 
 This is source evidence for an installation approach, not a runtime validation against this package's current Playwright version. Its profile-permission workaround also needs revalidation before reuse.
 
+## Can about:addons expose the installation API?
+
+Firefox's internal API exists. The [about:addons implementation](https://github.com/mozilla-firefox/firefox/blob/main/toolkit/mozapps/extensions/content/aboutaddons.mjs) imports `AddonManager` through `ChromeUtils.importESModule`. The [about:debugging installation action](https://github.com/mozilla-firefox/firefox/blob/main/devtools/client/aboutdebugging/src/actions/debug-targets.js) calls `AddonManager.installTemporaryAddon(file)`, where `file` is an `nsIFile` for the unpacked directory or package. The visible temporary-install button uses a [native XPCOM file picker](https://github.com/mozilla-firefox/firefox/blob/main/devtools/client/aboutdebugging/src/modules/extensions-helper.js), rather than an HTML file input.
+
+The unresolved step is evaluating code in that privileged page through Playwright. A local probe used Playwright 1.62.1 with its matching Firefox 153.0 build (`firefox-1538`), headless, in a fresh persistent profile:
+
+- A control `data:text/html,control` page navigated and returned its location through `page.evaluate()`.
+- Both `about:addons` and `about:debugging#/runtime/this-firefox` timed out after five seconds even with `waitUntil: 'commit'`. Playwright's frame URL remained `about:blank`.
+- A separate evaluation attempt after each navigation timeout also exceeded a five-second deadline. Thus the failure was not just waiting for the page's `load` event.
+
+The probe was repeated in headed Firefox 153.0 using `firefox.launchPersistentContext(profileDirectory, { headless: false })` with an explicit, fresh profile directory. The control page again succeeded. Both internal pages exceeded a 15-second navigation timeout and a separate five-second evaluation deadline, with Playwright's frame URL still at `about:blank`. The browser was closed and the disposable profile removed afterward.
+
+An earlier probe against cached Firefox 151.0 also timed out on both internal pages, using a 15-second navigation timeout. These experiments did not reach the installation API, so they establish that the straightforward `page.goto()` plus `page.evaluate()` route did not work in either headed or headless persistent contexts. They do not prove that every privileged automation route is impossible; browser-internal protocol bridges were not tested.
+
 ## Routes to investigate before reconsidering support
 
 **Playwright plus Firefox DevTools RDP** is a plausible integration. Mozilla's [extension debugging guide](https://extensionworkshop.com/documentation/develop/debugging/#debugging-background-scripts) demonstrates access to actual background objects and functions. The [extension descriptor actor](https://searchfox.org/firefox-main/source/devtools/server/actors/descriptors/webextension.js) and [Web Console remoting documentation](https://firefox-source-docs.mozilla.org/devtools-user/web_console/remoting/index.html) provide implementation references. Debugger attachment can keep an event page alive, so lifecycle effects must be measured.
 
 **An extension-page bridge** is another candidate: [`runtime.getBackgroundPage()`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/runtime/getBackgroundPage) returns the background `Window` to privileged extension pages and wakes a stopped event page. It does not itself provide arbitrary Playwright evaluation in that realm; private browsing and access to lexical variables also impose limits.
 
-Before changing the support claim, a prototype must demonstrate automatic installation, native Playwright page access, cleanup, and the chosen background API against the actual bundled Firefox. Background evaluation would need defined argument/result serialization, error handling, and behavior across event-page restarts. The first supported subset, including which lifecycle and storage operations it exposes, remains a product decision. No Firefox runtime experiment or working background-evaluation adapter was produced during this investigation.
+Before changing the support claim, a prototype must demonstrate automatic installation, native Playwright page access, cleanup, and the chosen background API against the actual bundled Firefox. Background evaluation would need defined argument/result serialization, error handling, and behavior across event-page restarts. The first supported subset, including which lifecycle and storage operations it exposes, remains a product decision. The runtime experiments above tested privileged-page access only; no working installation or background-evaluation adapter was produced.

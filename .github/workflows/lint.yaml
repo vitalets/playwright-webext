@@ -16,7 +16,7 @@ jobs:
           node-version: 24
           cache: 'npm'
       - run: npm ci
-      # - run: npm run lint
+      - run: npm run lint
       - run: npm run prettier
       # - run: npm run knip
       - run: npm run tsc

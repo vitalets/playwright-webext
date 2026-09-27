@@ -2,7 +2,7 @@ import { expect } from '@playwright/test';
 import { fileURLToPath } from 'node:url';
 import { test } from '../../src/index.js';
 
-test('auto install by default', async ({ extension }) => {
+test('auto install by default', ({ extension }) => {
   expect(extension.id).toBeDefined();
   expect(extension.manifest.version).toBe('1.0.0');
 });
