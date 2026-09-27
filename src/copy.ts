@@ -12,6 +12,9 @@ import { join } from 'node:path';
 export class ExtensionCopy {
   path = '';
 
+  /**
+   * Replaces the private directory contents with the supplied extension build.
+   */
   async copyFrom(extensionPath: string) {
     await this.ensurePath();
     await this.clearContents();
@@ -19,11 +22,17 @@ export class ExtensionCopy {
     return this;
   }
 
-  async cleanup(): Promise<void> {
+  /**
+   * Removes the private extension directory when one has been created.
+   */
+  async cleanup() {
     if (!this.path) return;
     await rm(this.path, { recursive: true, force: true });
   }
 
+  /**
+   * Empties the private directory while preserving its path for extension upgrades.
+   */
   async clearContents() {
     const entries = await readdir(this.path);
     await Promise.all(

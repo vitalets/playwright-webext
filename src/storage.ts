@@ -35,7 +35,7 @@ class StorageArea {
   /**
    * Reads stored values, optionally supplying defaults for missing keys.
    */
-  async get<T = { [key: string]: unknown }>(keys?: StorageKeys<NoInfer<T>>): Promise<T> {
+  async get<T = { [key: string]: unknown }>(keys?: StorageKeys<NoInfer<T>>) {
     return this.getWorker().evaluate(
       ({ area, keys }) => chrome.storage[area].get<T>(keys as StorageKeys<T>),
       {
@@ -58,7 +58,7 @@ class StorageArea {
   /**
    * Updates the supplied keys without replacing other stored values.
    */
-  async set<T = { [key: string]: unknown }>(items: Partial<T>): Promise<void> {
+  async set<T = { [key: string]: unknown }>(items: Partial<T>) {
     await this.getWorker().evaluate(
       ({ area, items }) => chrome.storage[area].set<T>(items as Partial<T>),
       {
@@ -71,7 +71,7 @@ class StorageArea {
   /**
    * Removes one or more stored keys.
    */
-  async remove<T = { [key: string]: unknown }>(keys: keyof T | Array<keyof T>): Promise<void> {
+  async remove<T = { [key: string]: unknown }>(keys: keyof T | Array<keyof T>) {
     await this.getWorker().evaluate(
       ({ area, keys }) => chrome.storage[area].remove<T>(keys as keyof T | Array<keyof T>),
       {
@@ -84,14 +84,14 @@ class StorageArea {
   /**
    * Removes every value in this storage area.
    */
-  async clear(): Promise<void> {
+  async clear() {
     await this.getWorker().evaluate((area) => chrome.storage[area].clear(), this.area);
   }
 
   /**
    * Lists the keys in this storage area.
    */
-  async getKeys(): Promise<string[]> {
+  async getKeys() {
     return this.getWorker().evaluate((area) => chrome.storage[area].getKeys(), this.area);
   }
 }

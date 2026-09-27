@@ -25,9 +25,6 @@ export class ExtensionInstaller {
   #canUpgrade = false;
   #id?: string;
 
-  /**
-   * Creates an installer for the browser context and configured extension sources.
-   */
   constructor(
     private readonly context: BrowserContext,
     private readonly options: InstallOptions,
@@ -37,7 +34,7 @@ export class ExtensionInstaller {
    * Loads a build and returns its ID. The caller waits for worker readiness.
    * Failed loads can be retried; successful loads consume the installation.
    */
-  async install(path?: string): Promise<string> {
+  async install(path?: string) {
     this.verifyStateForInstall();
     this.#state = 'installing';
     try {
@@ -55,7 +52,7 @@ export class ExtensionInstaller {
   /**
    * Replaces and reloads the private build once. The caller synchronizes worker lifecycle.
    */
-  async upgrade(): Promise<void> {
+  async upgrade() {
     this.verifyStateForUpgrade();
     this.#state = 'upgrading';
     try {
@@ -70,20 +67,7 @@ export class ExtensionInstaller {
     }
   }
 
-  private verifyStateForInstall(): void {
-    if (this.#state === 'installing')
-      throw new Error('Extension installation is already in progress.');
-    if (this.#state !== 'not-installed')
-      throw new Error('Extension installation has already been used.');
-  }
-
-  private verifyStateForUpgrade(): void {
-    if (this.#state === 'upgrading') throw new Error('Extension upgrade is already in progress.');
-    if (this.#state === 'upgraded') throw new Error('Extension upgrade has already been used.');
-    if (!this.#canUpgrade) throw new Error('Extension upgrade requires extension.install(path).');
-  }
-
-  private async resolveInstallPath(path?: string): Promise<string> {
+  private async resolveInstallPath(path?: string) {
     const source =
       path === undefined ? this.options.extensionPath : resolve(this.options.baseDir, path);
     return path !== undefined || !isDefaultLocale(this.options.locale)
@@ -91,7 +75,7 @@ export class ExtensionInstaller {
       : source;
   }
 
-  private async prepareCopy(source: string): Promise<string> {
+  private async prepareCopy(source: string) {
     await this.options.extensionCopy.copyFrom(source);
     if (!isDefaultLocale(this.options.locale)) {
       await localizeExtension(this.options.extensionCopy.path, this.options.locale);
@@ -99,7 +83,7 @@ export class ExtensionInstaller {
     return this.options.extensionCopy.path;
   }
 
-  private async loadUnpacked(path: string): Promise<string> {
+  private async loadUnpacked(path: string) {
     const browser = this.context.browser();
     if (!browser) throw new Error('Extension installation requires a browser CDP session.');
     const session = await browser.newBrowserCDPSession();
@@ -109,5 +93,18 @@ export class ExtensionInstaller {
     } finally {
       await session.detach();
     }
+  }
+
+  private verifyStateForInstall() {
+    if (this.#state === 'installing')
+      throw new Error('Extension installation is already in progress.');
+    if (this.#state !== 'not-installed')
+      throw new Error('Extension installation has already been used.');
+  }
+
+  private verifyStateForUpgrade() {
+    if (this.#state === 'upgrading') throw new Error('Extension upgrade is already in progress.');
+    if (this.#state === 'upgraded') throw new Error('Extension upgrade has already been used.');
+    if (!this.#canUpgrade) throw new Error('Extension upgrade requires extension.install(path).');
   }
 }

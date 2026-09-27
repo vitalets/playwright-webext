@@ -3,7 +3,7 @@
  */
 
 import { chromium } from '@playwright/test';
-import type { BrowserContext, BrowserContextOptions, LaunchOptions } from '@playwright/test';
+import type { BrowserContextOptions, LaunchOptions } from '@playwright/test';
 
 type LaunchExtensionOptions = {
   headless: boolean;
@@ -18,7 +18,7 @@ export async function launchContextWithExtension({
   headless,
   launchOptions: { args = [], ignoreDefaultArgs, ...launchOptions },
   contextOptions,
-}: LaunchExtensionOptions): Promise<BrowserContext> {
+}: LaunchExtensionOptions) {
   const context = await chromium.launchPersistentContext('', {
     ...launchOptions,
     channel: 'chromium',

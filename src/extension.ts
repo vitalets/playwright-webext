@@ -4,7 +4,7 @@
 
 /// <reference types="chrome" preserve="true" />
 
-import type { BrowserContext, Page, Worker } from '@playwright/test';
+import type { BrowserContext, Worker } from '@playwright/test';
 import { ExtensionInstaller, type InstallOptions } from './install.js';
 import { ExtensionsPage } from './extensions-page.js';
 import { createStorage } from './storage.js';
@@ -23,9 +23,6 @@ export class Extension {
   #id?: string;
   #manifest?: chrome.runtime.ManifestV3;
 
-  /**
-   * Creates an extension facade for the supplied browser context.
-   */
   constructor(
     context: BrowserContext,
     private readonly options: ExtensionOptions,
@@ -34,18 +31,27 @@ export class Extension {
     this.#installer = new ExtensionInstaller(context, options);
   }
 
-  get worker(): Worker {
+  /**
+   * Returns the current service worker, or throws when it is unavailable.
+   */
+  get worker() {
     const worker = this.findWorker();
     if (!worker) throw new Error('Extension service worker is not available.');
     return worker;
   }
 
-  get id(): string {
+  /**
+   * Returns the installed extension ID, or throws before installation.
+   */
+  get id() {
     if (!this.#id) throw new Error('Extension is not installed. Call extension.install() first.');
     return this.#id;
   }
 
-  get manifest(): chrome.runtime.ManifestV3 {
+  /**
+   * Returns the manifest read from the ready extension service worker.
+   */
+  get manifest() {
     if (!this.#manifest) throw new Error('Extension is not ready. Call extension.install() first.');
     return this.#manifest;
   }
@@ -53,7 +59,7 @@ export class Extension {
   /**
    * Returns the configured popup URL, or throws when no popup is declared.
    */
-  get popupUrl(): string {
+  get popupUrl() {
     const popupPath = this.manifest.action?.default_popup;
     if (!popupPath) {
       throw new Error('Extension does not define action.default_popup.');
@@ -65,7 +71,7 @@ export class Extension {
    * Returns the configured options URL, preferring options_ui.page over options_page.
    * Throws when no options page is declared.
    */
-  get optionsUrl(): string {
+  get optionsUrl() {
     const optionsPath = this.manifest.options_ui?.page ?? this.manifest.options_page;
     if (!optionsPath) {
       throw new Error('Extension does not define options_ui.page or options_page.');
@@ -77,7 +83,7 @@ export class Extension {
    * Returns the side panel document URL declared by side_panel.default_path.
    * Throws when no default path is declared. Runtime sidePanel overrides are ignored.
    */
-  get sidePanelUrl(): string {
+  get sidePanelUrl() {
     const sidePanelPath = this.manifest.side_panel?.default_path;
     if (!sidePanelPath) {
       throw new Error('Extension does not define side_panel.default_path.');
@@ -97,7 +103,7 @@ export class Extension {
   /**
    * Installs the configured build, or a private copy of a custom build for later upgrade.
    */
-  async install(path?: string): Promise<void> {
+  async install(path?: string) {
     [this.#id] = await Promise.all([this.#installer.install(path), this.waitForReady()]);
   }
 
@@ -107,7 +113,7 @@ export class Extension {
    * This intentionally does not emulate dynamic URLs created by
    * web_accessible_resources entries with use_dynamic_url.
    */
-  getURL(path = ''): string {
+  getURL(path = '') {
     const suffix = path.startsWith('/') ? path : `/${path}`;
     return new URL(`chrome-extension://${this.id}${suffix}`).href;
   }
@@ -120,7 +126,7 @@ export class Extension {
    * Chromium's native `chrome.action.openPopup()` surface is not exposed by
    * `BrowserContext.pages()` and cannot be interacted with as a Playwright `Page`.
    */
-  async openPopup(): Promise<Page> {
+  async openPopup() {
     const url = this.popupUrl;
     const page = await this.context.newPage();
     await page.goto(url);
@@ -136,7 +142,7 @@ export class Extension {
    * Playwright page with normal tab lifecycle and message-sender behavior, including
    * `sender.tab` for runtime messages.
    */
-  async openOptions(): Promise<Page> {
+  async openOptions() {
     const url = this.optionsUrl;
     const page = await this.context.newPage();
     await page.goto(url);
@@ -150,7 +156,7 @@ export class Extension {
    * Uses normal tab viewport, lifecycle, active-tab, and message-sender behavior.
    * Does not open the native side panel or use runtime sidePanel configuration.
    */
-  async openSidePanel(): Promise<Page> {
+  async openSidePanel() {
     const url = this.sidePanelUrl;
     const page = await this.context.newPage();
     await page.goto(url);
@@ -161,7 +167,7 @@ export class Extension {
   /**
    * Enables the extension, waits for readiness, and closes Chromium's extensions page afterward.
    */
-  async enable(): Promise<void> {
+  async enable() {
     const extensionsPage = new ExtensionsPage(this.context);
     try {
       await extensionsPage.open();
@@ -175,7 +181,7 @@ export class Extension {
   /**
    * Disables the extension, waits for its worker to stop, and closes the extensions page afterward.
    */
-  async disable(): Promise<void> {
+  async disable() {
     const extensionsPage = new ExtensionsPage(this.context);
     try {
       await extensionsPage.open();
@@ -188,14 +194,14 @@ export class Extension {
   /**
    * Replaces the loaded old extension with the configured current version and reloads it.
    */
-  async upgrade(): Promise<void> {
+  async upgrade() {
     await Promise.all([this.#installer.upgrade(), this.waitForStopped(), this.waitForReady()]);
   }
 
   /**
    * Removes the extension from its browser profile.
    */
-  async uninstall(): Promise<void> {
+  async uninstall() {
     await Promise.all([
       this.worker.evaluate(() => {
         setTimeout(() => {
@@ -206,7 +212,7 @@ export class Extension {
     ]);
   }
 
-  private async waitForReady(): Promise<void> {
+  private async waitForReady() {
     const worker = await this.context.waitForEvent('serviceworker', {
       predicate: (worker) => worker.url().startsWith('chrome-extension://'),
       timeout: this.options.timeout,
@@ -215,12 +221,12 @@ export class Extension {
     this.#manifest = manifest as chrome.runtime.ManifestV3;
   }
 
-  private async waitForStopped(): Promise<void> {
+  private async waitForStopped() {
     const worker = this.findWorker();
     if (worker) await worker.waitForEvent('close', { timeout: this.options.timeout });
   }
 
-  private findWorker(): Worker | undefined {
+  private findWorker() {
     return this.context
       .serviceWorkers()
       .find((worker) => worker.url().startsWith(`chrome-extension://${this.#id}/`));

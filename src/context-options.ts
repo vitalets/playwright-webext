@@ -60,7 +60,7 @@ type ContextOptions = Partial<PlaywrightTestOptions>;
 export function mergeContextOptions(
   contextOptions: BrowserContextOptions,
   overrides: BrowserContextOptions,
-): BrowserContextOptions {
+) {
   return {
     ...contextOptions,
     ...removeUndefined(overrides),
@@ -73,7 +73,7 @@ export function mergeContextOptions(
 export function buildWorkerContextOptions(
   options: ContextOptions,
   launchOptions: PlaywrightWorkerOptions['launchOptions'],
-): BrowserContextOptions {
+) {
   const topLevelContextOptions = Object.fromEntries(
     Object.keys(CONTEXT_DEFAULTS).map((key) => [key, options[key as keyof ContextOptions]]),
   );

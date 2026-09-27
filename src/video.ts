@@ -44,7 +44,19 @@ export async function createVideoRecording(video: VideoOptions, testInfo: TestIn
   };
 }
 
-function normalizeVideoMode(video: VideoOptions): VideoMode {
+async function attachVideos(pages: Set<Page>, testInfo: TestInfo) {
+  for (const page of pages) {
+    const recording = page.video();
+    if (recording) {
+      await testInfo.attach('video', {
+        path: await recording.path(),
+        contentType: 'video/webm',
+      });
+    }
+  }
+}
+
+function normalizeVideoMode(video: VideoOptions) {
   const mode = typeof video === 'string' ? video : video.mode;
   return mode === 'retry-with-video' ? 'on-first-retry' : mode;
 }
@@ -82,16 +94,4 @@ function shouldRetainVideo(mode: VideoMode, testInfo: TestInfo) {
     failed ||
     (mode === 'retain-on-failure-and-retries' && testInfo.retry > 0)
   );
-}
-
-async function attachVideos(pages: Set<Page>, testInfo: TestInfo) {
-  for (const page of pages) {
-    const recording = page.video();
-    if (recording) {
-      await testInfo.attach('video', {
-        path: await recording.path(),
-        contentType: 'video/webm',
-      });
-    }
-  }
 }

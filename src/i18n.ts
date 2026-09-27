@@ -22,12 +22,12 @@ export function isDefaultLocale(locale: string | undefined): locale is DefaultLo
 /**
  * Projects the requested locale onto an extension directory in place.
  */
-export async function localizeExtension(extensionPath: string, locale: string): Promise<void> {
+export async function localizeExtension(extensionPath: string, locale: string) {
   const extensionLocale = await resolveExtensionLocale(extensionPath, locale);
   await applyExtensionLocale(extensionPath, extensionLocale);
 }
 
-async function resolveExtensionLocale(extensionPath: string, locale: string): Promise<string> {
+async function resolveExtensionLocale(extensionPath: string, locale: string) {
   const normalizedLocale = locale.replace(/-/g, '_');
   if (!/^[A-Za-z0-9_]+$/.test(normalizedLocale)) {
     throw new Error(`Invalid extension locale "${locale}".`);
@@ -51,25 +51,7 @@ async function resolveExtensionLocale(extensionPath: string, locale: string): Pr
   return extensionLocale;
 }
 
-async function readAvailableLocales(
-  localesPath: string,
-  extensionPath: string,
-  locale: string,
-): Promise<string[]> {
-  try {
-    const entries = await readdir(localesPath, { withFileTypes: true });
-    return entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name);
-  } catch (error) {
-    if (isMissingPathError(error)) {
-      throw new Error(
-        `Extension at "${extensionPath}" has no _locales directory for locale "${locale}".`,
-      );
-    }
-    throw error;
-  }
-}
-
-async function applyExtensionLocale(extensionPath: string, locale: string): Promise<void> {
+async function applyExtensionLocale(extensionPath: string, locale: string) {
   const manifestPath = join(extensionPath, 'manifest.json');
   const manifest = JSON.parse(await readFile(manifestPath, 'utf8')) as chrome.runtime.Manifest;
   manifest.default_locale = locale;
@@ -84,6 +66,20 @@ async function applyExtensionLocale(extensionPath: string, locale: string): Prom
   );
 }
 
-function isMissingPathError(error: unknown): error is NodeJS.ErrnoException {
+async function readAvailableLocales(localesPath: string, extensionPath: string, locale: string) {
+  try {
+    const entries = await readdir(localesPath, { withFileTypes: true });
+    return entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name);
+  } catch (error) {
+    if (isMissingPathError(error)) {
+      throw new Error(
+        `Extension at "${extensionPath}" has no _locales directory for locale "${locale}".`,
+      );
+    }
+    throw error;
+  }
+}
+
+function isMissingPathError(error: unknown) {
   return error instanceof Error && 'code' in error && error.code === 'ENOENT';
 }

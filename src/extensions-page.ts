@@ -35,7 +35,7 @@ export class ExtensionsPage {
   /**
    * Returns the currently open management page.
    */
-  get page(): Page {
+  get page() {
     if (!this.#page || this.#page.isClosed()) {
       throw new Error('Extensions page is not open. Call open() first.');
     }
@@ -45,7 +45,7 @@ export class ExtensionsPage {
   /**
    * Opens the privileged page that exposes Chromium's extension management APIs.
    */
-  async open(): Promise<void> {
+  async open() {
     if (this.#page && !this.#page.isClosed()) return;
     const page = await this.context.newPage();
     try {
@@ -60,28 +60,28 @@ export class ExtensionsPage {
   /**
    * Enables the extension with the supplied ID.
    */
-  async enable(id: string): Promise<void> {
+  async enable(id: string) {
     await this.setEnabled(id, true);
   }
 
   /**
    * Disables the extension with the supplied ID.
    */
-  async disable(id: string): Promise<void> {
+  async disable(id: string) {
     await this.setEnabled(id, false);
   }
 
   /**
    * Returns whether Chromium has enabled the extension.
    */
-  async isEnabled(id: string): Promise<boolean> {
+  async isEnabled(id: string) {
     return this.page.evaluate(async (id) => (await chrome.management.get(id)).enabled, id);
   }
 
   /**
    * Updates configuration switches without requiring Developer mode.
    */
-  async updateConfiguration(id: string, configuration: ExtensionConfiguration): Promise<void> {
+  async updateConfiguration(id: string, configuration: ExtensionConfiguration) {
     await this.page.evaluate(
       ({ id, configuration }) =>
         (chrome as ExtensionsChrome).developerPrivate.updateExtensionConfiguration({
@@ -95,14 +95,14 @@ export class ExtensionsPage {
   /**
    * Closes the underlying Playwright page if it is still open.
    */
-  async close(): Promise<void> {
+  async close() {
     if (this.#page && !this.#page.isClosed()) {
       await this.#page.close();
     }
     this.#page = undefined;
   }
 
-  private async setEnabled(id: string, enabled: boolean): Promise<void> {
+  private async setEnabled(id: string, enabled: boolean) {
     await this.page.evaluate(({ id, enabled }) => chrome.management.setEnabled(id, enabled), {
       id,
       enabled,

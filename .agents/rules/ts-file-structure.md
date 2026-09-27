@@ -1,9 +1,15 @@
 # TypeScript File Structure
 
 Structure TypeScript source files for top-down reading: a reader should understand what the file does before encountering implementation details.
-Apply only to the source files, not tests.
 
-## Ordering Rules
+## Files in Scope
+
+- **Apply to:** TypeScript source files (`.ts` and `.tsx`), such as application modules, components, services, and shared utilities.
+- **Ignore:** Configuration files (for example, `vite.config.ts`, `playwright.config.ts`, and `eslint.config.ts`), test files (for example, `*.test.ts`, `*.spec.ts`, and their `.tsx` equivalents), or files written in other languages.
+
+These scope boundaries apply to all rules below.
+
+## Ordering
 
 1. **File purpose** — start the file with a concise block comment describing the module’s overall purpose and boundaries. Do not list its exports or repeat documentation provided on individual exported members.
 2. **Imports** — external dependencies first, then internal modules according to the project's import conventions.
@@ -14,15 +20,28 @@ Apply only to the source files, not tests.
 7. **Lower-level implementation** — supporting functions ordered roughly by call flow, with callers before callees.
 8. **Leaf helpers and utilities** — small implementation details with no meaningful orchestration responsibilities.
 
-## Commenting Rules
+## Commenting
 
-- Always use multi-line block-form JSDoc.
+- Use multi-line block-form JSDoc for file-level and declaration documentation,
+  including existing comments on functions, methods, and constants. Reformat or
+  rewrite these comments as needed, preserving their meaning and useful details.
 - Document all exported functions and module-level constants. Focus on their purpose and role, not on implementation.
+- Do not document constructors.
 - For types, internal functions and helpers, comment them only when their purpose, behavior, or role in the module is not obvious from the code and naming.
 - Do not restate implementation details that are already clear from the code.
 - Do not add `@param` or `@returns` tags when TypeScript already expresses them.
 - Where useful, include 1–2 short inline examples, especially for reusable helpers.
 - Use simple, direct language. Keep important technical details; simplify the wording, not the content.
+- Preserve existing comments inside function and method bodies (including
+  constructors and callbacks) as written, including their wording, comment syntax,
+  and line breaks. Only adjust leading indentation when surrounding code moves.
+  Change or remove these comments only when explicitly requested or when a code
+  change makes them inaccurate. This preservation rule takes precedence over all
+  other commenting guidance, including for declarations nested inside these bodies.
+
+## Return Types
+
+- Omit explicit return type annotations on functions and methods unless TypeScript requires them. Rely on inference from the implementation to keep code simpler to review.
 
 ## Example
 
@@ -45,7 +64,7 @@ export type Settings = {
 /**
  * Loads persisted settings and applies the provided defaults.
  */
-export async function loadSettings(defaults: Settings): Promise<Settings> {
+export async function loadSettings(defaults: Settings) {
   const stored = await readStorage();
   return normalizeSettings(stored, defaults);
 }
@@ -53,7 +72,7 @@ export async function loadSettings(defaults: Settings): Promise<Settings> {
 /**
  * Persists application settings.
  */
-export async function saveSettings(settings: Settings): Promise<void> {
+export async function saveSettings(settings: Settings) {
   await writeStorage(normalizeSettings(settings, settings));
 }
 
@@ -74,7 +93,7 @@ async function writeStorage(settings: Settings) {
 /**
  * Applies defaults and converts persisted data into the public settings shape.
  */
-function normalizeSettings(settings: unknown, defaults: Settings): Settings {
+function normalizeSettings(settings: unknown, defaults: Settings) {
   return defaults;
 }
 
@@ -82,7 +101,7 @@ function normalizeSettings(settings: unknown, defaults: Settings): Settings {
  * Normalizes URLs before they are used as stable storage or comparison keys.
  * `https://example.com/` -> `https://example.com`
  */
-function normalizeUrl(url: string): string {
+function normalizeUrl(url: string) {
   return url.replace(/\/$/, '');
 }
 ```
