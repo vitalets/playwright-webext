@@ -6,6 +6,8 @@ description: API reference for extension metadata, worker evaluation, pages, and
 
 The `extension` fixture is available in your tests and lets you open extension pages, run code in the
 service worker, access storage, and manage the extension's lifecycle.
+The [`extensionW` fixture](../advanced/shared-context.md) provides the same API with a context shared
+between tests in a Playwright worker.
 
 ## Properties
 
@@ -13,7 +15,8 @@ service worker, access storage, and manage the extension's lifecycle.
 
 **Type:** [`BrowserContext`](https://playwright.dev/docs/api/class-browsercontext).
 
-The isolated persistent Chromium context hosting the extension.
+The persistent Chromium context hosting the extension. It is isolated per test for `extension` and
+shared within a worker for `extensionW`.
 
 ```ts
 const page = await extension.context.newPage();

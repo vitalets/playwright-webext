@@ -23,7 +23,7 @@ export default defineConfig<WebextOptions>({
 ### extensionPath
 
 **Type:** `string`.  
-**Default:** `''`; a non-empty path is required when requesting `extension`.
+**Default:** `''`; a non-empty path is required when requesting `extension` or `extensionW`.
 
 The directory containing your unpacked extension. Relative paths resolve from
 the Playwright configuration file's directory, or the current working directory when there is no
@@ -74,6 +74,9 @@ values in `contextOptions`.
 
 `storageState` accepts an object or a JSON file path and is restored before extension installation.
 
+For `extensionW`, extension and context settings must be configured globally or per project;
+test-scoped overrides do not apply. See [Shared context](../advanced/shared-context.md#configure-the-shared-context).
+
 ## Traces, screenshots, and videos
 
 Playwright's [trace](https://playwright.dev/docs/api/class-testoptions#test-options-trace) and
@@ -85,6 +88,7 @@ in these screenshots.
 The
 [video](https://playwright.dev/docs/api/class-testoptions#test-options-video) setting controls video
 recording, including retention modes, retries, and recording size. Retained videos are attached to
-the test report after the extension context closes.
+the test report after the extension context closes. `extensionW` ignores video settings; see its
+[artifact behavior](../advanced/shared-context.md#caveats).
 
 See [Using context](using-context.md) for direct access and mapping the `context` fixture.

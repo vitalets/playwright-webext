@@ -42,6 +42,12 @@ const sidebars: SidebarsConfig = {
         'guides/uninstall',
       ],
     },
+    {
+      type: 'category',
+      label: 'Advanced',
+      collapsed: false,
+      items: ['advanced/shared-context'],
+    },
   ],
   api: ['api/extension', 'api/storage'],
 };
