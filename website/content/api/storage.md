@@ -53,19 +53,25 @@ const settings = await extension.storage.local.get<{ theme: string }>({ theme: '
 The optional generic describes the expected shape; it does not validate stored values at runtime.
 Without a generic, values are typed as `unknown`.
 
-#### Wait for storage changes
+### expect
 
-Reads return the current values immediately. Use Playwright's
-[`expect.poll`](https://playwright.dev/docs/test-assertions#expectpoll) when your extension writes
-asynchronously:
+**Call:** `extension.storage.local.expect(key?: string)`
+
+Returns Playwright's retrying assertions for a key's value. Chain a matcher and await the assertion.
+Omit the key or pass `undefined` to assert against all values in the storage area.
+Uses [`expect.poll`](https://playwright.dev/docs/test-assertions#expectpoll) with its configured
+timeout, so you can assert values written asynchronously. A missing key has the value `undefined`.
 
 ```ts
-await expect
-  .poll(() => extension.storage.local.get('preferences'))
-  .toEqual({ preferences: expect.objectContaining({ colorScheme: 'dark' }) });
+await extension.storage.local.expect('saved').toEqual(true);
+await extension.storage.local.expect('theme').not.toEqual('light');
+await extension.storage.local.expect().toEqual({ saved: true, theme: 'dark' });
+await extension.storage.local
+  .expect('preferences')
+  .toEqual(expect.objectContaining({ colorScheme: 'dark' }));
 ```
 
-Import `expect` from `@playwright/test` and use this snippet inside a test requesting `extension`.
+Import `expect` from `@playwright/test` when using matchers such as `expect.objectContaining`.
 
 ### set
 

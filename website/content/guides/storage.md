@@ -31,6 +31,22 @@ await extension.storage.local.set({ key: 'value' });
 
 You can also use `extension.storage.sync` and `extension.storage.session`.
 
+## Check stored values
+
+Use `expect(key)` to check a saved value. Assertions retry while your extension writes asynchronously
+and support Playwright matchers, including `.not`:
+
+```ts
+await extension.storage.local.expect('saved').toEqual(true);
+await extension.storage.local.expect('theme').not.toEqual('light');
+```
+
+Omit the key or pass `undefined` to check the whole storage area:
+
+```ts
+await extension.storage.local.expect().toEqual({ saved: true, theme: 'dark' });
+```
+
 ## Example
 
 Set storage keys before opening an extension page to test how it displays saved values. This example

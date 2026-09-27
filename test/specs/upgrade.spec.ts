@@ -17,12 +17,11 @@ test.describe('extension upgrade', () => {
     expect(extension.manifest.version).toBe('1.0.0');
     expect(extension.id).toBe(oldId);
     expect(extension.worker).not.toBe(oldWorker);
-    expect(await extension.storage.local.get('foo')).toEqual({ foo: 'bar' });
-    await expect
-      .poll(() => extension.storage.local.get('onInstalled'))
-      .toEqual({
-        onInstalled: { reason: 'update', previousVersion: '0.1.0' },
-      });
+    await extension.storage.local.expect('foo').toEqual('bar');
+    await extension.storage.local.expect('onInstalled').toEqual({
+      reason: 'update',
+      previousVersion: '0.1.0',
+    });
     await expect(extension.upgrade()).rejects.toThrow('already been used');
   });
 });

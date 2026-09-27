@@ -21,7 +21,6 @@ This example assumes an options document with a “Theme” select, a “Save”
 the chosen value under `theme`. The extension needs the `storage` permission.
 
 ```ts title="tests/options.spec.ts"
-import { expect } from '@playwright/test';
 import { test } from 'playwright-webext';
 
 test('saves the theme', async ({ extension }) => {
@@ -30,7 +29,7 @@ test('saves the theme', async ({ extension }) => {
   await optionsPage.getByLabel('Theme').selectOption('dark');
   await optionsPage.getByRole('button', { name: 'Save' }).click();
 
-  await expect.poll(() => extension.storage.local.get('theme')).toEqual({ theme: 'dark' });
+  await extension.storage.local.expect('theme').toEqual('dark');
 });
 ```
 
@@ -81,7 +80,6 @@ export class OptionsPage {
 Use `OptionsPage` in your test to check the same behavior through the page object:
 
 ```ts title="tests/options.spec.ts"
-import { expect } from '@playwright/test';
 import { test } from 'playwright-webext';
 import { OptionsPage } from './pages/options';
 
@@ -91,7 +89,7 @@ test('saves the theme', async ({ extension }) => {
   await optionsPage.selectTheme('dark');
   await optionsPage.saveButton().click();
 
-  await expect.poll(() => extension.storage.local.get('theme')).toEqual({ theme: 'dark' });
+  await extension.storage.local.expect('theme').toEqual('dark');
 });
 ```
 

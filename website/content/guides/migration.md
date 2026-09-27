@@ -81,11 +81,7 @@ test('migrates preferences from the old version', async ({ extension }) => {
   await extension.upgrade();
 
   expect(extension.manifest.version).toBe('2.0.0');
-  await expect
-    .poll(() => extension.storage.local.get('preferences'))
-    .toEqual({
-      preferences: { theme: 'dark' },
-    });
+  await extension.storage.local.expect('preferences').toEqual({ theme: 'dark' });
 });
 ```
 
@@ -100,7 +96,7 @@ The reload replaces the service worker. `upgrade()` waits for the new worker and
 refer to the old version, so read `extension.worker` and `extension.manifest` again after upgrading.
 
 Worker readiness does not mean the extension's migration handler has finished. Use
-[`expect.poll`](https://playwright.dev/docs/test-assertions#expectpoll) to wait for migrated data.
+[`expect()`](../api/storage.md#expect) to wait for migrated data.
 
 This process tests an unpacked extension upgrade; it does not use store delivery. It requires an
 explicit `install(path)` and supports one upgrade per test's extension instance. If a translation

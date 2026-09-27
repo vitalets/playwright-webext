@@ -2,7 +2,7 @@
  * Provides Promise-based access to extension storage through the current service worker.
  */
 
-import type { Worker } from '@playwright/test';
+import { expect, type Worker } from '@playwright/test';
 
 type StorageAreaName = 'local' | 'sync' | 'session' | 'managed';
 type StorageKeys<T> = keyof T | Array<keyof T> | Partial<T> | null | undefined;
@@ -43,6 +43,16 @@ class StorageArea {
         keys,
       },
     );
+  }
+
+  /**
+   * Creates retrying Playwright assertions for a stored value or the whole storage area.
+   */
+  expect(key?: string): ReturnType<typeof expect.poll> {
+    return expect.poll(async () => {
+      const values = await this.get(key);
+      return key === undefined ? values : values[key];
+    });
   }
 
   /**

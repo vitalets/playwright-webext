@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+- Add `extension.storage[area].expect(key?)` for retrying Playwright assertions, including `.not`.
+  Omit the key or pass `undefined` to assert against the whole storage area.
 - Add `extension.openSidePanel()` and readonly `extension.sidePanelUrl` for the side panel document
   declared by `side_panel.default_path`. The helper opens a regular tab and ignores runtime side
   panel overrides.

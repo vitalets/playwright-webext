@@ -24,14 +24,13 @@ The following example assumes your popup has a “Save” button that stores `sa
 manifest includes the `storage` permission:
 
 ```ts title="tests/popup.spec.ts"
-import { expect } from '@playwright/test';
 import { test } from 'playwright-webext';
 
 test('saves preferences from the popup', async ({ extension }) => {
   const popupPage = await extension.openPopup();
 
   await popupPage.getByRole('button', { name: 'Save' }).click();
-  await expect.poll(() => extension.storage.local.get('saved')).toEqual({ saved: true });
+  await extension.storage.local.expect('saved').toEqual(true);
 });
 ```
 
@@ -78,7 +77,6 @@ export class Popup {
 Use `Popup` in your test to check the same behavior through the page object:
 
 ```ts title="tests/popup.spec.ts"
-import { expect } from '@playwright/test';
 import { test } from 'playwright-webext';
 import { Popup } from './pages/popup';
 
@@ -86,7 +84,7 @@ test('saves preferences from the popup', async ({ extension }) => {
   const popup = await new Popup(extension).open();
 
   await popup.saveButton().click();
-  await expect.poll(() => extension.storage.local.get('saved')).toEqual({ saved: true });
+  await extension.storage.local.expect('saved').toEqual(true);
 });
 ```
 
