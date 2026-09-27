@@ -66,16 +66,14 @@ exists before installation, but metadata and worker operations require an instal
 - [browserName](https://playwright.dev/docs/api/class-testoptions#test-options-browser-name) (Chromium only)
 - [headless](https://playwright.dev/docs/api/class-testoptions#test-options-headless)
 - [launchOptions](https://playwright.dev/docs/api/class-testoptions#test-options-launch-options)
+- [contextOptions](https://playwright.dev/docs/api/class-testoptions#test-options-context-options)
 
-[Context options](https://playwright.dev/docs/api/class-testoptions), including `baseURL`,
-`storageState`, `permissions`, `locale`, and `viewport`, also apply to `extension.context`.
+Context options, including `baseURL`, `storageState`, `permissions`, `locale`, and `viewport`,
+apply to `extension.context`.
 Set them directly in `use` or through `use.contextOptions`. Individual options take precedence over
 values in `contextOptions`.
 
 `storageState` accepts an object or a JSON file path and is restored before extension installation.
-
-For `extensionW`, extension and context settings must be configured globally or per project;
-test-scoped overrides do not apply. See [Shared context](../advanced/shared-context.md#configure-the-shared-context).
 
 ## Traces, screenshots, and videos
 
