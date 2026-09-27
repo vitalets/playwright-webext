@@ -46,12 +46,12 @@ class StorageArea {
   }
 
   /**
-   * Creates retrying Playwright assertions for a stored value or the whole storage area.
+   * Creates retrying Playwright assertions for a stored value, selected keys, or the whole area.
    */
-  expect(key?: string): ReturnType<typeof expect.poll> {
+  expect(keys?: string | string[]): ReturnType<typeof expect.poll> {
     return expect.poll(async () => {
-      const values = await this.get(key);
-      return key === undefined ? values : values[key];
+      const values = await this.get(keys);
+      return typeof keys === 'string' ? values[keys] : values;
     });
   }
 

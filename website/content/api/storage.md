@@ -55,7 +55,7 @@ Without a generic, values are typed as `unknown`.
 
 ### expect
 
-**Call:** `extension.storage.local.expect(key?: string)`
+**Call:** `extension.storage.local.expect(keys?: string | string[])`
 
 Returns Playwright's retrying assertions for a key's value. Chain a matcher and await the assertion.
 Uses [`expect.poll`](https://playwright.dev/docs/test-assertions#expectpoll) with its configured
@@ -69,7 +69,14 @@ await extension.storage.local
   .toEqual(expect.objectContaining({ theme: 'dark' }));
 ```
 
-Omit the key to assert against all values in the storage area:
+Pass an array of keys to assert against an object of selected values, even for a single-element
+array. Missing keys are omitted; an empty array selects an empty object.
+
+```ts
+await extension.storage.local.expect(['saved', 'theme']).toEqual({ saved: true, theme: 'dark' });
+```
+
+Omit the argument to assert against all values in the storage area:
 
 ```ts
 await extension.storage.local.expect().toEqual({ saved: true, theme: 'dark' });
