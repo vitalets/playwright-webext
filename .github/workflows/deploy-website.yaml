@@ -3,19 +3,18 @@ name: deploy-website
 on:
   workflow_dispatch:
   push:
-    branches: [main, docs]
-  pull_request:
-    branches: [main, docs]
+    branches: [docs]
 
 permissions:
   contents: read
 
 concurrency:
   group: website-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/docs' }}
+  cancel-in-progress: true
 
 jobs:
   build:
+    if: github.ref_name == 'docs'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
@@ -28,12 +27,11 @@ jobs:
       - run: npm run docs:tsc
       - run: npm run docs:build
       - uses: actions/upload-pages-artifact@v4
-        if: github.ref == 'refs/heads/docs' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         with:
           path: website/build
 
   deploy:
-    if: github.ref == 'refs/heads/docs' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    if: github.ref_name == 'docs'
     needs: build
     runs-on: ubuntu-24.04
     permissions:
