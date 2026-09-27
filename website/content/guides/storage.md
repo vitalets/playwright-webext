@@ -3,38 +3,40 @@ title: Storage
 description: Read and write extension storage in your tests.
 ---
 
-Tests often need to start with saved settings or check data written by an extension.
+Tests often need to start with saved values or check data written by an extension.
 playwright-webext provides `extension.storage` to read and write that data directly from your test,
-without writing service-worker evaluation code for each operation. You can prepare settings before
+without writing service-worker evaluation code for each operation. You can set storage keys before
 opening a page and check what a UI action saved.
+
+## Read and write to storage
 
 The storage methods mirror the original
 [Chrome Extensions Storage API](https://developer.chrome.com/docs/extensions/reference/api/storage),
 using the same arguments and return values with promises. Your extension needs the `storage` permission.
 
-Read saved settings with `get()`:
+Read a key with `get()`:
 
 ```ts
-const settings = await extension.storage.local.get('theme');
-// settings: { theme: 'dark' }
+const result = await extension.storage.local.get('key');
+// result: { key: 'value' }
 ```
 
 `get()` returns an object containing the requested keys. Omit the argument to read all values.
 
-Write settings with `set()`:
+Write a key with `set()`:
 
 ```ts
-await extension.storage.local.set({ theme: 'dark' });
+await extension.storage.local.set({ key: 'value' });
 ```
 
 You can also use `extension.storage.sync` and `extension.storage.session`.
 
 ## Example
 
-Write settings before opening an extension page to test how it displays saved values. This example
+Set storage keys before opening an extension page to test how it displays saved values. This example
 assumes your options page reads `theme` from local storage and displays it in a “Theme” select.
 If your extension initializes storage asynchronously, wait for that initialization before seeding
-settings so it cannot overwrite them.
+values so it cannot overwrite them.
 
 ```ts title="tests/storage.spec.ts"
 import { expect } from '@playwright/test';
