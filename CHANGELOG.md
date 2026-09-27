@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-27
+
 - Add `extension.storage[area].expect(key?)` for retrying Playwright assertions, including `.not`.
   Omit the key or pass `undefined` to assert against the whole storage area.
 - Add `extension.openSidePanel()` and readonly `extension.sidePanelUrl` for the side panel document
@@ -27,6 +29,7 @@
 
 - Initial release.
 
-[unreleased]: https://github.com/vitalets/playwright-webext/compare/v0.1.2...HEAD
+[unreleased]: https://github.com/vitalets/playwright-webext/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/vitalets/playwright-webext/compare/v0.1.2...v0.2.0
 [0.1.2]: https://github.com/vitalets/playwright-webext/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/vitalets/playwright-webext/releases/tag/v0.1.1
