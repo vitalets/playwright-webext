@@ -66,7 +66,7 @@ chrome.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
 
 The migration test:
 
-```ts title="tests/migration.spec.ts"
+```ts title="test/migration.spec.ts"
 import { expect } from '@playwright/test';
 import { test } from 'playwright-webext';
 

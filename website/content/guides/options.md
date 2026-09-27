@@ -20,7 +20,7 @@ test('options page', async ({ extension }) => {
 This example assumes an options document with a “Theme” select, a “Save” button, and code that stores
 the chosen value under `theme`. The extension needs the `storage` permission.
 
-```ts title="tests/options.spec.ts"
+```ts title="test/options.spec.ts"
 import { test } from 'playwright-webext';
 
 test('saves the theme', async ({ extension }) => {
@@ -41,7 +41,7 @@ then assert the values displayed by your UI.
 If your options page has many elements to interact with, wrap it in a Page Object Model (POM)
 to keep locators and actions in one place.
 
-```ts title="tests/pages/options.ts"
+```ts title="test/pages/options.ts"
 import type { Page } from '@playwright/test';
 import type { Extension } from 'playwright-webext';
 
@@ -78,7 +78,7 @@ export class OptionsPage {
 
 Use `OptionsPage` in your test to check the same behavior through the page object:
 
-```ts title="tests/options.spec.ts"
+```ts title="test/options.spec.ts"
 import { test } from 'playwright-webext';
 import { OptionsPage } from './pages/options';
 

@@ -18,7 +18,7 @@ test('side panel', async ({ extension }) => {
 
 This example assumes your side panel displays a “Notes for this page” heading:
 
-```ts title="tests/side-panel.spec.ts"
+```ts title="test/side-panel.spec.ts"
 import { expect } from '@playwright/test';
 import { test } from 'playwright-webext';
 
@@ -34,7 +34,7 @@ test('shows the notes panel', async ({ extension }) => {
 If your side panel has many elements to interact with, wrap it in a Page Object Model (POM)
 to keep locators and actions in one place.
 
-```ts title="tests/pages/side-panel.ts"
+```ts title="test/pages/side-panel.ts"
 import type { Page } from '@playwright/test';
 import type { Extension } from 'playwright-webext';
 
@@ -67,7 +67,7 @@ export class SidePanel {
 
 Use `SidePanel` in your test to check the same behavior through the page object:
 
-```ts title="tests/side-panel.spec.ts"
+```ts title="test/side-panel.spec.ts"
 import { expect } from '@playwright/test';
 import { test } from 'playwright-webext';
 import { SidePanel } from './pages/side-panel';

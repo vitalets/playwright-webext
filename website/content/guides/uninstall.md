@@ -21,7 +21,7 @@ test('uninstall', async ({ extension }) => {
 
 Capture the feedback page in the same browser context to check where users are sent.
 
-```ts title="tests/uninstall.spec.ts"
+```ts title="test/uninstall.spec.ts"
 import { expect } from '@playwright/test';
 import { test } from 'playwright-webext';
 

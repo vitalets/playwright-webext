@@ -11,7 +11,7 @@ your extension.
 
 Use `extension.context.newPage()` when a website needs your extension loaded:
 
-```ts title="tests/website.spec.ts"
+```ts title="test/website.spec.ts"
 import { expect } from '@playwright/test';
 import { test } from 'playwright-webext';
 
@@ -29,7 +29,7 @@ The extension fixture closes the context and its pages during teardown.
 If you want tests to use the familiar `context` and `page` fixtures with the extension loaded,
 override `context` in your own fixture module:
 
-```ts title="tests/fixtures.ts"
+```ts title="test/fixtures.ts"
 import { test as base } from 'playwright-webext';
 
 export const test = base.extend({
@@ -41,7 +41,7 @@ Import this `test` in your test files. The built-in `page` fixture and any pages
 `context.newPage()` will use the extension context, so you can test pages that interact with your
 extension.
 
-```ts title="tests/website.spec.ts"
+```ts title="test/website.spec.ts"
 import { test } from './fixtures';
 
 test('opens a website with the extension loaded', async ({ page }) => {

@@ -54,7 +54,7 @@ assumes your options page reads `theme` from local storage and displays it in a 
 If your extension initializes storage asynchronously, wait for that initialization before seeding
 values so it cannot overwrite them.
 
-```ts title="tests/storage.spec.ts"
+```ts title="test/storage.spec.ts"
 import { expect } from '@playwright/test';
 import { test } from 'playwright-webext';
 

@@ -15,7 +15,7 @@ An extension can schedule background work with Chrome's alarms API. Use `extensi
 check an alarm in its service worker. This example assumes the extension declares the `alarms`
 permission and has already registered a synchronization alarm that runs every 30 minutes.
 
-```ts title="tests/background.spec.ts"
+```ts title="test/background.spec.ts"
 import { expect } from '@playwright/test';
 import { test } from 'playwright-webext';
 
@@ -37,7 +37,7 @@ argument rather than referring to variables from the test's scope. See
 Extensions can show a popup when users click their toolbar icon. This example assumes an
 `action.default_popup` declaration in your manifest and a heading containing “popup”.
 
-```ts title="tests/popup.spec.ts"
+```ts title="test/popup.spec.ts"
 import { expect } from '@playwright/test';
 import { test } from 'playwright-webext';
 

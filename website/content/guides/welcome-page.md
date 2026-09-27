@@ -40,7 +40,7 @@ chrome.runtime.onInstalled.addListener(({ reason }) => {
 });
 ```
 
-```ts title="tests/welcome.spec.ts"
+```ts title="test/welcome.spec.ts"
 import { expect } from '@playwright/test';
 import { test } from 'playwright-webext';
 
@@ -61,7 +61,7 @@ test('opens the welcome page on install', async ({ extension }) => {
 If your welcome page has many elements to interact with, wrap it in a Page Object Model (POM)
 to keep locators and actions in one place. Use `attach()` to find the page opened by the extension.
 
-```ts title="tests/pages/welcome.ts"
+```ts title="test/pages/welcome.ts"
 import { expect, type Page } from '@playwright/test';
 import type { Extension } from 'playwright-webext';
 
@@ -100,7 +100,7 @@ export class WelcomePage {
 
 Use `WelcomePage` in your test to check the same behavior through the page object:
 
-```ts title="tests/welcome.spec.ts"
+```ts title="test/welcome.spec.ts"
 import { expect } from '@playwright/test';
 import { test } from 'playwright-webext';
 import { WelcomePage } from './pages/welcome';

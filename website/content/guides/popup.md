@@ -23,7 +23,7 @@ test('popup', async ({ extension }) => {
 The following example assumes your popup has a “Save” button that stores `saved: true`, and your
 manifest includes the `storage` permission:
 
-```ts title="tests/popup.spec.ts"
+```ts title="test/popup.spec.ts"
 import { test } from 'playwright-webext';
 
 test('saves preferences from the popup', async ({ extension }) => {
@@ -42,7 +42,7 @@ Use Playwright's [locators](https://playwright.dev/docs/locators) and
 If your popup has many elements to interact with, wrap it in a Page Object Model (POM)
 to keep locators and actions in one place.
 
-```ts title="tests/pages/popup.ts"
+```ts title="test/pages/popup.ts"
 import type { Page } from '@playwright/test';
 import type { Extension } from 'playwright-webext';
 
@@ -75,7 +75,7 @@ export class Popup {
 
 Use `Popup` in your test to check the same behavior through the page object:
 
-```ts title="tests/popup.spec.ts"
+```ts title="test/popup.spec.ts"
 import { test } from 'playwright-webext';
 import { Popup } from './pages/popup';
 

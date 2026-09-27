@@ -9,7 +9,7 @@ Define your custom fixtures in a separate file and extend `test` from `playwrigh
 This makes `extension` available alongside your custom fixtures. See
 [Playwright's fixture guide](https://playwright.dev/docs/test-fixtures#creating-a-fixture) for defining fixtures.
 
-```ts title="tests/fixtures.ts"
+```ts title="test/fixtures.ts"
 import { test as base } from 'playwright-webext';
 
 export const test = base.extend({
@@ -24,7 +24,7 @@ Import your extended `test` from this file in your tests.
 Use Playwright's [`mergeTests()`](https://playwright.dev/docs/test-fixtures#combine-custom-fixtures-from-multiple-modules)
 to combine fixtures from multiple packages:
 
-```ts title="tests/fixtures.ts"
+```ts title="test/fixtures.ts"
 import { mergeTests } from '@playwright/test';
 import { test as base } from 'some-playwright-package';
 import { test as baseWebext } from 'playwright-webext';
