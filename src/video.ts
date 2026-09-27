@@ -50,14 +50,16 @@ function normalizeVideoMode(video: VideoOptions): VideoMode {
 }
 
 function shouldRecordVideo(mode: VideoMode, retry: number) {
-  return (
-    mode === 'on' ||
-    mode === 'retain-on-failure' ||
-    mode === 'retain-on-failure-and-retries' ||
-    (mode === 'on-first-retry' && retry === 1) ||
-    (mode === 'on-all-retries' && retry > 0) ||
-    (mode === 'retain-on-first-failure' && retry === 0)
-  );
+  switch (mode) {
+    case 'on-first-retry':
+      return retry === 1;
+    case 'on-all-retries':
+      return retry > 0;
+    case 'retain-on-first-failure':
+      return retry === 0;
+    default:
+      return ['on', 'retain-on-failure', 'retain-on-failure-and-retries'].includes(mode);
+  }
 }
 
 function buildRecordingOptions(video: VideoOptions, dir: string) {
@@ -76,9 +78,7 @@ function trackPages(context: BrowserContext, pages: Set<Page>) {
 function shouldRetainVideo(mode: VideoMode, testInfo: TestInfo) {
   const failed = testInfo.status !== testInfo.expectedStatus;
   return (
-    mode === 'on' ||
-    mode === 'on-first-retry' ||
-    mode === 'on-all-retries' ||
+    ['on', 'on-first-retry', 'on-all-retries'].includes(mode) ||
     failed ||
     (mode === 'retain-on-failure-and-retries' && testInfo.retry > 0)
   );

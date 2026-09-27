@@ -35,6 +35,7 @@ export { Extension } from './extension.js';
 export const test = base.extend<WebextOptions & WebextFixtures>({
   extensionPath: ['', { option: true }],
   extensionAutoInstall: [true, { option: true }],
+  // eslint-disable-next-line max-lines-per-function, max-statements -- Keep the fixture lifecycle together.
   extension: async (
     {
       extensionPath,
@@ -122,6 +123,7 @@ export const test = base.extend<WebextOptions & WebextFixtures>({
           locale,
           timeout: testInfo.timeout,
         });
+        // eslint-disable-next-line max-depth -- Nested cleanup guarantees context, video, and copy teardown in order.
         if (extensionAutoInstall) await extension.install();
         await use(extension);
       } finally {
