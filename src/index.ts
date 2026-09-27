@@ -35,7 +35,7 @@ export { Extension } from './extension.js';
 export const test = base.extend<WebextOptions & WebextFixtures>({
   extensionPath: ['', { option: true }],
   extensionAutoInstall: [true, { option: true }],
-  // eslint-disable-next-line max-lines-per-function, max-statements -- Keep the fixture lifecycle together.
+  // eslint-disable-next-line max-lines-per-function, max-statements
   extension: async (
     {
       extensionPath,
