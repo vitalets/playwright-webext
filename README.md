@@ -1,11 +1,13 @@
 <div align="center">
-  <img width="128" alt="playwright-webext" src="website/static/img/brand/logo.svg">
+  <a href="https://vitalets.github.io/playwright-webext">
+    <img width="128" alt="playwright-webext" src="website/static/img/brand/logo.svg">
+  </a>
 </div>
 
 <h2 align="center">playwright-webext</h2>
 <div align="center">
 
-[Playwright](https://playwright.dev/) toolkit for testing browser extensions.
+[Playwright](https://playwright.dev/) toolkit for testing browser extensions
 
 </div>
 
