@@ -5,6 +5,8 @@
 For public documentation and README changes, use
 [writing-docs](.agents/skills/writing-docs/SKILL.md).
 
+When implementing a meaningful feature, update `CHANGELOG.md` to describe the user-facing change.
+
 ## Source file structure
 
 For TypeScript implementation files, follow `.agents/rules/ts-file-structure.md`.
