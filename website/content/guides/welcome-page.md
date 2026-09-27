@@ -52,6 +52,63 @@ test('opens the welcome page on install', async ({ extension }) => {
   await expect.poll(getWelcomePage).toBeDefined();
   const welcomePage = getWelcomePage()!;
 
-  await expect(welcomePage.getByRole('heading', { name: 'Welcome' })).toBeVisible();
+  await expect(welcomePage.getByRole('heading', { name: 'Welcome' })).toContainText('Welcome');
+});
+```
+
+## Wrap as POM
+
+If your welcome page has many elements to interact with, wrap it in a Page Object Model (POM)
+to keep locators and actions in one place. Use `attach()` to find the page opened by the extension.
+
+```ts title="tests/pages/welcome.ts"
+import { expect, type Page } from '@playwright/test';
+import type { Extension } from 'playwright-webext';
+
+export class WelcomePage {
+  #page?: Page;
+
+  constructor(private extension: Extension) {}
+
+  get page() {
+    if (!this.#page || this.#page.isClosed()) {
+      throw new Error('Call WelcomePage.attach() before interacting with the welcome page.');
+    }
+    return this.#page;
+  }
+
+  async attach() {
+    await expect.poll(() => this.findWelcomePage()).toBeDefined();
+    this.#page = this.findWelcomePage()!;
+    return this;
+  }
+
+  async close() {
+    await this.page.close();
+    this.#page = undefined;
+  }
+
+  heading() {
+    return this.page.getByRole('heading', { name: 'Welcome' });
+  }
+
+  private findWelcomePage() {
+    const welcomeUrl = this.extension.getURL('welcome.html');
+    return this.extension.context.pages().find((openPage) => openPage.url() === welcomeUrl);
+  }
+}
+```
+
+Use `WelcomePage` in your test to check the same behavior through the page object:
+
+```ts title="tests/welcome.spec.ts"
+import { expect } from '@playwright/test';
+import { test } from 'playwright-webext';
+import { WelcomePage } from './pages/welcome';
+
+test('opens the welcome page on install', async ({ extension }) => {
+  const welcomePage = await new WelcomePage(extension).attach();
+
+  await expect(welcomePage.heading()).toContainText('Welcome');
 });
 ```

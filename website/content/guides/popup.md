@@ -38,6 +38,58 @@ test('saves preferences from the popup', async ({ extension }) => {
 Use Playwright's [locators](https://playwright.dev/docs/locators) and
 [retrying assertions](https://playwright.dev/docs/test-assertions) to interact with the document.
 
+## Wrap as POM
+
+If your popup has many elements to interact with, wrap it in a Page Object Model (POM)
+to keep locators and actions in one place.
+
+```ts title="tests/pages/popup.ts"
+import type { Page } from '@playwright/test';
+import type { Extension } from 'playwright-webext';
+
+export class Popup {
+  #page?: Page;
+
+  constructor(private extension: Extension) {}
+
+  get page() {
+    if (!this.#page || this.#page.isClosed()) {
+      throw new Error('Call Popup.open() before interacting with the popup.');
+    }
+    return this.#page;
+  }
+
+  async open() {
+    this.#page = await this.extension.openPopup();
+    return this;
+  }
+
+  async close() {
+    await this.page.close();
+    this.#page = undefined;
+  }
+
+  saveButton() {
+    return this.page.getByRole('button', { name: 'Save' });
+  }
+}
+```
+
+Use `Popup` in your test to check the same behavior through the page object:
+
+```ts title="tests/popup.spec.ts"
+import { expect } from '@playwright/test';
+import { test } from 'playwright-webext';
+import { Popup } from './pages/popup';
+
+test('saves preferences from the popup', async ({ extension }) => {
+  const popup = await new Popup(extension).open();
+
+  await popup.saveButton().click();
+  await expect.poll(() => extension.storage.local.get('saved')).toEqual({ saved: true });
+});
+```
+
 ## Limitations
 
 `openPopup()` opens the popup document in a regular browser tab. Its extension APIs and storage

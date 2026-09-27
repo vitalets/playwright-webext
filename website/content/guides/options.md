@@ -37,6 +37,64 @@ test('saves the theme', async ({ extension }) => {
 You can also seed settings with [`extension.storage`](../api/storage.md) before opening the document,
 then assert the values displayed by your UI.
 
+## Wrap as POM
+
+If your options page has many elements to interact with, wrap it in a Page Object Model (POM)
+to keep locators and actions in one place.
+
+```ts title="tests/pages/options.ts"
+import type { Page } from '@playwright/test';
+import type { Extension } from 'playwright-webext';
+
+export class OptionsPage {
+  #page?: Page;
+
+  constructor(private extension: Extension) {}
+
+  get page() {
+    if (!this.#page || this.#page.isClosed()) {
+      throw new Error('Call OptionsPage.open() before interacting with the options page.');
+    }
+    return this.#page;
+  }
+
+  async open() {
+    this.#page = await this.extension.openOptions();
+    return this;
+  }
+
+  async close() {
+    await this.page.close();
+    this.#page = undefined;
+  }
+
+  async selectTheme(theme: string) {
+    await this.page.getByLabel('Theme').selectOption(theme);
+  }
+
+  saveButton() {
+    return this.page.getByRole('button', { name: 'Save' });
+  }
+}
+```
+
+Use `OptionsPage` in your test to check the same behavior through the page object:
+
+```ts title="tests/options.spec.ts"
+import { expect } from '@playwright/test';
+import { test } from 'playwright-webext';
+import { OptionsPage } from './pages/options';
+
+test('saves the theme', async ({ extension }) => {
+  const optionsPage = await new OptionsPage(extension).open();
+
+  await optionsPage.selectTheme('dark');
+  await optionsPage.saveButton().click();
+
+  await expect.poll(() => extension.storage.local.get('theme')).toEqual({ theme: 'dark' });
+});
+```
+
 ## Limitations
 
 `openOptions()` opens the options document in a regular browser tab. Its extension APIs and storage

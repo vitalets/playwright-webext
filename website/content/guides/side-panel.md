@@ -16,7 +16,7 @@ test('side panel', async ({ extension }) => {
 
 ## Example
 
-This example assumes your side panel displays a “Notes” heading:
+This example assumes your side panel displays a “Notes for this page” heading:
 
 ```ts title="tests/side-panel.spec.ts"
 import { expect } from '@playwright/test';
@@ -25,7 +25,58 @@ import { test } from 'playwright-webext';
 test('shows the notes panel', async ({ extension }) => {
   const sidePanelPage = await extension.openSidePanel();
 
-  await expect(sidePanelPage.getByRole('heading', { name: 'Notes' })).toBeVisible();
+  await expect(sidePanelPage.getByRole('heading', { name: 'Notes' })).toContainText('Notes');
+});
+```
+
+## Wrap as POM
+
+If your side panel has many elements to interact with, wrap it in a Page Object Model (POM)
+to keep locators and actions in one place.
+
+```ts title="tests/pages/side-panel.ts"
+import type { Page } from '@playwright/test';
+import type { Extension } from 'playwright-webext';
+
+export class SidePanel {
+  #page?: Page;
+
+  constructor(private extension: Extension) {}
+
+  get page() {
+    if (!this.#page || this.#page.isClosed()) {
+      throw new Error('Call SidePanel.open() before interacting with the side panel.');
+    }
+    return this.#page;
+  }
+
+  heading() {
+    return this.page.getByRole('heading', { name: 'Notes' });
+  }
+
+  async open() {
+    this.#page = await this.extension.openSidePanel();
+    return this;
+  }
+
+  async close() {
+    await this.page.close();
+    this.#page = undefined;
+  }
+}
+```
+
+Use `SidePanel` in your test to check the same behavior through the page object:
+
+```ts title="tests/side-panel.spec.ts"
+import { expect } from '@playwright/test';
+import { test } from 'playwright-webext';
+import { SidePanel } from './pages/side-panel';
+
+test('shows the notes panel', async ({ extension }) => {
+  const sidePanel = await new SidePanel(extension).open();
+
+  await expect(sidePanel.heading()).toContainText('Notes');
 });
 ```
 
