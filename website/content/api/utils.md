@@ -8,7 +8,7 @@ description: Utilities for waiting on asynchronous test conditions.
 
 ### waitUntil
 
-**Call:** `waitUntil<T>(callback: () => T | Promise<T>, options?: { timeout?: number; intervals?: number[] })`  
+**Call:** `waitUntil<T>(callback: () => T | Promise<T>, options?: WaitUntilOptions)`  
 **Returns:** `Promise<T>`
 
 Polls a synchronous or asynchronous callback until it returns a truthy value, then returns that

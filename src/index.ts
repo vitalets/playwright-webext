@@ -10,7 +10,8 @@ import { Extension } from './extension.js';
 import { ExtensionCopy } from './copy.js';
 import { launchContextWithExtension } from './launch.js';
 import { createVideoRecording } from './video.js';
-import { runAll, throwIf } from './utils.js';
+import { runAll } from './utils/run-all.js';
+import { throwIf } from './utils/throw-if.js';
 import { mergeContextOptions, buildWorkerContextOptions } from './context-options.js';
 
 /**
@@ -36,7 +37,7 @@ export type WebextWorkerFixtures = {
 };
 
 export { Extension } from './extension.js';
-export { waitUntil } from './utils.js';
+export { waitUntil, type WaitUntilOptions } from './utils/wait-until.js';
 
 /**
  * Playwright test extended with extension configuration and fixtures.

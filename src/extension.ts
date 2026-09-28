@@ -8,7 +8,7 @@ import type { BrowserContext, Worker } from '@playwright/test';
 import { ExtensionInstaller, type InstallOptions } from './install.js';
 import { ExtensionsPage } from './extensions-page.js';
 import { createStorage } from './storage.js';
-import { waitUntil } from './utils.js';
+import { waitUntil } from './utils/wait-until.js';
 
 type ExtensionOptions = InstallOptions & {
   timeout: number;
