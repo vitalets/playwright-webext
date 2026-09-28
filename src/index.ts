@@ -36,6 +36,7 @@ export type WebextWorkerFixtures = {
 };
 
 export { Extension } from './extension.js';
+export { waitUntil } from './utils.js';
 
 /**
  * Playwright test extended with extension configuration and fixtures.

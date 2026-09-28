@@ -4,6 +4,9 @@
 
 ## [Unreleased]
 
+- Export `waitUntil(callback, options)` to poll for and return a truthy value.
+- Add `extension.waitForPage(url, options)` to wait for existing or newly opened pages, resolving
+  relative URLs under the extension and matching absolute URLs in its browser context.
 - Add local search across the website's guides and API documentation.
 
 ## [0.2.0] - 2026-09-27

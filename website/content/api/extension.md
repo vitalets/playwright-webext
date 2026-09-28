@@ -108,6 +108,27 @@ is accepted. Does not emulate dynamic URLs from
 const url = extension.getURL('settings/advanced.html');
 ```
 
+### waitForPage
+
+**Call:** `extension.waitForPage(url: string, options?: { timeout?: number; intervals?: number[] })`  
+**Returns:** <code>Promise&lt;<a href="https://playwright.dev/docs/api/class-page">Page</a>&gt;</code>
+
+Waits for a page in `extension.context` with the exact resolved URL. Relative paths, including paths
+with a leading slash, resolve under the extension URL. Absolute URLs can match any page in the
+context. Checks both existing pages and pages that open or navigate later.
+
+```ts
+const welcomePage = await extension.waitForPage('welcome.html');
+await expect(welcomePage.getByRole('heading', { name: 'Welcome' })).toBeVisible();
+
+const feedbackPage = await extension.waitForPage('https://example.com/uninstalled');
+```
+
+Forwards `timeout` and `intervals` to
+[`expect.poll`](https://playwright.dev/docs/test-assertions#expectpoll), using its defaults when
+omitted. Rejects if no matching page appears before the timeout. Returns once the URL matches;
+use locator assertions to check the page's content.
+
 ### install
 
 **Call:** `extension.install(path?: string)`  

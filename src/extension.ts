@@ -8,6 +8,7 @@ import type { BrowserContext, Worker } from '@playwright/test';
 import { ExtensionInstaller, type InstallOptions } from './install.js';
 import { ExtensionsPage } from './extensions-page.js';
 import { createStorage } from './storage.js';
+import { waitUntil } from './utils.js';
 
 type ExtensionOptions = InstallOptions & {
   timeout: number;
@@ -116,6 +117,20 @@ export class Extension {
   getURL(path = '') {
     const suffix = path.startsWith('/') ? path : `/${path}`;
     return new URL(`chrome-extension://${this.id}${suffix}`).href;
+  }
+
+  /**
+   * Waits for an existing or newly opened context page with the exact URL.
+   * Relative URLs resolve under the extension; absolute URLs match any context page.
+   */
+  async waitForPage(url: string, options?: { timeout?: number; intervals?: number[] }) {
+    const isAbsolute = URL.canParse(url);
+    const targetUrl = isAbsolute ? new URL(url).href : this.getURL(url);
+    const page = await waitUntil(
+      () => this.context.pages().find((page) => page.url() === targetUrl),
+      options,
+    );
+    return page!;
   }
 
   /**

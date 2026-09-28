@@ -49,7 +49,7 @@ const sidebars: SidebarsConfig = {
       items: ['advanced/shared-context', 'advanced/performance'],
     },
   ],
-  api: ['api/extension', 'api/storage'],
+  api: ['api/extension', 'api/storage', 'api/utils'],
 };
 
 export default sidebars;
