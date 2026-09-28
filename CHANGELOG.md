@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+- Add `extension.setFileAccess(boolean)` to control Allow access to file URLs and wait for the
+  extension's replacement worker when enabled.
 - Add `extension.waitForFunction(pageFunction, arg, options)` to poll service worker evaluation
   until it returns a truthy value, waiting for an available worker when needed.
 - Export `waitUntil(callback, options)` to poll for and return a truthy value, with

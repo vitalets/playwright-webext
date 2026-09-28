@@ -16,6 +16,8 @@ export type ExtensionConfiguration = {
 
 type ExtensionsChrome = typeof chrome & {
   developerPrivate: {
+    updateProfileConfiguration(configuration: { inDeveloperMode: boolean }): Promise<void>;
+    getExtensionInfo(id: string): Promise<{ fileAccess: { isActive: boolean } }>;
     updateExtensionConfiguration(
       configuration: ExtensionConfiguration & { extensionId: string },
     ): Promise<void>;
@@ -79,6 +81,16 @@ export class ExtensionsPage {
   }
 
   /**
+   * Returns Chromium's configuration details for the installed extension.
+   */
+  async getExtensionInfo(id: string) {
+    return this.page.evaluate(
+      (id) => (chrome as ExtensionsChrome).developerPrivate.getExtensionInfo(id),
+      id,
+    );
+  }
+
+  /**
    * Updates configuration switches without requiring Developer mode.
    */
   async updateConfiguration(id: string, configuration: ExtensionConfiguration) {
@@ -89,6 +101,17 @@ export class ExtensionsPage {
           extensionId: id,
         }),
       { id, configuration },
+    );
+  }
+
+  /**
+   * Enables Developer mode in the browser profile.
+   */
+  async enableDeveloperMode() {
+    await this.page.evaluate(() =>
+      (chrome as ExtensionsChrome).developerPrivate.updateProfileConfiguration({
+        inDeveloperMode: true,
+      }),
     );
   }
 

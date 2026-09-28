@@ -226,6 +226,33 @@ export class Extension {
   }
 
   /**
+   * Sets Allow access to file URLs and waits for the replacement worker when enabled.
+   * An unchanged setting does not restart the extension.
+   */
+  async setFileAccess(allowed: boolean) {
+    const id = this.id;
+    const extensionsPage = new ExtensionsPage(this.context);
+    try {
+      await extensionsPage.open();
+      const info = await extensionsPage.getExtensionInfo(id);
+      if (info.fileAccess.isActive === allowed) return;
+      const enabled = await extensionsPage.isEnabled(id);
+      // File access itself does not require Developer mode, but changing it reloads the extension.
+      // CDP can initially load our unpacked extension with Developer mode off; on this reload,
+      // Chromium disables it with unsupportedDeveloperExtension instead of restarting its worker.
+      // Enable Developer mode first so the extension stays enabled and waitForReady() can complete.
+      await extensionsPage.enableDeveloperMode();
+      await Promise.all([
+        enabled ? this.waitForStopped() : undefined,
+        enabled ? this.waitForReady() : undefined,
+        extensionsPage.updateConfiguration(id, { fileAccess: allowed }),
+      ]);
+    } finally {
+      await extensionsPage.close();
+    }
+  }
+
+  /**
    * Replaces the loaded old extension with the configured current version and reloads it.
    */
   async upgrade() {

@@ -346,6 +346,24 @@ None.
 
 <code>Promise&lt;<a href="https://playwright.dev/docs/api/class-page">Page</a>&gt;</code>
 
+### setFileAccess
+
+Controls Chromium's **Allow access to file URLs** setting.
+
+#### Usage
+
+```ts
+await extension.setFileAccess(true);
+```
+
+#### Arguments
+
+- `allowed` (`boolean`) — Whether to allow access to `file://` URLs.
+
+#### Returns
+
+`Promise<void>`
+
 ### uninstall
 
 Uninstalls the extension. Subsequent worker and storage operations are unavailable. Cached `id` and
