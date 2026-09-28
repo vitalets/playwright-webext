@@ -8,11 +8,14 @@ playwright-webext provides `extension.storage` to read and write that data direc
 without writing service-worker evaluation code for each operation. You can set storage keys before
 opening a page and check what a UI action saved.
 
-## Read and write to storage
-
 The storage methods mirror the original
 [Chrome Extensions Storage API](https://developer.chrome.com/docs/extensions/reference/api/storage),
 using the same arguments and return values with promises. Your extension needs the `storage` permission.
+
+The examples below use `extension.storage.local`. You can also use `extension.storage.sync` and
+`extension.storage.session`.
+
+## Read from storage
 
 Read a key with `get()`:
 
@@ -23,15 +26,15 @@ const result = await extension.storage.local.get('key');
 
 `get()` returns an object containing the requested keys. Omit the argument to read all values.
 
+## Write to storage
+
 Write a key with `set()`:
 
 ```ts
 await extension.storage.local.set({ key: 'value' });
 ```
 
-You can also use `extension.storage.sync` and `extension.storage.session`.
-
-## Check stored values
+## Assert stored values
 
 Use `expect(key)` to check a saved value. Assertions retry while your extension writes asynchronously
 and support Playwright matchers, including `.not`:

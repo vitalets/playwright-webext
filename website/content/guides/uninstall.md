@@ -19,18 +19,16 @@ test('uninstall', async ({ extension }) => {
 
 ## Example
 
-Capture the feedback page in the same browser context to check where users are sent.
+Capture the feedback page and check its heading.
 
 ```ts title="test/uninstall.spec.ts"
 import { expect } from '@playwright/test';
 import { test } from 'playwright-webext';
 
 test('opens the feedback page after uninstalling', async ({ extension }) => {
-  const [feedbackPage] = await Promise.all([
-    extension.context.waitForEvent('page'),
-    extension.uninstall(),
-  ]);
+  await extension.uninstall();
 
-  await expect(feedbackPage).toHaveURL('https://example.com/uninstalled');
+  const feedbackPage = await extension.waitForPage('https://example.com/uninstall');
+  await expect(feedbackPage.getByRole('heading')).toHaveText('Why did you uninstall?');
 });
 ```
