@@ -6,7 +6,7 @@
 
 import type { BrowserContext, Worker } from '@playwright/test';
 import { ExtensionInstaller, type InstallOptions } from './install.js';
-import { ExtensionsPage } from './extensions-page.js';
+import { ExtensionManagement } from './management.js';
 import { createStorage } from './storage.js';
 import { waitUntil, type WaitUntilOptions } from './utils/wait-until.js';
 
@@ -199,30 +199,21 @@ export class Extension {
   }
 
   /**
-   * Enables the extension, waits for readiness, and closes Chromium's extensions page afterward.
+   * Enables the extension and waits for readiness.
    */
   async enable() {
-    const extensionsPage = new ExtensionsPage(this.context);
-    try {
-      await extensionsPage.open();
-      if (await extensionsPage.isEnabled(this.id)) return;
-      await Promise.all([extensionsPage.enable(this.id), this.waitForReady()]);
-    } finally {
-      await extensionsPage.close();
-    }
+    const management = new ExtensionManagement(this.context, this.id);
+    // important to early return, otherwise we will wait for new worker forever.
+    if (await management.isEnabled()) return;
+    await Promise.all([management.setEnabled(true), this.waitForReady()]);
   }
 
   /**
-   * Disables the extension, waits for its worker to stop, and closes the extensions page afterward.
+   * Disables the extension and waits for its worker to stop.
    */
   async disable() {
-    const extensionsPage = new ExtensionsPage(this.context);
-    try {
-      await extensionsPage.open();
-      await Promise.all([extensionsPage.disable(this.id), this.waitForStopped()]);
-    } finally {
-      await extensionsPage.close();
-    }
+    const management = new ExtensionManagement(this.context, this.id);
+    await Promise.all([management.setEnabled(false), this.waitForStopped()]);
   }
 
   /**
@@ -230,26 +221,20 @@ export class Extension {
    * An unchanged setting does not restart the extension.
    */
   async setFileAccess(allowed: boolean) {
-    const id = this.id;
-    const extensionsPage = new ExtensionsPage(this.context);
-    try {
-      await extensionsPage.open();
-      const info = await extensionsPage.getExtensionInfo(id);
-      if (info.fileAccess.isActive === allowed) return;
-      const enabled = await extensionsPage.isEnabled(id);
-      // File access itself does not require Developer mode, but changing it reloads the extension.
-      // CDP can initially load our unpacked extension with Developer mode off; on this reload,
-      // Chromium disables it with unsupportedDeveloperExtension instead of restarting its worker.
-      // Enable Developer mode first so the extension stays enabled and waitForReady() can complete.
-      await extensionsPage.enableDeveloperMode();
-      await Promise.all([
-        enabled ? this.waitForStopped() : undefined,
-        enabled ? this.waitForReady() : undefined,
-        extensionsPage.updateConfiguration(id, { fileAccess: allowed }),
-      ]);
-    } finally {
-      await extensionsPage.close();
-    }
+    const management = new ExtensionManagement(this.context, this.id);
+    const info = await management.getExtensionInfo();
+    if (info.fileAccess.isActive === allowed) return;
+    const enabled = await management.isEnabled();
+    // File access itself does not require Developer mode, but changing it reloads the extension.
+    // CDP can initially load our unpacked extension with Developer mode off; on this reload,
+    // Chromium disables it with unsupportedDeveloperExtension instead of restarting its worker.
+    // Enable Developer mode first so the extension stays enabled and waitForReady() can complete.
+    await management.enableDeveloperMode();
+    await Promise.all([
+      enabled ? this.waitForStopped() : undefined,
+      enabled ? this.waitForReady() : undefined,
+      management.updateConfiguration({ fileAccess: allowed }),
+    ]);
   }
 
   /**
