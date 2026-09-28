@@ -193,6 +193,38 @@ no page DOM; use a Playwright [`Page`](https://playwright.dev/docs/api/class-pag
 
 `Promise<R>` — Resolves to the evaluated result, awaiting it if it is a promise.
 
+### waitForFunction
+
+Polls a function or expression in the current service worker until its evaluated result is truthy.
+Asynchronous results are awaited on each attempt. Retries while the worker is unavailable;
+evaluation errors reject the call.
+
+#### Usage
+
+Wait for settings saved asynchronously by the extension (requires the `storage` permission):
+
+```ts
+const theme = await extension.waitForFunction(
+  async (key) => (await chrome.storage.local.get(key))[key],
+  'theme',
+  { timeout: 5_000 },
+);
+expect(theme).toBe('dark');
+```
+
+#### Arguments
+
+- `pageFunction` — Function or string expression, with the same serialization as
+  [`evaluate()`](#evaluate).
+- `arg` — Optional argument passed to the function. Pass `undefined` to supply options without an argument.
+- `options` (object, optional) — `timeout` and `intervals`, following
+  [`waitUntil()`](utils.md#arguments), including its defaults.
+
+#### Returns
+
+`Promise<Awaited<R>>` — Resolves to the first truthy evaluated value, rather than the `JSHandle`
+returned by Playwright's `page.waitForFunction()`. Rejects if the polling timeout expires.
+
 ### getURL
 
 Resolves a resource path under `chrome-extension://<id>/`. A leading slash is accepted.

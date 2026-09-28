@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+- Add `extension.waitForFunction(pageFunction, arg, options)` to poll service worker evaluation
+  until it returns a truthy value, waiting for an available worker when needed.
 - Export `waitUntil(callback, options)` to poll for and return a truthy value, with
   `WaitUntilOptions` for its polling options.
 - Add `extension.waitForPage(url, options)` to wait for existing or newly opened pages, resolving

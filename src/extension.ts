@@ -8,7 +8,7 @@ import type { BrowserContext, Worker } from '@playwright/test';
 import { ExtensionInstaller, type InstallOptions } from './install.js';
 import { ExtensionsPage } from './extensions-page.js';
 import { createStorage } from './storage.js';
-import { waitUntil } from './utils/wait-until.js';
+import { waitUntil, type WaitUntilOptions } from './utils/wait-until.js';
 
 type ExtensionOptions = InstallOptions & {
   timeout: number;
@@ -99,6 +99,25 @@ export class Extension {
   evaluate<R>(...args: Parameters<typeof this.worker.evaluate<R>>): Promise<R>;
   evaluate(...args: Parameters<Worker['evaluate']>) {
     return this.worker.evaluate(...args);
+  }
+
+  /**
+   * Polls the current service worker until evaluation returns a truthy value.
+   * Retries while the worker is unavailable.
+   * Uses waitUntil options and returns the value, rather than a JSHandle.
+   * Playwright's page implementation reference: waitForFunctionExpression in
+   * https://github.com/microsoft/playwright/blob/main/packages/playwright-core/src/server/frames.ts#L1471-L1537
+   */
+  waitForFunction<R, Arg>(
+    ...args: [...Parameters<typeof this.worker.evaluate<R, Arg>>, options?: WaitUntilOptions]
+  ): Promise<Awaited<R>>;
+  waitForFunction<R>(
+    ...args: [...Parameters<typeof this.worker.evaluate<R>>, options?: WaitUntilOptions]
+  ): Promise<Awaited<R>>;
+  waitForFunction(
+    ...[pageFunction, arg, options]: [...Parameters<Worker['evaluate']>, options?: WaitUntilOptions]
+  ) {
+    return waitUntil(() => this.findWorker()?.evaluate(pageFunction, arg), options);
   }
 
   /**
