@@ -34,14 +34,14 @@ None.
 
 `StorageArea`
 
-### sync
+### managed
 
-Access to `chrome.storage.sync`.
+Access to `chrome.storage.managed`. This area is read-only.
 
 #### Usage
 
 ```ts
-const values = await extension.storage.sync.get();
+const values = await extension.storage.managed.get();
 ```
 
 #### Arguments
@@ -70,14 +70,14 @@ None.
 
 `StorageArea`
 
-### managed
+### sync
 
-Access to `chrome.storage.managed`. This area is read-only.
+Access to `chrome.storage.sync`.
 
 #### Usage
 
 ```ts
-const values = await extension.storage.managed.get();
+const values = await extension.storage.sync.get();
 ```
 
 #### Arguments
@@ -91,6 +91,48 @@ None.
 ## Methods
 
 These methods are available on each storage area, except that `managed` only supports reads.
+
+### clear
+
+Removes every value in the area.
+
+#### Usage
+
+```ts
+await extension.storage.session.clear();
+```
+
+#### Arguments
+
+None.
+
+#### Returns
+
+`Promise<void>`
+
+### expect
+
+Creates Playwright's retrying assertions for stored values. Uses
+[`expect.poll`](https://playwright.dev/docs/test-assertions#expectpoll) with its configured timeout.
+
+#### Usage
+
+```ts
+await extension.storage.local.expect('saved').toEqual(true);
+await extension.storage.local.expect(['saved', 'theme']).toEqual({ saved: true, theme: 'dark' });
+await extension.storage.local.expect().toEqual({ saved: true, theme: 'dark' });
+```
+
+#### Arguments
+
+- `keys` (`string | string[]`, optional) — A string selects that key's value. An array selects
+  an object of values, even for a single-element array. Missing keys are omitted; an empty array
+  selects an empty object. Omit the argument to select all values.
+
+#### Returns
+
+`ReturnType<typeof expect.poll>` — Playwright's retrying matchers. Chain a matcher and await
+the resulting assertion.
 
 ### get
 
@@ -117,47 +159,23 @@ Without a generic, values are typed as `unknown`.
 
 `Promise<T>` — Resolves to an object containing the selected stored values.
 
-### expect
+### getKeys
 
-Creates Playwright's retrying assertions for stored values. Uses
-[`expect.poll`](https://playwright.dev/docs/test-assertions#expectpoll) with its configured timeout.
-
-#### Usage
-
-```ts
-await extension.storage.local.expect('saved').toEqual(true);
-await extension.storage.local.expect(['saved', 'theme']).toEqual({ saved: true, theme: 'dark' });
-await extension.storage.local.expect().toEqual({ saved: true, theme: 'dark' });
-```
-
-#### Arguments
-
-- `keys` (`string | string[]`, optional) — A string selects that key's value. An array selects
-  an object of values, even for a single-element array. Missing keys are omitted; an empty array
-  selects an empty object. Omit the argument to select all values.
-
-#### Returns
-
-`ReturnType<typeof expect.poll>` — Playwright's retrying matchers. Chain a matcher and await
-the resulting assertion.
-
-### set
-
-Writes the supplied keys without replacing other stored values.
+Lists keys in the area.
 
 #### Usage
 
 ```ts
-await extension.storage.local.set({ preferences: { colorScheme: 'dark' } });
+const keys = await extension.storage.local.getKeys();
 ```
 
 #### Arguments
 
-- `items` (`Partial<T>`) — Keys and values to write.
+None.
 
 #### Returns
 
-`Promise<void>`
+`Promise<string[]>` — Resolves to the keys in the area.
 
 ### remove
 
@@ -178,38 +196,20 @@ await extension.storage.local.remove(['oldTheme', 'oldLanguage']);
 
 `Promise<void>`
 
-### clear
+### set
 
-Removes every value in the area.
+Writes the supplied keys without replacing other stored values.
 
 #### Usage
 
 ```ts
-await extension.storage.session.clear();
+await extension.storage.local.set({ preferences: { colorScheme: 'dark' } });
 ```
 
 #### Arguments
 
-None.
+- `items` (`Partial<T>`) — Keys and values to write.
 
 #### Returns
 
 `Promise<void>`
-
-### getKeys
-
-Lists keys in the area.
-
-#### Usage
-
-```ts
-const keys = await extension.storage.local.getKeys();
-```
-
-#### Arguments
-
-None.
-
-#### Returns
-
-`Promise<string[]>` — Resolves to the keys in the area.

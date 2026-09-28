@@ -67,15 +67,15 @@ None.
 
 `chrome.runtime.ManifestV3`
 
-### popupUrl
+### optionsUrl
 
-The full extension URL of `action.default_popup` from the manifest snapshot. Throws when no popup
-is declared or the extension is not ready.
+The full extension URL of `options_ui.page`, falling back to `options_page`, from the manifest
+snapshot. Throws when neither is declared or the extension is not ready.
 
 #### Usage
 
 ```ts
-const popupUrl = extension.popupUrl;
+const optionsUrl = extension.optionsUrl;
 ```
 
 #### Arguments
@@ -86,15 +86,15 @@ None.
 
 `string` (readonly)
 
-### optionsUrl
+### popupUrl
 
-The full extension URL of `options_ui.page`, falling back to `options_page`, from the manifest
-snapshot. Throws when neither is declared or the extension is not ready.
+The full extension URL of `action.default_popup` from the manifest snapshot. Throws when no popup
+is declared or the extension is not ready.
 
 #### Usage
 
 ```ts
-const optionsUrl = extension.optionsUrl;
+const popupUrl = extension.popupUrl;
 ```
 
 #### Arguments
@@ -125,6 +125,25 @@ None.
 
 `string` (readonly)
 
+### storage
+
+Provides access to `chrome.storage.local`, `sync`, `session`, and the read-only `managed` area through
+the current worker. See [ExtensionStorage](storage.md) for methods.
+
+#### Usage
+
+```ts
+await extension.storage.local.set({ theme: 'dark' });
+```
+
+#### Arguments
+
+None.
+
+#### Returns
+
+[`ExtensionStorage`](storage.md)
+
 ### worker
 
 Looks up the currently running extension service worker on each access. Throws when no worker is
@@ -145,228 +164,7 @@ None.
 
 [`Worker`](https://playwright.dev/docs/api/class-worker)
 
-### storage
-
-Provides access to `chrome.storage.local`, `sync`, `session`, and the read-only `managed` area through
-the current worker. See [ExtensionStorage](storage.md) for methods.
-
-#### Usage
-
-```ts
-await extension.storage.local.set({ theme: 'dark' });
-```
-
-#### Arguments
-
-None.
-
-#### Returns
-
-[`ExtensionStorage`](storage.md)
-
 ## Methods
-
-### evaluate
-
-Evaluates a function or expression in the current service worker. Follows
-[`Worker.evaluate()`](https://playwright.dev/docs/api/class-worker#worker-evaluate), including its
-argument serialization and return-value behavior. Functions run outside the test's JavaScript scope;
-pass values as the optional argument.
-
-#### Usage
-
-```ts
-await extension.evaluate(() => chrome.tabs.create({ url: 'https://example.com' }));
-```
-
-Requires a running worker and the permissions needed by the Chrome API being called. A worker has
-no page DOM; use a Playwright [`Page`](https://playwright.dev/docs/api/class-page) to interact with extension UI.
-
-#### Arguments
-
-- `pageFunction` — Function or string expression to evaluate. See
-  [`Worker.evaluate()`](https://playwright.dev/docs/api/class-worker#worker-evaluate).
-- `arg` — Optional argument passed to the function, using Playwright's
-  [evaluation argument serialization](https://playwright.dev/docs/evaluating#evaluation-argument).
-
-#### Returns
-
-`Promise<R>` — Resolves to the evaluated result, awaiting it if it is a promise.
-
-### waitForFunction
-
-Polls a function or expression in the current service worker until its evaluated result is truthy.
-Asynchronous results are awaited on each attempt. Retries while the worker is unavailable;
-evaluation errors reject the call.
-
-#### Usage
-
-Wait for settings saved asynchronously by the extension (requires the `storage` permission):
-
-```ts
-const theme = await extension.waitForFunction(
-  async (key) => (await chrome.storage.local.get(key))[key],
-  'theme',
-  { timeout: 5_000 },
-);
-expect(theme).toBe('dark');
-```
-
-#### Arguments
-
-- `pageFunction` — Function or string expression, with the same serialization as
-  [`evaluate()`](#evaluate).
-- `arg` — Optional argument passed to the function. Pass `undefined` to supply options without an argument.
-- `options` (object, optional) — `timeout` and `intervals`, following
-  [`waitUntil()`](utils.md#arguments), including its defaults.
-
-#### Returns
-
-`Promise<Awaited<R>>` — Resolves to the first truthy evaluated value, rather than the `JSHandle`
-returned by Playwright's `page.waitForFunction()`. Rejects if the polling timeout expires.
-
-### getURL
-
-Resolves a resource path under `chrome-extension://<id>/`. A leading slash is accepted.
-Does not emulate dynamic URLs from
-`web_accessible_resources` entries with `use_dynamic_url`.
-
-#### Usage
-
-```ts
-const url = extension.getURL('settings/advanced.html');
-```
-
-#### Arguments
-
-- `path` (`string`, optional) — Resource path inside the extension. Defaults to `''`.
-
-#### Returns
-
-`string` — The fully qualified extension resource URL.
-
-### waitForPage
-
-Waits for a page in `extension.context` with the exact resolved URL. Relative paths, including paths
-with a leading slash, resolve under the extension URL. Absolute URLs can match any page in the
-context. Checks both existing pages and pages that open or navigate later.
-
-#### Usage
-
-```ts
-const welcomePage = await extension.waitForPage('welcome.html');
-const feedbackPage = await extension.waitForPage('https://example.com/uninstalled');
-```
-
-Returns once the URL matches; use locator assertions to check the page's content.
-
-#### Arguments
-
-- `url` (`string`) — Extension-relative path or absolute URL to match.
-- `options` (object, optional):
-  - `timeout` (`number`, optional) — Polling timeout in milliseconds.
-  - `intervals` (`number[]`, optional) — Delays between polling attempts in milliseconds.
-
-Both options follow [`waitUntil()`](utils.md#arguments), including its defaults.
-
-#### Returns
-
-<code>Promise&lt;<a href="https://playwright.dev/docs/api/class-page">Page</a>&gt;</code> — Resolves to the matching page.
-Rejects if no matching page appears before the timeout.
-
-### install
-
-Installs `extensionPath` when no path is supplied. With a custom path, installs a private copy of
-that build so it can later be replaced by `upgrade()`.
-
-Waits for the extension worker and refreshes the manifest. It does not wait for all application
-startup handlers to finish. Use with [`extensionAutoInstall: false`](../basics/configuration.md#extensionautoinstall)
-to control initial installation. Each instance supports one successful installation;
-calling `install()` again, including after uninstalling, rejects.
-
-#### Usage
-
-```ts
-await extension.install();
-```
-
-See [Welcome page](../guides/welcome-page.md) for checking pages opened during automatic installation.
-
-#### Arguments
-
-- `path` (`string`, optional) — Build directory to install. Defaults to the configured
-  [`extensionPath`](../basics/configuration.md#extensionpath). Relative paths resolve from the
-  Playwright configuration file's directory, or the current working directory when no config file
-  is used.
-
-#### Returns
-
-`Promise<void>`
-
-### openPopup
-
-Opens `action.default_popup` in a new regular tab and navigates to its extension URL. Throws when the
-manifest has no popup declaration.
-
-#### Usage
-
-```ts
-const popupPage = await extension.openPopup();
-```
-
-This hosts the popup document in a tab, not the native toolbar popup. See the
-[Popup guide](../guides/popup.md#limitations) for active-tab, focus, and permission differences.
-
-#### Arguments
-
-None.
-
-#### Returns
-
-<code>Promise&lt;<a href="https://playwright.dev/docs/api/class-page">Page</a>&gt;</code>
-
-### openOptions
-
-Opens `options_ui.page`, falling back to `options_page`, in a new regular tab. Throws when neither
-is declared. Ignores `options_ui.open_in_tab` and does not invoke
-`chrome.runtime.openOptionsPage()`.
-
-#### Usage
-
-```ts
-const optionsPage = await extension.openOptions();
-```
-
-See the [Options page guide](../guides/options.md#limitations) for differences from embedded options.
-
-#### Arguments
-
-None.
-
-#### Returns
-
-<code>Promise&lt;<a href="https://playwright.dev/docs/api/class-page">Page</a>&gt;</code>
-
-### openSidePanel
-
-Opens `side_panel.default_path` in a new regular tab and returns it after navigation. Throws before
-creating a tab when the manifest has no default path. Ignores runtime side panel configuration.
-
-#### Usage
-
-```ts
-const sidePanelPage = await extension.openSidePanel();
-```
-
-See the [Side panel guide](../guides/side-panel.md#limitations) for differences from the native panel.
-
-#### Arguments
-
-None.
-
-#### Returns
-
-<code>Promise&lt;<a href="https://playwright.dev/docs/api/class-page">Page</a>&gt;</code>
 
 ### disable
 
@@ -407,6 +205,168 @@ None.
 
 `Promise<void>`
 
+### evaluate
+
+Evaluates a function or expression in the current service worker. Follows
+[`Worker.evaluate()`](https://playwright.dev/docs/api/class-worker#worker-evaluate), including its
+argument serialization and return-value behavior. Functions run outside the test's JavaScript scope;
+pass values as the optional argument.
+
+#### Usage
+
+```ts
+await extension.evaluate(() => chrome.tabs.create({ url: 'https://example.com' }));
+```
+
+Requires a running worker and the permissions needed by the Chrome API being called. A worker has
+no page DOM; use a Playwright [`Page`](https://playwright.dev/docs/api/class-page) to interact with extension UI.
+
+#### Arguments
+
+- `pageFunction` — Function or string expression to evaluate. See
+  [`Worker.evaluate()`](https://playwright.dev/docs/api/class-worker#worker-evaluate).
+- `arg` — Optional argument passed to the function, using Playwright's
+  [evaluation argument serialization](https://playwright.dev/docs/evaluating#evaluation-argument).
+
+#### Returns
+
+`Promise<R>` — Resolves to the evaluated result, awaiting it if it is a promise.
+
+### getURL
+
+Resolves a resource path under `chrome-extension://<id>/`. A leading slash is accepted.
+Does not emulate dynamic URLs from
+`web_accessible_resources` entries with `use_dynamic_url`.
+
+#### Usage
+
+```ts
+const url = extension.getURL('settings/advanced.html');
+```
+
+#### Arguments
+
+- `path` (`string`, optional) — Resource path inside the extension. Defaults to `''`.
+
+#### Returns
+
+`string` — The fully qualified extension resource URL.
+
+### install
+
+Installs `extensionPath` when no path is supplied. With a custom path, installs a private copy of
+that build so it can later be replaced by `upgrade()`.
+
+Waits for the extension worker and refreshes the manifest. It does not wait for all application
+startup handlers to finish. Use with [`extensionAutoInstall: false`](../basics/configuration.md#extensionautoinstall)
+to control initial installation. Each instance supports one successful installation;
+calling `install()` again, including after uninstalling, rejects.
+
+#### Usage
+
+```ts
+await extension.install();
+```
+
+See [Welcome page](../guides/welcome-page.md) for checking pages opened during automatic installation.
+
+#### Arguments
+
+- `path` (`string`, optional) — Build directory to install. Defaults to the configured
+  [`extensionPath`](../basics/configuration.md#extensionpath). Relative paths resolve from the
+  Playwright configuration file's directory, or the current working directory when no config file
+  is used.
+
+#### Returns
+
+`Promise<void>`
+
+### openOptions
+
+Opens `options_ui.page`, falling back to `options_page`, in a new regular tab. Throws when neither
+is declared. Ignores `options_ui.open_in_tab` and does not invoke
+`chrome.runtime.openOptionsPage()`.
+
+#### Usage
+
+```ts
+const optionsPage = await extension.openOptions();
+```
+
+See the [Options page guide](../guides/options.md#limitations) for differences from embedded options.
+
+#### Arguments
+
+None.
+
+#### Returns
+
+<code>Promise&lt;<a href="https://playwright.dev/docs/api/class-page">Page</a>&gt;</code>
+
+### openPopup
+
+Opens `action.default_popup` in a new regular tab and navigates to its extension URL. Throws when the
+manifest has no popup declaration.
+
+#### Usage
+
+```ts
+const popupPage = await extension.openPopup();
+```
+
+This hosts the popup document in a tab, not the native toolbar popup. See the
+[Popup guide](../guides/popup.md#limitations) for active-tab, focus, and permission differences.
+
+#### Arguments
+
+None.
+
+#### Returns
+
+<code>Promise&lt;<a href="https://playwright.dev/docs/api/class-page">Page</a>&gt;</code>
+
+### openSidePanel
+
+Opens `side_panel.default_path` in a new regular tab and returns it after navigation. Throws before
+creating a tab when the manifest has no default path. Ignores runtime side panel configuration.
+
+#### Usage
+
+```ts
+const sidePanelPage = await extension.openSidePanel();
+```
+
+See the [Side panel guide](../guides/side-panel.md#limitations) for differences from the native panel.
+
+#### Arguments
+
+None.
+
+#### Returns
+
+<code>Promise&lt;<a href="https://playwright.dev/docs/api/class-page">Page</a>&gt;</code>
+
+### uninstall
+
+Uninstalls the extension. Subsequent worker and storage operations are unavailable. Cached `id` and
+`manifest` values do not prove that the extension is still installed.
+
+#### Usage
+
+```ts
+await extension.uninstall();
+```
+
+See [Uninstall](../guides/uninstall.md) for checking the feedback page.
+
+#### Arguments
+
+None.
+
+#### Returns
+
+`Promise<void>`
+
 ### upgrade
 
 Updates the installed extension with the build at the configured `extensionPath` and reloads it.
@@ -432,23 +392,63 @@ None.
 
 `Promise<void>`
 
-### uninstall
+### waitForFunction
 
-Uninstalls the extension. Subsequent worker and storage operations are unavailable. Cached `id` and
-`manifest` values do not prove that the extension is still installed.
+Polls a function or expression in the current service worker until its evaluated result is truthy.
+Asynchronous results are awaited on each attempt. Retries while the worker is unavailable;
+evaluation errors reject the call.
+
+#### Usage
+
+Wait for settings saved asynchronously by the extension (requires the `storage` permission):
+
+```ts
+const theme = await extension.waitForFunction(
+  async (key) => (await chrome.storage.local.get(key))[key],
+  'theme',
+  { timeout: 5_000 },
+);
+expect(theme).toBe('dark');
+```
+
+#### Arguments
+
+- `pageFunction` — Function or string expression, with the same serialization as
+  [`evaluate()`](#evaluate).
+- `arg` — Optional argument passed to the function. Pass `undefined` to supply options without an argument.
+- `options` (object, optional) — `timeout` and `intervals`, following
+  [`waitUntil()`](utils.md#arguments), including its defaults.
+
+#### Returns
+
+`Promise<Awaited<R>>` — Resolves to the first truthy evaluated value, rather than the `JSHandle`
+returned by Playwright's `page.waitForFunction()`. Rejects if the polling timeout expires.
+
+### waitForPage
+
+Waits for a page in `extension.context` with the exact resolved URL. Relative paths, including paths
+with a leading slash, resolve under the extension URL. Absolute URLs can match any page in the
+context. Checks both existing pages and pages that open or navigate later.
 
 #### Usage
 
 ```ts
-await extension.uninstall();
+const welcomePage = await extension.waitForPage('welcome.html');
+const feedbackPage = await extension.waitForPage('https://example.com/uninstalled');
 ```
 
-See [Uninstall](../guides/uninstall.md) for checking the feedback page.
+Returns once the URL matches; use locator assertions to check the page's content.
 
 #### Arguments
 
-None.
+- `url` (`string`) — Extension-relative path or absolute URL to match.
+- `options` (object, optional):
+  - `timeout` (`number`, optional) — Polling timeout in milliseconds.
+  - `intervals` (`number[]`, optional) — Delays between polling attempts in milliseconds.
+
+Both options follow [`waitUntil()`](utils.md#arguments), including its defaults.
 
 #### Returns
 
-`Promise<void>`
+<code>Promise&lt;<a href="https://playwright.dev/docs/api/class-page">Page</a>&gt;</code> — Resolves to the matching page.
+Rejects if no matching page appears before the timeout.
