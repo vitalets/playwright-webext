@@ -32,6 +32,7 @@ const sidebars: SidebarsConfig = {
       label: 'Testing Guides',
       collapsed: false,
       items: [
+        'guides/worker',
         'guides/storage',
         'guides/popup',
         'guides/options',

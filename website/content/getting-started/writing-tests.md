@@ -4,16 +4,26 @@ description: Use the extension fixture to test background behavior and the popup
 ---
 
 Import `test` from `playwright-webext` and request the `extension` fixture in your test callback.
-Use it to test background behavior and extension pages, as shown below. See the
-[Extension API](../api/extension.md) for all available methods.
+
+```ts title="test/extension.spec.ts"
+import { test } from 'playwright-webext';
+
+test('my extension test', async ({ extension }) => {
+  // ...your extension test
+});
+```
+
+The `extension` fixture gives your test access to the installed extension's worker, pages, and storage.
+See the [Extension API](../api/extension.md) for all available methods.
 If you have [set up custom or merged fixtures](../basics/setup-fixtures.md), import `test` from your
 fixture module instead.
 
-## Test background
+## Test the worker
 
-An extension can schedule background work with Chrome's alarms API. Use `extension.evaluate()` to
-check an alarm in its service worker. This example assumes the extension declares the `alarms`
-permission and has already registered a synchronization alarm that runs every 30 minutes.
+Use `extension.evaluate()` to run code in your extension's service worker. You can call Chrome APIs,
+read worker state, and trigger background behavior from your test.
+
+In this example, the test checks that the extension registers an alarm that runs every 30 minutes.
 
 ```ts title="test/background.spec.ts"
 import { expect } from '@playwright/test';
@@ -43,7 +53,7 @@ import { test } from 'playwright-webext';
 
 test('shows the popup', async ({ extension }) => {
   const popupPage = await extension.openPopup();
-  await expect(popupPage.getByRole('heading')).toContainText('popup');
+  await expect(popupPage.getByRole('heading')).toContainText('My popup');
   await popupPage.close();
 });
 ```

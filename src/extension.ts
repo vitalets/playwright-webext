@@ -9,6 +9,7 @@ import { ExtensionInstaller, type InstallOptions } from './install.js';
 import { ExtensionManagement } from './management.js';
 import { createStorage } from './storage.js';
 import { waitUntil, type WaitUntilOptions } from './utils/wait-until.js';
+import { waitForPage, type PagePredicate } from './utils/wait-for-page.js';
 
 type ExtensionOptions = InstallOptions & {
   timeout: number;
@@ -139,17 +140,14 @@ export class Extension {
   }
 
   /**
-   * Waits for an existing or newly opened context page with the exact URL.
+   * Waits for an existing or newly opened context page matching a URL or predicate.
    * Relative URLs resolve under the extension; absolute URLs match any context page.
    */
-  async waitForPage(url: string, options?: { timeout?: number; intervals?: number[] }) {
-    const isAbsolute = URL.canParse(url);
-    const targetUrl = isAbsolute ? new URL(url).href : this.getURL(url);
-    const page = await waitUntil(
-      () => this.context.pages().find((page) => page.url() === targetUrl),
-      options,
-    );
-    return page!;
+  async waitForPage(urlOrPredicate: string | PagePredicate, options?: WaitUntilOptions) {
+    if (typeof urlOrPredicate === 'string' && !URL.canParse(urlOrPredicate)) {
+      urlOrPredicate = this.getURL(urlOrPredicate);
+    }
+    return waitForPage(this.context, urlOrPredicate, options);
   }
 
   /**
