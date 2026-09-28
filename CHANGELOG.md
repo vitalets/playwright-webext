@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-09-28
+
 - Add `extension.setFileAccess(boolean)` to control Allow access to file URLs and wait for the
   extension's replacement worker when enabled.
 - Add `extension.waitForFunction(pageFunction, arg, options)` to poll service worker evaluation
@@ -39,7 +41,8 @@
 
 - Initial release.
 
-[unreleased]: https://github.com/vitalets/playwright-webext/compare/v0.2.0...HEAD
+[unreleased]: https://github.com/vitalets/playwright-webext/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/vitalets/playwright-webext/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/vitalets/playwright-webext/compare/v0.1.2...v0.2.0
 [0.1.2]: https://github.com/vitalets/playwright-webext/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/vitalets/playwright-webext/releases/tag/v0.1.1
