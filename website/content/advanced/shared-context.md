@@ -48,19 +48,17 @@ also affects later tests; an instance cannot be installed again after uninstalli
 
 ## Use the shared extension
 
-`extensionW` provides the same [Extension API](../api/extension.md). These two tests demonstrate that
-storage persists between tests in the same worker: the first saves a theme, and the second reads it.
-Run them together without enabling parallel execution within the file; the second depends on the first.
+`extensionW` provides the same [Extension API](../api/extension.md).
 
 ```ts title="test/shared-context.spec.ts"
 import { test } from 'playwright-webext';
 
-test('stores state in the shared extension', async ({ extensionW }) => {
-  await extensionW.storage.local.set({ theme: 'dark' });
+test('shows the welcome page', async ({ extensionW }) => {
+  // check welcome page
 });
 
-test('reuses the extension and its state in the next test', async ({ extensionW }) => {
-  await extensionW.storage.local.expect('theme').toEqual('dark');
+test('has the expected initial state', async ({ extensionW }) => {
+  // check initial state
 });
 ```
 
