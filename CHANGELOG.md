@@ -4,6 +4,9 @@
 
 ## [Unreleased]
 
+- Allow `extension.waitForPage()` to match pages with a synchronous or asynchronous predicate
+  receiving the Playwright `Page` instance.
+
 ## [0.2.1] - 2026-09-28
 
 - Add `extension.setFileAccess(boolean)` to control Allow access to file URLs and wait for the
