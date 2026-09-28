@@ -43,6 +43,17 @@ These scope boundaries apply to all rules below.
 
 - Omit explicit return type annotations on functions and methods unless TypeScript requires them. Rely on inference from the implementation to keep code simpler to review.
 
+## Code Quality
+
+- **Simple control flow:** Keep branches and conditions easy to follow. Use optional chaining when it simplifies access.
+- **Shallow nesting:** Prefer guard clauses and early returns. Extract meaningful operations when nested blocks obscure the main flow.
+- **Readable callbacks:** Avoid deeply nested callbacks. Use named helpers or `async`/`await` where appropriate without changing execution behavior.
+- **Small parameter lists:** Keep inputs easy to understand at call sites. Group related inputs into a named object when that clarifies their meaning.
+- **Focused functions:** Keep functions, methods, and callbacks concise and centered on a clear responsibility. Extract coherent steps when the main operation becomes difficult to follow.
+- **Readable lines:** Break long expressions at natural boundaries. Keep URLs intact and preserve existing body comments according to the commenting rules.
+- **Focused files:** Keep each module centered on a cohesive purpose. Separate distinct responsibilities when a file becomes difficult to navigate.
+- **Meaningful refactoring:** Preserve useful comments and whitespace. Avoid compressing code or introducing trivial helpers solely to make functions or files shorter.
+
 ## Example
 
 ```ts

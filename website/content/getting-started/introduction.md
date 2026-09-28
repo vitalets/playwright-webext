@@ -10,8 +10,7 @@ import ProjectBrand from '@site/src/components/ProjectBrand';
 <ProjectBrand />
 
 **playwright-webext** is a toolkit for testing browser extensions with
-[Playwright](https://playwright.dev/). It loads your extension and provides APIs for testing its pages,
-background behavior, storage, and lifecycle.
+[Playwright](https://playwright.dev/). It provides ready-to-use APIs for testing extension pages, background behavior, storage, migrations, i18n, and much more.
 
 ## Features
 
@@ -31,7 +30,7 @@ background behavior, storage, and lifecycle.
 browser with an extension, wait for its service worker, and find its ID. That gives you a working
 starting point, but leaves you to maintain the setup fixtures and write helpers for extension tasks.
 
-**playwright-webext** provides helpers beyond the default guide: storage setup, localization
+Playwright-webext provides helpers beyond the default guide: storage setup, localization
 testing, migrations and much more. These helpers let you focus on your extension's
 behavior using familiar Playwright pages, locators, and assertions.
 
