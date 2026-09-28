@@ -42,7 +42,7 @@ Check out the [documentation](https://vitalets.github.io/playwright-webext/).
 browser with an extension, wait for its service worker, and find its ID. That gives you a working
 starting point, but leaves you to maintain the setup fixtures and write helpers for extension tasks.
 
-**playwright-webext** provides helpers beyond the default guide: storage setup, localization
+Playwright-webext provides helpers beyond the default guide: storage setup, localization
 testing, migrations and much more. These helpers let you focus on your extension's
 behavior using familiar Playwright pages, locators, and assertions.
 

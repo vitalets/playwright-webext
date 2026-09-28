@@ -49,6 +49,11 @@
   --ifm-footer-background-color: #142b22;
 }
 
+.footer__copyright a {
+  color: inherit;
+  text-decoration: none;
+}
+
 .brand-lockup {
   display: flex;
   align-items: center;

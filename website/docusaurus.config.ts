@@ -78,7 +78,7 @@ const config: Config = {
     },
     footer: {
       style: 'dark',
-      copyright: `Copyright © ${new Date().getFullYear()} playwright-webext contributors. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} <a href="https://vitalets.github.io/">Vitaliy Potapov</a>. Built with Docusaurus.`,
     },
     prism: {
       theme: prismThemes.github,
