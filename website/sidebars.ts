@@ -46,7 +46,7 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: 'Advanced',
       collapsed: false,
-      items: ['advanced/shared-context'],
+      items: ['advanced/shared-context', 'advanced/performance'],
     },
   ],
   api: ['api/extension', 'api/storage'],
