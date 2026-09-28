@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+- Add local search across the website's guides and API documentation.
+
 ## [0.2.0] - 2026-09-27
 
 - Add `extension.storage[area].expect(key?)` for retrying Playwright assertions, including `.not`.
