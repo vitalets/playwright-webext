@@ -18,19 +18,75 @@ The examples below use `local`. The same read methods work with the other availa
 
 ### local
 
-**Type:** `StorageArea`.
+Access to `chrome.storage.local`.
+
+#### Usage
+
+```ts
+const values = await extension.storage.local.get();
+```
+
+#### Arguments
+
+None.
+
+#### Returns
+
+`StorageArea`
 
 ### sync
 
-**Type:** `StorageArea`.
+Access to `chrome.storage.sync`.
+
+#### Usage
+
+```ts
+const values = await extension.storage.sync.get();
+```
+
+#### Arguments
+
+None.
+
+#### Returns
+
+`StorageArea`
 
 ### session
 
-**Type:** `StorageArea`.
+Access to `chrome.storage.session`.
+
+#### Usage
+
+```ts
+const values = await extension.storage.session.get();
+```
+
+#### Arguments
+
+None.
+
+#### Returns
+
+`StorageArea`
 
 ### managed
 
-**Type:** `StorageArea`. This area is read-only.
+Access to `chrome.storage.managed`. This area is read-only.
+
+#### Usage
+
+```ts
+const values = await extension.storage.managed.get();
+```
+
+#### Arguments
+
+None.
+
+#### Returns
+
+`StorageArea`
 
 ## Methods
 
@@ -38,11 +94,9 @@ These methods are available on each storage area, except that `managed` only sup
 
 ### get
 
-**Call:** `extension.storage.local.get<T>(keys?)`  
-**Returns:** `Promise<T>`
+Reads stored values from the area.
 
-Accepts a key, an array of keys, an object of defaults, `null`, or no argument. Omit the argument or
-pass `null` to read all values. Missing keys are omitted unless you supply defaults.
+#### Usage
 
 ```ts
 const allValues = await extension.storage.local.get();
@@ -50,79 +104,112 @@ const selected = await extension.storage.local.get(['theme', 'language']);
 const settings = await extension.storage.local.get<{ theme: string }>({ theme: 'light' });
 ```
 
-The optional generic describes the expected shape; it does not validate stored values at runtime.
+#### Arguments
+
+- `keys` (`keyof T | Array<keyof T> | Partial<T> | null`, optional) — A key, an array of keys,
+  or an object supplying defaults for missing keys. Omit it or pass `null` to read all values.
+  Missing keys are omitted unless defaults are supplied.
+
+The optional generic `T` describes the expected shape; it does not validate stored values at runtime.
 Without a generic, values are typed as `unknown`.
+
+#### Returns
+
+`Promise<T>` — Resolves to an object containing the selected stored values.
 
 ### expect
 
-**Call:** `extension.storage.local.expect(keys?: string | string[])`
+Creates Playwright's retrying assertions for stored values. Uses
+[`expect.poll`](https://playwright.dev/docs/test-assertions#expectpoll) with its configured timeout.
 
-Returns Playwright's retrying assertions for a key's value. Chain a matcher and await the assertion.
-Uses [`expect.poll`](https://playwright.dev/docs/test-assertions#expectpoll) with its configured
-timeout, so you can assert values written asynchronously:
+#### Usage
 
 ```ts
 await extension.storage.local.expect('saved').toEqual(true);
-await extension.storage.local.expect('theme').not.toEqual('light');
-await extension.storage.local
-  .expect('preferences')
-  .toEqual(expect.objectContaining({ theme: 'dark' }));
-```
-
-Pass an array of keys to assert against an object of selected values, even for a single-element
-array. Missing keys are omitted; an empty array selects an empty object.
-
-```ts
 await extension.storage.local.expect(['saved', 'theme']).toEqual({ saved: true, theme: 'dark' });
-```
-
-Omit the argument to assert against all values in the storage area:
-
-```ts
 await extension.storage.local.expect().toEqual({ saved: true, theme: 'dark' });
 ```
 
+#### Arguments
+
+- `keys` (`string | string[]`, optional) — A string selects that key's value. An array selects
+  an object of values, even for a single-element array. Missing keys are omitted; an empty array
+  selects an empty object. Omit the argument to select all values.
+
+#### Returns
+
+`ReturnType<typeof expect.poll>` — Playwright's retrying matchers. Chain a matcher and await
+the resulting assertion.
+
 ### set
 
-**Call:** `extension.storage.local.set<T>(items: Partial<T>)`  
-**Returns:** `Promise<void>`
-
 Writes the supplied keys without replacing other stored values.
+
+#### Usage
 
 ```ts
 await extension.storage.local.set({ preferences: { colorScheme: 'dark' } });
 ```
 
+#### Arguments
+
+- `items` (`Partial<T>`) — Keys and values to write.
+
+#### Returns
+
+`Promise<void>`
+
 ### remove
 
-**Call:** `extension.storage.local.remove<T>(keys: keyof T | Array<keyof T>)`  
-**Returns:** `Promise<void>`
-
 Removes one key or a list of keys.
+
+#### Usage
 
 ```ts
 await extension.storage.local.remove('obsoleteKey');
 await extension.storage.local.remove(['oldTheme', 'oldLanguage']);
 ```
 
+#### Arguments
+
+- `keys` (`keyof T | Array<keyof T>`) — One key or an array of keys to remove.
+
+#### Returns
+
+`Promise<void>`
+
 ### clear
 
-**Call:** `extension.storage.local.clear()`  
-**Returns:** `Promise<void>`
-
 Removes every value in the area.
+
+#### Usage
 
 ```ts
 await extension.storage.session.clear();
 ```
 
+#### Arguments
+
+None.
+
+#### Returns
+
+`Promise<void>`
+
 ### getKeys
 
-**Call:** `extension.storage.local.getKeys()`  
-**Returns:** `Promise<string[]>`
-
 Lists keys in the area.
+
+#### Usage
 
 ```ts
 const keys = await extension.storage.local.getKeys();
 ```
+
+#### Arguments
+
+None.
+
+#### Returns
+
+`Promise<string[]>` — Resolves to the keys in the area.
