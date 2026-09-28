@@ -7,7 +7,7 @@ import type {
   PlaywrightTestOptions,
   PlaywrightWorkerOptions,
 } from '@playwright/test';
-import { removeUndefined } from './utils.js';
+import { removeUndefined } from './utils/remove-undefined.js';
 
 /**
  * Playwright Test fills missing context options from the current test, even for manual

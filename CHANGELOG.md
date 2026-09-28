@@ -4,6 +4,18 @@
 
 ## [Unreleased]
 
+- Add `extension.setFileAccess(boolean)` to control Allow access to file URLs and wait for the
+  extension's replacement worker when enabled.
+- Add `extension.waitForFunction(pageFunction, arg, options)` to poll service worker evaluation
+  until it returns a truthy value, waiting for an available worker when needed.
+- Export `waitUntil(callback, options)` to poll for and return a truthy value, with
+  `WaitUntilOptions` for its polling options.
+- Add `extension.waitForPage(url, options)` to wait for existing or newly opened pages, resolving
+  relative URLs under the extension and matching absolute URLs in its browser context.
+- Add local search across the website's guides and API documentation.
+
+## [0.2.0] - 2026-09-27
+
 - Add `extension.storage[area].expect(key?)` for retrying Playwright assertions, including `.not`.
   Omit the key or pass `undefined` to assert against the whole storage area.
 - Add `extension.openSidePanel()` and readonly `extension.sidePanelUrl` for the side panel document
@@ -27,6 +39,7 @@
 
 - Initial release.
 
-[unreleased]: https://github.com/vitalets/playwright-webext/compare/v0.1.2...HEAD
+[unreleased]: https://github.com/vitalets/playwright-webext/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/vitalets/playwright-webext/compare/v0.1.2...v0.2.0
 [0.1.2]: https://github.com/vitalets/playwright-webext/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/vitalets/playwright-webext/releases/tag/v0.1.1

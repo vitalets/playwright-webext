@@ -10,7 +10,7 @@ Reviewed on September 27, 2026, against the installed Playwright 1.62.1. Firefox
 
 **Storage also depends on the worker.** The [storage helpers](../src/storage.ts) execute every operation through the current worker. Installing a Firefox extension alone does not make these helpers work.
 
-**Resource URLs and management operations assume Chromium.** The [Extension class](../src/extension.ts) constructs `chrome-extension://<id>` URLs, and the [management helper](../src/extensions-page.ts) operates Chromium's extension details page. Firefox resource origins must be discovered separately, and management operations need their own implementation or explicit exclusion.
+**Resource URLs and management operations assume Chromium.** The [Extension class](../src/extension.ts) constructs `chrome-extension://<id>` URLs, and the [management helper](../src/management.ts) operates Chromium's extension details page. Firefox resource origins must be discovered separately, and management operations need their own implementation or explicit exclusion.
 
 The [Playwright extension guide](https://playwright.dev/docs/chrome-extensions) documents Chromium persistent contexts. Removing the fixture's browser guard would not address the dependencies above.
 

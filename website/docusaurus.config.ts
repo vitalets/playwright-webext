@@ -26,6 +26,20 @@ const config: Config = {
   onBrokenLinks: 'throw',
   markdown: { hooks: { onBrokenMarkdownLinks: 'throw' } },
   i18n: { defaultLocale: 'en', locales: ['en'] },
+  themes: [
+    [
+      '@easyops-cn/docusaurus-search-local',
+      {
+        docsDir: 'content',
+        docsRouteBasePath: '/',
+        language: 'en',
+        hashed: 'filename',
+        indexBlog: false,
+        indexPages: false,
+        searchBarPosition: 'right',
+      },
+    ],
+  ],
   presets: [
     [
       'classic',
@@ -49,6 +63,7 @@ const config: Config = {
       items: [
         { type: 'docSidebar', sidebarId: 'guides', label: 'Docs', position: 'left' },
         { type: 'docSidebar', sidebarId: 'api', label: 'API', position: 'left' },
+        { type: 'search', position: 'right' },
         {
           href: 'https://www.npmjs.com/package/playwright-webext',
           label: 'npm',

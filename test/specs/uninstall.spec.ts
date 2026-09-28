@@ -6,4 +6,7 @@ test('uninstalls the extension', async ({ extension }) => {
 
   expect(extension.context.serviceWorkers()).toHaveLength(0);
   expect(() => extension.worker).toThrow('not available');
+
+  const page = await extension.waitForPage('https://example.com/uninstalled');
+  await expect(page).toHaveURL('https://example.com/uninstalled');
 });

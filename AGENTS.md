@@ -16,4 +16,5 @@ apply it to tests or test fixtures.
 
 ## Validation
 
-After changes, run `npm run prettier`, `npm run tsc` and focused tests for the affected behavior.
+After changes, run `npm run prettier`, `npm run tsc`, ESLint on changed files, and focused tests
+for the affected behavior.

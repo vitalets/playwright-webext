@@ -39,9 +39,19 @@ not prohibit relevant topic-specific limitations, such as popup tab behavior or 
 
 ## API reference
 
-Keep top-level `Methods` and `Properties` sections, with entries beneath them. Put `Call` and `Returns`
-on separate lines. State property types. Include parameters, defaults, errors, and examples when they
-help define the contract; do not add empty subsections to satisfy a template.
+Keep top-level `Methods` and `Properties` sections, with entries sorted alphabetically by name within
+each section. Use a level-three heading for each entry, followed by a description and these
+level-four subsections in order:
+
+- `Usage`: A short TypeScript example showing the method call or property access.
+- `Arguments`: Parameter names, types, optionality, defaults, and relevant constraints. Omit this
+  subsection for properties and methods without arguments.
+- `Returns`: The method's return type or property's value type, with links to referenced API types
+  where available. Explain resolved values for promises when useful.
+
+Check examples, arguments, defaults, return types, and error conditions against the actual
+implementation. Describe errors and limitations near the behavior they affect; do not invent
+parameters or return values to fill these subsections.
 
 Fixture setup and package configuration have their own Basics pages. Link there instead of recreating
 those sections in API reference. Likewise, link to Playwright's native object and option references.
