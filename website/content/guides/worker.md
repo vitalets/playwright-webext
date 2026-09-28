@@ -4,15 +4,11 @@ description: Run code in your extension's service worker and wrap reusable test 
 ---
 
 Use [`extension.evaluate()`](../api/extension.md#evaluate) to run code in your extension's service
-worker.
-
-This example assumes another open extension page handles the `DO_SOMETHING` message.
-[`chrome.runtime.sendMessage()`](https://developer.chrome.com/docs/extensions/reference/api/runtime#method-sendMessage)
-sends to other extension contexts.
+worker:
 
 ```ts
 await extension.evaluate(() => {
-  return chrome.runtime.sendMessage({ type: 'DO_SOMETHING' });
+  // ...run code inside worker
 });
 ```
 
