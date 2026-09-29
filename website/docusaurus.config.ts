@@ -2,9 +2,17 @@
  * Configures the public documentation site independently of the package build.
  */
 
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { loadEnvFile } from 'node:process';
 import { themes as prismThemes } from 'prism-react-renderer';
 import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
+
+const envPath = resolve(__dirname, '../.env');
+if (existsSync(envPath)) loadEnvFile(envPath);
+
+const googleAnalyticsId = process.env.GOOGLE_ANALYTICS_ID;
 
 /**
  * Uses the publishing branch for edit links in deployed documentation.
@@ -51,6 +59,7 @@ const config: Config = {
           editUrl: `https://github.com/vitalets/playwright-webext/edit/${sourceBranch}/website/`,
         },
         blog: false,
+        gtag: googleAnalyticsId ? { trackingID: googleAnalyticsId } : undefined,
         theme: { customCss: './src/css/custom.css' },
       } satisfies Preset.Options,
     ],

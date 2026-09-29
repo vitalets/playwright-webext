@@ -58,6 +58,10 @@ export class WelcomePage {
 
   constructor(private extension: Extension) {}
 
+  get url() {
+    return this.extension.getURL('/welcome.html');
+  }
+
   get page() {
     if (!this.#page || this.#page.isClosed()) {
       throw new Error('Call WelcomePage.attach() before interacting with the welcome page.');
@@ -66,7 +70,7 @@ export class WelcomePage {
   }
 
   async attach() {
-    this.#page = await this.extension.waitForPage('welcome.html');
+    this.#page = await this.extension.waitForPage(this.url);
     return this;
   }
 
