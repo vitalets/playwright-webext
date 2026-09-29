@@ -26,6 +26,8 @@ jobs:
       - run: npm ci --prefix website
       - run: npm run docs:tsc
       - run: npm run docs:build
+        env:
+          GOOGLE_ANALYTICS_ID: ${{ vars.GOOGLE_ANALYTICS_ID }}
       - uses: actions/upload-pages-artifact@v4
         with:
           path: website/build

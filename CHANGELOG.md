@@ -4,6 +4,7 @@
 
 ## [Unreleased]
 
+- Add Google Analytics to the website, configured through `GOOGLE_ANALYTICS_ID`.
 - Allow `extension.waitForPage()` to match pages with a synchronous or asynchronous predicate
   receiving the Playwright `Page` instance.
 
