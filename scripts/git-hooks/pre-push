@@ -9,6 +9,7 @@ npm run prettier
 npm run lint
 npm run tsc
 npm run build
-npm test
+# dont run test on pre-push to save time, ci will run anyway.
+# npm test
 
 # todo: knip
