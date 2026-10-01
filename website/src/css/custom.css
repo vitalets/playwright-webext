@@ -67,6 +67,10 @@
   --ifm-footer-background-color: #142b22;
 }
 
+.navbar a[target='_blank'] > svg {
+  vertical-align: -0.1em;
+}
+
 .footer__copyright a {
   color: inherit;
   text-decoration: none;
