@@ -11,3 +11,4 @@ node_modules/
 
 /website/build/
 /website/.docusaurus/
+/website/.docusaurus-dev/

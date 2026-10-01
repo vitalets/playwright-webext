@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-01
+
 - Add `launchWithExtension()` for custom fixtures and standalone extension launches, with cleanup
   through `extension.close()`. Explicit launch and installation paths resolve from the working
   directory; the built-in fixture resolves configured `extensionPath` from the config directory. Lifecycle
@@ -52,7 +54,8 @@
 
 - Initial release.
 
-[unreleased]: https://github.com/vitalets/playwright-webext/compare/v0.2.1...HEAD
+[unreleased]: https://github.com/vitalets/playwright-webext/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/vitalets/playwright-webext/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/vitalets/playwright-webext/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/vitalets/playwright-webext/compare/v0.1.2...v0.2.0
 [0.1.2]: https://github.com/vitalets/playwright-webext/compare/v0.1.1...v0.1.2
