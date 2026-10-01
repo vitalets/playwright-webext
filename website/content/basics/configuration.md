@@ -23,7 +23,7 @@ export default defineConfig<WebextOptions>({
 ### extensionPath
 
 **Type:** `string`.  
-**Default:** `''`; a non-empty path is required when requesting `extension`.
+**Required.**
 
 The directory containing your unpacked extension. Relative paths resolve from
 the Playwright configuration file's directory, or the current working directory when there is no
