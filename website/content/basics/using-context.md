@@ -24,7 +24,7 @@ test('opens a website with the extension loaded', async ({ extension }) => {
 
 The extension fixture closes the context and its pages during teardown.
 
-## Map context to the extension context
+## Map to the default context
 
 If you want tests to use the familiar `context` and `page` fixtures with the extension loaded,
 override `context` in your own fixture module:
