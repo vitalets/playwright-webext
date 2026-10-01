@@ -4,21 +4,31 @@
 
 /// <reference types="chrome" preserve="true" />
 
-import { dirname, isAbsolute, resolve } from 'node:path';
-import { test as base, type BrowserContext } from '@playwright/test';
+import { dirname, resolve } from 'node:path';
+import { test as base } from '@playwright/test';
 import { Extension } from './extension.js';
-import { ExtensionCopy } from './copy.js';
-import { launchContextWithExtension } from './launch.js';
+import { launchContext } from './launch.js';
 import { createVideoRecording } from './video.js';
 import { runAll } from './utils/run-all.js';
 import { throwIf } from './utils/throw-if.js';
-import { mergeContextOptions, buildWorkerContextOptions } from './context-options.js';
+import { removeUndefined } from './utils/remove-undefined.js';
 
 /**
  * Configuration accepted by the extension test fixtures.
  */
-export type WebextOptions = {
+export type WebextOptions = WebextTestOptions & WebextWorkerOptions;
+
+/**
+ * Options available to both test-scoped and worker-scoped fixtures.
+ */
+export type WebextWorkerOptions = {
   extensionPath: string;
+};
+
+/**
+ * Options that can vary between tests.
+ */
+export type WebextTestOptions = {
   extensionAutoInstall?: boolean;
 };
 
@@ -29,23 +39,17 @@ export type WebextFixtures = {
   extension: Extension;
 };
 
-/**
- * Fixtures shared by tests running in the same Playwright worker.
- */
-export type WebextWorkerFixtures = {
-  extensionW: Extension;
-};
-
 export { Extension } from './extension.js';
+export { launchWithExtension, type LaunchWithExtensionOptions } from './launch.js';
 export { waitUntil, type WaitUntilOptions } from './utils/wait-until.js';
 
 /**
  * Playwright test extended with extension configuration and fixtures.
  */
-export const test = base.extend<WebextOptions & WebextFixtures, WebextWorkerFixtures>({
-  extensionPath: ['', { option: true }],
+export const test = base.extend<WebextTestOptions & WebextFixtures, WebextWorkerOptions>({
+  extensionPath: ['', { option: true, scope: 'worker' }],
   extensionAutoInstall: [true, { option: true }],
-  // eslint-disable-next-line max-lines-per-function, max-statements
+  // eslint-disable-next-line max-lines-per-function
   extension: async (
     {
       extensionPath,
@@ -82,116 +86,66 @@ export const test = base.extend<WebextOptions & WebextFixtures, WebextWorkerFixt
     use,
     testInfo,
   ) => {
-    validateOptions('extension', extensionPath, browserName);
+    validateOptions(extensionPath, browserName);
 
     const { configFile } = testInfo.config;
-    extensionPath = resolvePath(extensionPath, configFile);
-    const extensionCopy = new ExtensionCopy();
+    const baseDir = configFile ? dirname(configFile) : process.cwd();
     const videoRecording = await createVideoRecording(video, testInfo);
 
-    let context: BrowserContext | undefined;
+    let extension: Extension | undefined;
     try {
-      context = await launchContextWithExtension({
-        headless,
-        launchOptions,
-        contextOptions: mergeContextOptions(contextOptions, {
-          recordVideo: videoRecording?.options,
-          acceptDownloads,
-          baseURL,
-          bypassCSP,
-          clientCertificates,
-          colorScheme,
-          deviceScaleFactor,
-          extraHTTPHeaders,
-          geolocation,
-          hasTouch,
-          httpCredentials,
-          ignoreHTTPSErrors,
-          isMobile,
-          javaScriptEnabled,
-          locale,
-          offline,
-          permissions,
-          proxy,
-          serviceWorkers,
-          storageState,
-          timezoneId,
-          userAgent,
-          viewport,
-        }),
+      // Launch separately from launchWithExtension to track video before extension installation.
+      const context = await launchContext({
+        launchOptions: { ...launchOptions, headless },
+        contextOptions: {
+          ...contextOptions,
+          ...removeUndefined({
+            recordVideo: videoRecording?.options,
+            acceptDownloads,
+            baseURL,
+            bypassCSP,
+            clientCertificates,
+            colorScheme,
+            deviceScaleFactor,
+            extraHTTPHeaders,
+            geolocation,
+            hasTouch,
+            httpCredentials,
+            ignoreHTTPSErrors,
+            isMobile,
+            javaScriptEnabled,
+            locale,
+            offline,
+            permissions,
+            proxy,
+            serviceWorkers,
+            storageState,
+            timezoneId,
+            userAgent,
+            viewport,
+          }),
+        },
+      });
+      extension = new Extension(context, {
+        extensionPath: resolve(baseDir, extensionPath),
+        locale,
       });
       videoRecording?.track(context);
-      const extension = new Extension(context, {
-        extensionPath,
-        extensionCopy,
-        baseDir: configFile ? dirname(configFile) : process.cwd(),
-        locale,
-        timeout: testInfo.timeout,
-      });
       if (extensionAutoInstall) await extension.install();
       await use(extension);
     } finally {
       await runAll([
-        () => context?.close(),
+        () => extension?.close(), // prettier-ignore
         () => videoRecording?.finish(),
-        () => extensionCopy.cleanup(),
       ]);
     }
   },
-  extensionW: [
-    // eslint-disable-next-line max-statements
-    async ({ browserName, headless, launchOptions }, use, workerInfo) => {
-      const options = workerInfo.project.use as Partial<WebextOptions>;
-      validateOptions('extensionW', options.extensionPath, browserName);
-
-      const { configFile } = workerInfo.config;
-      const extensionPath = resolvePath(options.extensionPath!, configFile);
-      const extensionCopy = new ExtensionCopy();
-      const contextOptions = buildWorkerContextOptions(workerInfo.project.use, launchOptions);
-
-      let context: BrowserContext | undefined;
-      try {
-        context = await launchContextWithExtension({ headless, launchOptions, contextOptions });
-        const extension = new Extension(context, {
-          extensionPath,
-          extensionCopy,
-          baseDir: configFile ? dirname(configFile) : process.cwd(),
-          locale: contextOptions.locale,
-          timeout: workerInfo.project.timeout,
-        });
-        if (options.extensionAutoInstall ?? true) await extension.install();
-        await use(extension);
-      } finally {
-        await runAll([
-          () => context?.close(), // prettier-ignore
-          () => extensionCopy.cleanup(),
-        ]);
-      }
-    },
-    { scope: 'worker' },
-  ],
 });
 
-function validateOptions(
-  fixtureName: 'extension' | 'extensionW',
-  extensionPath: string | undefined,
-  browserName: string,
-) {
-  const configHint = fixtureName === 'extensionW' ? ' in the config' : '';
-  throwIf(!extensionPath, `The ${fixtureName} fixture requires use.extensionPath${configHint}.`);
+function validateOptions(extensionPath: string, browserName: string) {
+  throwIf(!extensionPath, 'The extension fixture requires use.extensionPath.');
   throwIf(
     browserName !== 'chromium',
-    `The ${fixtureName} fixture only supports Chromium projects; received "${browserName}".`,
+    `The extension fixture only supports Chromium projects; received "${browserName}".`,
   );
-}
-
-function resolvePath<T extends string | undefined>(extensionPath: T, configFile?: string) {
-  if (!extensionPath) return extensionPath;
-
-  if (isAbsolute(extensionPath)) {
-    return extensionPath;
-  }
-
-  const baseDir = configFile ? dirname(configFile) : process.cwd();
-  return resolve(baseDir, extensionPath);
 }

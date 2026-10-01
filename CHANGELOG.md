@@ -4,6 +4,13 @@
 
 ## [Unreleased]
 
+- Add `launchWithExtension()` for custom fixtures and standalone extension launches, with cleanup
+  through `extension.close()`. Explicit launch and installation paths resolve from the working
+  directory; the built-in fixture resolves configured `extensionPath` from the config directory. Lifecycle
+  waits use native Playwright timeouts. Replace `extensionW` with a documented custom worker fixture.
+- Make `extensionPath` worker-scoped so custom worker fixtures can consume it. File-level overrides
+  remain supported; overrides inside `test.describe()` are no longer supported.
+
 - Add Google Analytics to the website, configured through `GOOGLE_ANALYTICS_ID`.
 - Allow `extension.waitForPage()` to match pages with a synchronous or asynchronous predicate
   receiving the Playwright `Page` instance.
