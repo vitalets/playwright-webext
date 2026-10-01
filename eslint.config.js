@@ -25,6 +25,12 @@ export default defineConfig([
     },
   },
   {
+    files: ['test/**/*.{ts,tsx,mts}'],
+    rules: {
+      '@typescript-eslint/no-empty-object-type': 'off',
+    },
+  },
+  {
     // src files
     files: ['src/**/*.{js,mjs,ts}'],
     plugins: {

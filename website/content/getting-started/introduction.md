@@ -14,15 +14,15 @@ import ProjectBrand from '@site/src/components/ProjectBrand';
 
 ## Features
 
-- A built-in [`extension`](writing-tests.md) fixture for accessing your extension's APIs.
-- Helpers for opening [popup](../guides/popup.md), [options](../guides/options.md), and
-  [side-panel](../guides/side-panel.md) pages.
-- Helpers for reading and writing [extension storage](../guides/storage.md).
-- Set up browser state [before installing your extension](../basics/configuration.md#extensionautoinstall).
+- Access your extension’s APIs with the built-in [`extension`](writing-tests.md) fixture.
+- Open [popup](../guides/popup.md), [options](../guides/options.md), and
+  [side panel](../guides/side-panel.md) pages.
+- Read and write [extension storage](../guides/storage.md).
+- Defer [extension installation](../basics/configuration.md#extensionautoinstall) to prepare the browser state first.
 - Test [internationalization (i18n)](../guides/i18n.md) without changing your system language.
 - Test [data migrations](../guides/migration.md) between extension versions.
-- Test extension [disabling](../api/extension.md#disable), [re-enabling](../api/extension.md#enable) and
-  [uninstall](../guides/uninstall.md).
+- Test extension behavior when [disabled](../api/extension.md#disable), [re-enabled](../api/extension.md#enable), or
+  [uninstalled](../guides/uninstall.md).
 
 ## Motivation
 
@@ -34,4 +34,4 @@ Playwright-webext provides helpers beyond the default guide: storage setup, loca
 testing, migrations and much more. These helpers let you focus on your extension's
 behavior using familiar Playwright pages, locators, and assertions.
 
-Start with [Installation](installation.md), then [configure your tests](configuration.md).
+Proceed to [Getting started](installation.md).

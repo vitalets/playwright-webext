@@ -10,10 +10,7 @@ import { ExtensionManagement } from './management.js';
 import { createStorage } from './storage.js';
 import { waitUntil, type WaitUntilOptions } from './utils/wait-until.js';
 import { waitForPage, type PagePredicate } from './utils/wait-for-page.js';
-
-type ExtensionOptions = InstallOptions & {
-  timeout: number;
-};
+import { runAll } from './utils/run-all.js';
 
 /**
  * Provides access to a loaded extension's context, metadata, worker, and resource URLs.
@@ -24,11 +21,9 @@ export class Extension {
   readonly #installer: ExtensionInstaller;
   #id?: string;
   #manifest?: chrome.runtime.ManifestV3;
+  #closePromise?: Promise<void>;
 
-  constructor(
-    context: BrowserContext,
-    private readonly options: ExtensionOptions,
-  ) {
+  constructor(context: BrowserContext, options: InstallOptions) {
     this.context = context;
     this.#installer = new ExtensionInstaller(context, options);
   }
@@ -94,6 +89,17 @@ export class Extension {
   }
 
   /**
+   * Closes the browser context and removes private extension copies, even if context closure fails.
+   * Repeated calls await the same teardown.
+   */
+  async close() {
+    await (this.#closePromise ??= runAll([
+      () => this.context.close(),
+      () => this.#installer.cleanup(),
+    ]));
+  }
+
+  /**
    * Runs code in the current extension service worker using Playwright's evaluation API.
    */
   evaluate<R, Arg>(...args: Parameters<typeof this.worker.evaluate<R, Arg>>): Promise<R>;
@@ -119,13 +125,6 @@ export class Extension {
     ...[pageFunction, arg, options]: [...Parameters<Worker['evaluate']>, options?: WaitUntilOptions]
   ) {
     return waitUntil(() => this.findWorker()?.evaluate(pageFunction, arg), options);
-  }
-
-  /**
-   * Installs the configured build, or a private copy of a custom build for later upgrade.
-   */
-  async install(path?: string) {
-    [this.#id] = await Promise.all([this.#installer.install(path), this.waitForReady()]);
   }
 
   /**
@@ -236,6 +235,13 @@ export class Extension {
   }
 
   /**
+   * Installs the configured build, or a private copy of a custom build for later upgrade.
+   */
+  async install(path?: string) {
+    [this.#id] = await Promise.all([this.#installer.install(path), this.waitForReady()]);
+  }
+
+  /**
    * Replaces the loaded old extension with the configured current version and reloads it.
    */
   async upgrade() {
@@ -259,7 +265,6 @@ export class Extension {
   private async waitForReady() {
     const worker = await this.context.waitForEvent('serviceworker', {
       predicate: (worker) => worker.url().startsWith('chrome-extension://'),
-      timeout: this.options.timeout,
     });
     const manifest = await worker.evaluate(() => chrome.runtime.getManifest());
     this.#manifest = manifest as chrome.runtime.ManifestV3;
@@ -267,7 +272,7 @@ export class Extension {
 
   private async waitForStopped() {
     const worker = this.findWorker();
-    if (worker) await worker.waitForEvent('close', { timeout: this.options.timeout });
+    if (worker) await worker.waitForEvent('close');
   }
 
   private findWorker() {

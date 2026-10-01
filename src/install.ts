@@ -5,15 +5,13 @@
 
 import { resolve } from 'node:path';
 import type { BrowserContext } from '@playwright/test';
-import type { ExtensionCopy } from './copy.js';
+import { ExtensionCopy } from './copy.js';
 import { isDefaultLocale, localizeExtension } from './i18n.js';
 
 type InstallState = 'not-installed' | 'installing' | 'installed' | 'upgrading' | 'upgraded';
 
 export type InstallOptions = {
   extensionPath: string;
-  extensionCopy: ExtensionCopy;
-  baseDir: string;
   locale?: string;
 };
 
@@ -21,6 +19,8 @@ export type InstallOptions = {
  * Coordinates one initial installation and an optional upgrade at the same filesystem path.
  */
 export class ExtensionInstaller {
+  readonly #copy = new ExtensionCopy();
+  readonly #extensionPath: string;
   #state: InstallState = 'not-installed';
   #canUpgrade = false;
   #id?: string;
@@ -28,7 +28,9 @@ export class ExtensionInstaller {
   constructor(
     private readonly context: BrowserContext,
     private readonly options: InstallOptions,
-  ) {}
+  ) {
+    this.#extensionPath = resolve(options.extensionPath);
+  }
 
   /**
    * Loads a build and returns its ID. The caller waits for worker readiness.
@@ -56,10 +58,10 @@ export class ExtensionInstaller {
     this.verifyStateForUpgrade();
     this.#state = 'upgrading';
     try {
-      await this.prepareCopy(this.options.extensionPath);
+      await this.prepareCopy(this.#extensionPath);
       this.#state = 'upgraded';
       this.#canUpgrade = false;
-      const id = await this.loadUnpacked(this.options.extensionCopy.path);
+      const id = await this.loadUnpacked(this.#copy.path);
       if (id !== this.#id) throw new Error('Extension upgrade changed the extension ID.');
     } catch (error) {
       if (this.#state === 'upgrading') this.#state = 'installed';
@@ -67,20 +69,26 @@ export class ExtensionInstaller {
     }
   }
 
+  /**
+   * Removes the private build copy owned by this installer.
+   */
+  async cleanup() {
+    await this.#copy.cleanup();
+  }
+
   private async resolveInstallPath(path?: string) {
-    const source =
-      path === undefined ? this.options.extensionPath : resolve(this.options.baseDir, path);
+    const source = path === undefined ? this.#extensionPath : resolve(path);
     return path !== undefined || !isDefaultLocale(this.options.locale)
       ? this.prepareCopy(source)
       : source;
   }
 
   private async prepareCopy(source: string) {
-    await this.options.extensionCopy.copyFrom(source);
+    await this.#copy.copyFrom(source);
     if (!isDefaultLocale(this.options.locale)) {
-      await localizeExtension(this.options.extensionCopy.path, this.options.locale);
+      await localizeExtension(this.#copy.path, this.options.locale);
     }
-    return this.options.extensionCopy.path;
+    return this.#copy.path;
   }
 
   private async loadUnpacked(path: string) {

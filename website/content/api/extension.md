@@ -6,15 +6,15 @@ description: API reference for extension metadata, worker evaluation, pages, and
 
 The `extension` fixture is available in your tests and lets you open extension pages, run code in the
 service worker, access storage, and manage the extension's lifecycle.
-The [`extensionW` fixture](../advanced/shared-context.md) provides the same API with a context shared
-between tests in a Playwright worker.
+`launchWithExtension()` returns the same API for [custom fixtures](../advanced/shared-context.md).
 
 ## Properties
 
 ### context
 
-The persistent Chromium context hosting the extension. It is isolated per test for `extension` and
-shared within a worker for `extensionW`.
+The persistent Chromium context hosting the extension. The `extension` fixture creates one per test.
+With `launchWithExtension()`, close it through `await extension.close()` to release the browser
+and temporary extension copies.
 
 #### Usage
 
@@ -166,6 +166,24 @@ None.
 
 ## Methods
 
+### close
+
+Closes the browser context and removes temporary extension copies. Use this to release instances
+created with `launchWithExtension()`; the built-in `extension` fixture handles teardown automatically.
+
+Cleanup still runs if closing the context fails. Repeated calls await the same teardown and report
+its result.
+
+#### Usage
+
+```ts
+await extension.close();
+```
+
+#### Returns
+
+`Promise<void>`
+
 ### disable
 
 Disables the installed extension and waits for its worker to stop. Worker evaluation and storage
@@ -273,9 +291,9 @@ See [Welcome page](../guides/welcome-page.md) for checking pages opened during a
 #### Arguments
 
 - `path` (`string`, optional) — Build directory to install. Defaults to the configured
-  [`extensionPath`](../basics/configuration.md#extensionpath). Relative paths resolve from the
-  Playwright configuration file's directory, or the current working directory when no config file
-  is used.
+  [`extensionPath`](../basics/configuration.md#extensionpath). Explicit relative paths resolve from
+  the current working directory. Calling `install()` without a path uses the original build path;
+  for the built-in fixture, that path is resolved relative to the Playwright configuration file.
 
 #### Returns
 

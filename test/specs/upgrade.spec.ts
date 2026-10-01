@@ -5,7 +5,7 @@ test.describe('extension upgrade', () => {
   test.use({ extensionAutoInstall: false });
 
   test('0.1.0 -> current', async ({ extension }) => {
-    await extension.install('./data/extension-0.1.0');
+    await extension.install('./test/data/extension-0.1.0');
     expect(extension.manifest.version).toBe('0.1.0');
 
     const oldId = extension.id;
@@ -33,7 +33,7 @@ test.describe('localized upgrade', () => {
   });
 
   test('0.1.0 -> current (+i18n)', async ({ extension }) => {
-    await extension.install('./data/extension-0.1.0');
+    await extension.install('./test/data/extension-0.1.0');
     expect(extension.manifest.name).toBe('Extensión de prueba antigua');
     expect(await extension.evaluate(() => chrome.i18n.getMessage('greeting'))).toBe('Hola antigua');
 
