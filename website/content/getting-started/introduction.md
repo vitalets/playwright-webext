@@ -2,14 +2,14 @@
 slug: /
 title: Introduction
 hide_title: true
-description: A Playwright toolkit for testing Chromium browser extensions.
+description: playwright-webext is a package that helps you test browser extensions with Playwright.
 ---
 
 import ProjectBrand from '@site/src/components/ProjectBrand';
 
 <ProjectBrand />
 
-**playwright-webext** is a toolkit for testing browser extensions with
+**playwright-webext** is a package that helps you test browser extensions with
 [Playwright](https://playwright.dev/). It provides ready-to-use APIs for testing extension pages, background behavior, storage, migrations, i18n, and much more.
 
 ## Features
