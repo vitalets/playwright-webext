@@ -9,7 +9,7 @@ import { ExtensionInstaller, type InstallOptions } from './install.js';
 import { ExtensionManagement } from './management.js';
 import { createStorage } from './storage.js';
 import { poll, type PollOptions } from './utils/poll.js';
-import { pollForPage, type PagePredicate } from './utils/poll-for-page.js';
+import { pollForPage, type PageMatcher } from './utils/poll-for-page.js';
 import { runAll } from './utils/run-all.js';
 
 /**
@@ -139,10 +139,11 @@ export class Extension {
   }
 
   /**
-   * Waits for an existing or newly opened context page matching a URL or predicate.
+   * Waits for an existing or newly opened context page matching a URL, pattern, or predicate.
    * Relative URLs resolve under the extension; absolute URLs match any context page.
+   * Pattern objects use URLPattern defaults without an implicit extension base URL.
    */
-  async pollForPage(urlOrPredicate: string | PagePredicate, options?: PollOptions) {
+  async pollForPage(urlOrPredicate: PageMatcher, options?: PollOptions) {
     if (typeof urlOrPredicate === 'string' && !URL.canParse(urlOrPredicate)) {
       urlOrPredicate = this.getURL(urlOrPredicate);
     }

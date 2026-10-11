@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+- Allow `extension.pollForPage()` to match regular expressions, `URLPattern` instances, or raw
+  `URLPatternInit` objects against the full page URL. URL patterns require global `URLPattern`
+  support. Strings continue to match exact URLs.
+
 ## [0.3.1] - 2026-10-11
 
 - Rename `waitUntil()` to `poll()`, `WaitUntilOptions` to `PollOptions`, and
