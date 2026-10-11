@@ -8,16 +8,16 @@ first-install behavior requires a browser profile where the extension has not al
 
 playwright-webext installs the extension in a fresh profile for each test, so you can check the
 welcome page without resetting a browser profile yourself. Keep automatic installation enabled and
-use [`extension.waitForPage()`](../api/extension.md#waitforpage) to find the welcome page.
+use [`extension.pollForPage()`](../api/extension.md#pollforpage) to find the welcome page.
 
 ```ts
 test('welcome page', async ({ extension }) => {
-  const welcomePage = await extension.waitForPage('welcome.html');
+  const welcomePage = await extension.pollForPage('welcome.html');
   // ...check welcome page
 });
 ```
 
-The welcome tab may already be open when your test starts. `waitForPage()` handles both an existing
+The welcome tab may already be open when your test starts. `pollForPage()` handles both an existing
 tab and one that is still opening. Relative paths resolve under the extension's URL.
 
 ## Example
@@ -38,7 +38,7 @@ import { expect } from '@playwright/test';
 import { test } from 'playwright-webext';
 
 test('opens the welcome page on install', async ({ extension }) => {
-  const welcomePage = await extension.waitForPage('welcome.html');
+  const welcomePage = await extension.pollForPage('welcome.html');
 
   await expect(welcomePage.getByRole('heading', { name: 'Welcome' })).toContainText('Welcome');
 });
@@ -70,7 +70,7 @@ export class WelcomePage {
   }
 
   async attach() {
-    this.#page = await this.extension.waitForPage(this.url);
+    this.#page = await this.extension.pollForPage(this.url);
     return this;
   }
 

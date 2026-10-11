@@ -3,24 +3,24 @@
  */
 
 import type { BrowserContext, Page } from '@playwright/test';
-import { waitUntil, type WaitUntilOptions } from './wait-until.js';
+import { poll, type PollOptions } from './poll.js';
 
 export type PagePredicate = (page: Page) => boolean | Promise<boolean>;
 
 /**
  * Polls existing and newly opened pages until an absolute URL or predicate matches.
  */
-export async function waitForPage(
+export async function pollForPage(
   context: BrowserContext,
   urlOrPredicate: string | PagePredicate,
-  options?: WaitUntilOptions,
+  options?: PollOptions,
 ) {
   const targetUrl = typeof urlOrPredicate === 'string' ? new URL(urlOrPredicate).href : undefined;
   const predicate =
     typeof urlOrPredicate === 'function'
       ? urlOrPredicate
       : (page: Page) => page.url() === targetUrl;
-  const page = await waitUntil(async () => {
+  const page = await poll(async () => {
     for (const page of context.pages()) {
       if (await predicate(page)) return page;
     }

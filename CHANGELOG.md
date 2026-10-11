@@ -4,6 +4,9 @@
 
 ## [Unreleased]
 
+- Rename `waitUntil()` to `poll()`, `WaitUntilOptions` to `PollOptions`, and
+  `extension.waitForPage()` to `extension.pollForPage()`. The old names are removed.
+
 ## [0.3.0] - 2026-10-01
 
 - Add `launchWithExtension()` for custom fixtures and standalone extension launches, with cleanup

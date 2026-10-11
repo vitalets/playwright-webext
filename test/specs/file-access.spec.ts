@@ -35,7 +35,7 @@ test('sets file access while disabled', async ({ extension }) => {
 
 test('closes the management page when the extension no longer exists', async ({ extension }) => {
   await extension.uninstall();
-  await extension.waitForPage('https://example.com/uninstalled');
+  await extension.pollForPage('https://example.com/uninstalled');
   const pages = extension.context.pages();
   await expect(extension.setFileAccess(true)).rejects.toThrow();
   expect(extension.context.pages()).toEqual(pages);

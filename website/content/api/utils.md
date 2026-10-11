@@ -62,7 +62,7 @@ fixture setup and test execution through its [fixture and test timeouts](https:/
 `extensionAutoInstall: false`, the context is available immediately, but metadata and worker
 operations require `await extension.install()` first.
 
-### waitUntil
+### poll
 
 Polls a synchronous or asynchronous callback until it returns a truthy value, then returns that
 value. Falsy values such as `undefined`, `null`, `false`, `0`, and `''` cause another attempt.
@@ -70,12 +70,12 @@ value. Falsy values such as `undefined`, `null`, `false`, `0`, and `''` cause an
 #### Usage
 
 ```ts
-import { waitUntil } from 'playwright-webext';
+import { poll } from 'playwright-webext';
 
-const result = await waitUntil(() => doSomething());
+const result = await poll(() => doSomething());
 ```
 
-To wait for a page by URL, use [`extension.waitForPage()`](extension.md#waitforpage).
+To wait for a page by URL, use [`extension.pollForPage()`](extension.md#pollforpage).
 
 #### Arguments
 

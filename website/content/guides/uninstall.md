@@ -28,7 +28,7 @@ import { test } from 'playwright-webext';
 test('opens the feedback page after uninstalling', async ({ extension }) => {
   await extension.uninstall();
 
-  const feedbackPage = await extension.waitForPage('https://example.com/uninstall');
+  const feedbackPage = await extension.pollForPage('https://example.com/uninstall');
   await expect(feedbackPage.getByRole('heading')).toHaveText('Why did you uninstall?');
 });
 ```

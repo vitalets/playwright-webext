@@ -8,8 +8,8 @@ import type { BrowserContext, Worker } from '@playwright/test';
 import { ExtensionInstaller, type InstallOptions } from './install.js';
 import { ExtensionManagement } from './management.js';
 import { createStorage } from './storage.js';
-import { waitUntil, type WaitUntilOptions } from './utils/wait-until.js';
-import { waitForPage, type PagePredicate } from './utils/wait-for-page.js';
+import { poll, type PollOptions } from './utils/poll.js';
+import { pollForPage, type PagePredicate } from './utils/poll-for-page.js';
 import { runAll } from './utils/run-all.js';
 
 /**
@@ -111,20 +111,20 @@ export class Extension {
   /**
    * Polls the current service worker until evaluation returns a truthy value.
    * Retries while the worker is unavailable.
-   * Uses waitUntil options and returns the value, rather than a JSHandle.
+   * Uses poll options and returns the value, rather than a JSHandle.
    * Playwright's page implementation reference: waitForFunctionExpression in
    * https://github.com/microsoft/playwright/blob/main/packages/playwright-core/src/server/frames.ts#L1471-L1537
    */
   waitForFunction<R, Arg>(
-    ...args: [...Parameters<typeof this.worker.evaluate<R, Arg>>, options?: WaitUntilOptions]
+    ...args: [...Parameters<typeof this.worker.evaluate<R, Arg>>, options?: PollOptions]
   ): Promise<Awaited<R>>;
   waitForFunction<R>(
-    ...args: [...Parameters<typeof this.worker.evaluate<R>>, options?: WaitUntilOptions]
+    ...args: [...Parameters<typeof this.worker.evaluate<R>>, options?: PollOptions]
   ): Promise<Awaited<R>>;
   waitForFunction(
-    ...[pageFunction, arg, options]: [...Parameters<Worker['evaluate']>, options?: WaitUntilOptions]
+    ...[pageFunction, arg, options]: [...Parameters<Worker['evaluate']>, options?: PollOptions]
   ) {
-    return waitUntil(() => this.findWorker()?.evaluate(pageFunction, arg), options);
+    return poll(() => this.findWorker()?.evaluate(pageFunction, arg), options);
   }
 
   /**
@@ -142,11 +142,11 @@ export class Extension {
    * Waits for an existing or newly opened context page matching a URL or predicate.
    * Relative URLs resolve under the extension; absolute URLs match any context page.
    */
-  async waitForPage(urlOrPredicate: string | PagePredicate, options?: WaitUntilOptions) {
+  async pollForPage(urlOrPredicate: string | PagePredicate, options?: PollOptions) {
     if (typeof urlOrPredicate === 'string' && !URL.canParse(urlOrPredicate)) {
       urlOrPredicate = this.getURL(urlOrPredicate);
     }
-    return waitForPage(this.context, urlOrPredicate, options);
+    return pollForPage(this.context, urlOrPredicate, options);
   }
 
   /**

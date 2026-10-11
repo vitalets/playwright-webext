@@ -453,14 +453,14 @@ expect(theme).toBe('dark');
   [`evaluate()`](#evaluate).
 - `arg` — Optional argument passed to the function. Pass `undefined` to supply options without an argument.
 - `options` (object, optional) — `timeout` and `intervals`, following
-  [`waitUntil()`](utils.md#arguments), including its defaults.
+  [`poll()`](utils.md#arguments), including its defaults.
 
 #### Returns
 
 `Promise<Awaited<R>>` — Resolves to the first truthy evaluated value, rather than the `JSHandle`
 returned by Playwright's `page.waitForFunction()`. Rejects if the polling timeout expires.
 
-### waitForPage
+### pollForPage
 
 Waits for a page in `extension.context` matching a URL or predicate. Relative paths, including paths
 with a leading slash, resolve under the extension URL. Absolute URLs can match any page in the
@@ -469,8 +469,8 @@ context by exact resolved URL. Checks both existing pages and pages that open or
 #### Usage
 
 ```ts
-const welcomePage = await extension.waitForPage('welcome.html');
-const feedbackPage = await extension.waitForPage('https://example.com/uninstalled');
+const welcomePage = await extension.pollForPage('welcome.html');
+const feedbackPage = await extension.pollForPage('https://example.com/uninstalled');
 ```
 
 Returns once the URL matches; use locator assertions to check the page's content.
@@ -479,8 +479,8 @@ For custom matching, pass a predicate that receives the Playwright `Page` instan
 runs in your test and is polled until it returns `true`; asynchronous results are awaited.
 
 ```ts
-const feedbackPage = await extension.waitForPage((page) => page.url().includes('/uninstalled'));
-const welcomePage = await extension.waitForPage(async (page) => (await page.title()) === 'Welcome');
+const feedbackPage = await extension.pollForPage((page) => page.url().includes('/uninstalled'));
+const welcomePage = await extension.pollForPage(async (page) => (await page.title()) === 'Welcome');
 ```
 
 #### Arguments
@@ -491,7 +491,7 @@ const welcomePage = await extension.waitForPage(async (page) => (await page.titl
   - `timeout` (`number`, optional) — Polling timeout in milliseconds.
   - `intervals` (`number[]`, optional) — Delays between polling attempts in milliseconds.
 
-Both options follow [`waitUntil()`](utils.md#arguments), including its defaults.
+Both options follow [`poll()`](utils.md#arguments), including its defaults.
 
 #### Returns
 
