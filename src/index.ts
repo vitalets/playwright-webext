@@ -41,7 +41,7 @@ export type WebextFixtures = {
 
 export { Extension } from './extension.js';
 export { launchWithExtension, type LaunchWithExtensionOptions } from './launch.js';
-export { waitUntil, type WaitUntilOptions } from './utils/wait-until.js';
+export { poll, type PollOptions } from './utils/poll.js';
 
 /**
  * Playwright test extended with extension configuration and fixtures.

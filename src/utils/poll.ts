@@ -4,7 +4,7 @@
 
 import { expect } from '@playwright/test';
 
-export type WaitUntilOptions = Pick<
+export type PollOptions = Pick<
   Extract<Parameters<typeof expect.poll>[1], object>,
   'timeout' | 'intervals'
 >;
@@ -12,7 +12,7 @@ export type WaitUntilOptions = Pick<
 /**
  * Polls until the callback returns a truthy value and returns that value.
  */
-export async function waitUntil<T>(callback: () => T | Promise<T>, options?: WaitUntilOptions) {
+export async function poll<T>(callback: () => T | Promise<T>, options?: PollOptions) {
   let value!: T;
 
   await expect
