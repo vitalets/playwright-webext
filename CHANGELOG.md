@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-10-11
+
 - Allow `extension.pollForPage()` to match regular expressions, `URLPattern` instances, or raw
   `URLPatternInit` objects against the full page URL. URL patterns require global `URLPattern`
   support. Strings continue to match exact URLs.
@@ -63,7 +65,8 @@
 
 - Initial release.
 
-[unreleased]: https://github.com/vitalets/playwright-webext/compare/v0.3.1...HEAD
+[unreleased]: https://github.com/vitalets/playwright-webext/compare/v0.3.2...HEAD
+[0.3.2]: https://github.com/vitalets/playwright-webext/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/vitalets/playwright-webext/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/vitalets/playwright-webext/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/vitalets/playwright-webext/compare/v0.2.0...v0.2.1
