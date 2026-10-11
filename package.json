@@ -33,6 +33,7 @@
     "update:rules": "cp ../agentic-dev/rules/ts-file-structure/ts-file-structure.md .agents/rules/",
     "docs": "npm --prefix website run start --",
     "docs:build": "npm --prefix website run build",
+    "docs:release": "git checkout docs && git pull && git merge main && git push origin docs && git checkout main",
     "docs:tsc": "npm --prefix website run typecheck"
   },
   "engines": {
