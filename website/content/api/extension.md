@@ -462,31 +462,49 @@ returned by Playwright's `page.waitForFunction()`. Rejects if the polling timeou
 
 ### pollForPage
 
-Waits for a page in `extension.context` matching a URL or predicate. Relative paths, including paths
+Waits for a page in `extension.context` matching a URL, regular expression, URL pattern, or predicate.
+Relative paths, including paths
 with a leading slash, resolve under the extension URL. Absolute URLs can match any page in the
-context by exact resolved URL. Checks both existing pages and pages that open or navigate later.
+context by exact resolved URL. Checks both existing pages and pages that open or navigate later. If several pages match, the first matching page is returned.
 
 #### Usage
 
 ```ts
 const welcomePage = await extension.pollForPage('welcome.html');
-const feedbackPage = await extension.pollForPage('https://example.com/uninstalled');
+const feedbackPage = await extension.pollForPage(/feedback/);
 ```
 
-Returns once the URL matches; use locator assertions to check the page's content.
+For pattern matching, pass a `URLPattern` instance or a raw `URLPatternInit` object. This requires
+global `URLPattern` support, available in Node.js 24+. The package does not include a polyfill.
+
+```ts
+// Match /welcome.html on any host, allowing any query string or hash.
+const page = await extension.pollForPage({ pathname: '/welcome.html' });
+```
+
+Raw objects are passed to `new URLPattern()` without an implicit base URL. Set `baseURL` to
+`extension.getURL()` to scope the pattern to the extension:
+
+```ts
+// Match the extension's welcome page, allowing any query string or hash.
+const welcomePage = await extension.pollForPage({
+  pathname: '/welcome.html',
+  baseURL: extension.getURL(),
+});
+```
 
 For custom matching, pass a predicate that receives the Playwright `Page` instance. The predicate
 runs in your test and is polled until it returns `true`; asynchronous results are awaited.
 
 ```ts
-const feedbackPage = await extension.pollForPage((page) => page.url().includes('/uninstalled'));
 const welcomePage = await extension.pollForPage(async (page) => (await page.title()) === 'Welcome');
 ```
 
 #### Arguments
 
-- `urlOrPredicate` (`string | ((page: Page) => boolean | Promise<boolean>)`) — Extension-relative
-  path, absolute URL, or predicate to match.
+- `urlOrPredicate` (`string | RegExp | URLPattern | URLPatternInit | ((page: Page) => boolean | Promise<boolean>)`) —
+  Extension-relative path, absolute URL, regular expression, URL pattern, pattern initialization object,
+  or predicate to match.
 - `options` (object, optional):
   - `timeout` (`number`, optional) — Polling timeout in milliseconds.
   - `intervals` (`number[]`, optional) — Delays between polling attempts in milliseconds.
@@ -496,4 +514,5 @@ Both options follow [`poll()`](utils.md#arguments), including its defaults.
 #### Returns
 
 <code>Promise&lt;<a href="https://playwright.dev/docs/api/class-page">Page</a>&gt;</code> — Resolves to the matching page.
-Rejects if no matching page appears before the timeout or the predicate throws or rejects.
+Rejects if no matching page appears before the timeout, the predicate throws or rejects, or the
+pattern is invalid or unsupported by the runtime.
