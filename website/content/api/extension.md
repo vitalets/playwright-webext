@@ -51,7 +51,7 @@ None.
 ### manifest
 
 A manifest snapshot read through `chrome.runtime.getManifest()` when the extension becomes ready.
-Installation, upgrade, and re-enabling refresh the snapshot.
+Installation, reload, upgrade, and re-enabling refresh the snapshot.
 
 #### Usage
 
@@ -148,7 +148,7 @@ None.
 
 Looks up the currently running extension service worker on each access. Throws when no worker is
 available, including after disabling or uninstalling.
-Read it again after an upgrade or enable operation instead of retaining an old handle.
+Read it again after a reload, upgrade, or enable operation instead of retaining an old handle.
 
 #### Usage
 
@@ -363,6 +363,26 @@ None.
 #### Returns
 
 <code>Promise&lt;<a href="https://playwright.dev/docs/api/class-page">Page</a>&gt;</code>
+
+### reload
+
+Reloads the running extension using `chrome.runtime.reload()`, waits for the replacement service
+worker, and refreshes the manifest. Enables Chromium's Developer mode so the unpacked extension
+can reload. Rejects when the extension has no running worker, including while disabled.
+
+#### Usage
+
+```ts
+await extension.reload();
+```
+
+#### Arguments
+
+None.
+
+#### Returns
+
+`Promise<void>`
 
 ### setFileAccess
 

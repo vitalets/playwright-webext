@@ -4,6 +4,9 @@
 
 ## [Unreleased]
 
+- Add `extension.reload()` to enable Developer mode, reload the extension, and wait for its
+  replacement service worker and refreshed manifest.
+
 ## [0.3.2] - 2026-10-11
 
 - Allow `extension.pollForPage()` to match regular expressions, `URLPattern` instances, or raw

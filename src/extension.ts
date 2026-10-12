@@ -215,6 +215,23 @@ export class Extension {
   }
 
   /**
+   * Reloads the running extension and waits for its replacement worker and manifest.
+   * Enables Developer mode so Chromium permits reloading an unpacked extension.
+   */
+  async reload() {
+    const worker = this.worker;
+    const management = new ExtensionManagement(this.context, this.id);
+    await management.enableDeveloperMode();
+    await Promise.all([
+      worker.waitForEvent('close'),
+      this.waitForReady(),
+      worker.evaluate(() => {
+        setTimeout(() => chrome.runtime.reload());
+      }),
+    ]);
+  }
+
+  /**
    * Sets Allow access to file URLs and waits for the replacement worker when enabled.
    * An unchanged setting does not restart the extension.
    */
