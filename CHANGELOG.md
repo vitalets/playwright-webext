@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.3.3] - 2026-10-12
+
 - Add `extension.reload()` to enable Developer mode, reload the extension, and wait for its
   replacement service worker and refreshed manifest.
 
@@ -68,7 +70,8 @@
 
 - Initial release.
 
-[unreleased]: https://github.com/vitalets/playwright-webext/compare/v0.3.2...HEAD
+[unreleased]: https://github.com/vitalets/playwright-webext/compare/v0.3.3...HEAD
+[0.3.3]: https://github.com/vitalets/playwright-webext/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/vitalets/playwright-webext/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/vitalets/playwright-webext/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/vitalets/playwright-webext/compare/v0.2.1...v0.3.0
