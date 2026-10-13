@@ -8,6 +8,7 @@ import type { BrowserContext, Worker } from '@playwright/test';
 import { ExtensionInstaller, type InstallOptions } from './install.js';
 import { ExtensionManagement } from './management.js';
 import { createStorage } from './storage.js';
+import { dispatch, type ExtensionEventName, type ExtensionEventArgs } from './dispatch.js';
 import { poll, type PollOptions } from './utils/poll.js';
 import { pollForPage, type PageMatcher } from './utils/poll-for-page.js';
 import { runAll } from './utils/run-all.js';
@@ -106,6 +107,17 @@ export class Extension {
   evaluate<R>(...args: Parameters<typeof this.worker.evaluate<R>>): Promise<R>;
   evaluate(...args: Parameters<Worker['evaluate']>) {
     return this.worker.evaluate(...args);
+  }
+
+  /**
+   * Dispatches a synthetic Chrome event in the current worker using its listener arguments.
+   * Requires serializable arguments. Does not wait for asynchronous listener work or retry.
+   */
+  async dispatch<Name extends ExtensionEventName>(
+    name: Name,
+    ...args: ExtensionEventArgs<NoInfer<Name>>
+  ) {
+    await dispatch(this.worker, name, args);
   }
 
   /**
@@ -215,6 +227,31 @@ export class Extension {
   }
 
   /**
+   * Enables Developer mode for the browser profile without restarting the extension.
+   * Safe to call repeatedly and while the installed extension is disabled.
+   */
+  async enableDevMode() {
+    const management = new ExtensionManagement(this.context, this.id);
+    await management.enableDevMode();
+  }
+
+  /**
+   * Reloads the running extension and waits for its replacement worker and manifest.
+   * Enables Developer mode so Chromium permits reloading an unpacked extension.
+   */
+  async reload() {
+    const worker = this.worker;
+    await this.enableDevMode();
+    await Promise.all([
+      worker.waitForEvent('close'),
+      this.waitForReady(),
+      worker.evaluate(() => {
+        setTimeout(() => chrome.runtime.reload());
+      }),
+    ]);
+  }
+
+  /**
    * Sets Allow access to file URLs and waits for the replacement worker when enabled.
    * An unchanged setting does not restart the extension.
    */
@@ -227,7 +264,7 @@ export class Extension {
     // CDP can initially load our unpacked extension with Developer mode off; on this reload,
     // Chromium disables it with unsupportedDeveloperExtension instead of restarting its worker.
     // Enable Developer mode first so the extension stays enabled and waitForReady() can complete.
-    await management.enableDeveloperMode();
+    await management.enableDevMode();
     await Promise.all([
       enabled ? this.waitForStopped() : undefined,
       enabled ? this.waitForReady() : undefined,

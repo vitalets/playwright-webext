@@ -90,7 +90,7 @@ export class ExtensionManagement {
   /**
    * Enables Developer mode in the browser profile.
    */
-  async enableDeveloperMode() {
+  async enableDevMode() {
     await this.withPage((page) =>
       page.evaluate(() =>
         (chrome as ExtensionsChrome).developerPrivate.updateProfileConfiguration({

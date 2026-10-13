@@ -4,6 +4,20 @@
 
 ## [Unreleased]
 
+## [0.3.5] - 2026-10-13
+
+- Add `extension.dispatch(name, ...args)` to dispatch synthetic Chrome events with typed event names
+  and listener arguments in the current service worker.
+
+## [0.3.4] - 2026-10-13
+
+- Add `extension.enableDevMode()` to enable Developer mode.
+
+## [0.3.3] - 2026-10-12
+
+- Add `extension.reload()` to reload the extension, and wait for its
+  replacement service worker and refreshed manifest.
+
 ## [0.3.2] - 2026-10-11
 
 - Allow `extension.pollForPage()` to match regular expressions, `URLPattern` instances, or raw
@@ -65,7 +79,10 @@
 
 - Initial release.
 
-[unreleased]: https://github.com/vitalets/playwright-webext/compare/v0.3.2...HEAD
+[unreleased]: https://github.com/vitalets/playwright-webext/compare/v0.3.5...HEAD
+[0.3.5]: https://github.com/vitalets/playwright-webext/compare/v0.3.4...v0.3.5
+[0.3.4]: https://github.com/vitalets/playwright-webext/compare/v0.3.3...v0.3.4
+[0.3.3]: https://github.com/vitalets/playwright-webext/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/vitalets/playwright-webext/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/vitalets/playwright-webext/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/vitalets/playwright-webext/compare/v0.2.1...v0.3.0

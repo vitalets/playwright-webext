@@ -40,6 +40,7 @@ export type WebextFixtures = {
 };
 
 export { Extension } from './extension.js';
+export type { ExtensionEventName, ExtensionEventArgs } from './dispatch.js';
 export { launchWithExtension, type LaunchWithExtensionOptions } from './launch.js';
 export { poll, type PollOptions } from './utils/poll.js';
 

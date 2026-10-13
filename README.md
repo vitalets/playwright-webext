@@ -26,6 +26,7 @@ A package for testing browser extensions with [**Playwright**](https://playwrigh
 - Open [popup](https://vitalets.github.io/playwright-webext/guides/popup/), [options](https://vitalets.github.io/playwright-webext/guides/options/), and
   [side panel](https://vitalets.github.io/playwright-webext/guides/side-panel/) pages.
 - Read and write [extension storage](https://vitalets.github.io/playwright-webext/guides/storage/) directly from test.
+- Dispatch [Chrome events](https://vitalets.github.io/playwright-webext/api/extension/#dispatch) directly from tests.
 - Defer [extension installation](https://vitalets.github.io/playwright-webext/basics/configuration/#extensionautoinstall) to prepare the browser state.
 - Test [internationalization (i18n)](https://vitalets.github.io/playwright-webext/guides/i18n/) without changing your system language.
 - Test [data migrations](https://vitalets.github.io/playwright-webext/guides/migration/) between extension versions.

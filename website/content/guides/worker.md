@@ -26,7 +26,7 @@ export class Bg {
 
   async doSomething() {
     await this.extension.evaluate(() => {
-      return chrome.runtime.sendMessage({ type: 'DO_SOMETHING' });
+      await chrome.runtime.sendMessage({ type: 'DO_SOMETHING' });
     });
   }
 }

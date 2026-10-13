@@ -148,7 +148,7 @@ None.
 
 Looks up the currently running extension service worker on each access. Throws when no worker is
 available, including after disabling or uninstalling.
-Read it again after an upgrade or enable operation instead of retaining an old handle.
+Read it again after a reload, upgrade, or enable operation instead of retaining an old handle.
 
 #### Usage
 
@@ -203,6 +203,61 @@ None.
 
 `Promise<void>`
 
+### dispatch
+
+Emulates a Chrome event in the current service worker. Use it to exercise event handlers without
+staging a browser action or another extension build.
+
+#### Usage
+
+```ts
+await extension.dispatch('runtime.onInstalled', {
+  reason: 'update',
+  previousVersion: '1.0',
+});
+```
+
+Event names are relative to `chrome`, with TypeScript checking the event's listener arguments.
+Events can take zero or multiple arguments:
+
+```ts
+await extension.dispatch('runtime.onStartup');
+await extension.dispatch('storage.onChanged', { theme: { newValue: 'dark' } }, 'local');
+```
+
+Dispatch only notifies listeners in the current worker. For example, dispatching `storage.onChanged`
+does not change storage. Requires a running worker, an available event with Chromium's internal
+`dispatch` method, and arguments supported by Playwright's
+[evaluation serialization](https://playwright.dev/docs/evaluating#evaluation-argument).
+Callbacks and ports cannot be passed from the test process.
+
+The call does not wait for listeners to register. Use [`waitForFunction()`](#waitforfunction)
+before dispatching when listeners may still be registering, such as after a worker reload:
+
+```ts
+await extension.waitForFunction(() => chrome.runtime.onInstalled.hasListeners());
+await extension.dispatch('runtime.onInstalled', {
+  reason: 'update',
+  previousVersion: '1.0',
+});
+```
+
+`hasListeners()` checks whether at least one listener is registered; it does not guarantee that all
+application listeners are ready. Dispatch does not wait for asynchronous listener work to finish;
+use retrying assertions for resulting changes. Dispatch is not retried, including if a listener
+closes the worker.
+
+#### Arguments
+
+- `name` (`ExtensionEventName`) — Chrome event path, such as `runtime.onInstalled` or
+  `storage.local.onChanged`.
+- `...args` (`ExtensionEventArgs<typeof name>`) — Arguments accepted by the event's listener.
+
+#### Returns
+
+`Promise<void>` — Resolves after dispatch returns. Rejects if the worker or event is unavailable,
+or the event does not expose a callable `dispatch` method.
+
 ### enable
 
 Enables the installed extension, waits for readiness, and refreshes the manifest. If already enabled,
@@ -214,6 +269,26 @@ returns without restarting the worker.
 await extension.disable();
 await extension.enable();
 ```
+
+#### Arguments
+
+None.
+
+#### Returns
+
+`Promise<void>`
+
+### enableDevMode
+
+Enables Chromium's Developer mode for esxtensions. Requires an installed extension, but works while it is disabled.
+
+#### Usage
+
+```ts
+await extension.enableDevMode();
+```
+
+Resolves when the setting is applied. Usefull when your extension triggers reload internally with `chrome.runtime.reload()`.
 
 #### Arguments
 
@@ -363,6 +438,26 @@ None.
 #### Returns
 
 <code>Promise&lt;<a href="https://playwright.dev/docs/api/class-page">Page</a>&gt;</code>
+
+### reload
+
+Reloads the running extension using `chrome.runtime.reload()`, waits for the replacement service
+worker, and refreshes the manifest. Enables Chromium's Developer mode so the unpacked extension
+can reload. Rejects when the extension has no running worker, including while disabled.
+
+#### Usage
+
+```ts
+await extension.reload();
+```
+
+#### Arguments
+
+None.
+
+#### Returns
+
+`Promise<void>`
 
 ### setFileAccess
 
