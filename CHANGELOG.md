@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.3.5] - 2026-10-13
+
 - Add `extension.dispatch(name, ...args)` to dispatch synthetic Chrome events with typed event names
   and listener arguments in the current service worker.
 
@@ -77,7 +79,8 @@
 
 - Initial release.
 
-[unreleased]: https://github.com/vitalets/playwright-webext/compare/v0.3.4...HEAD
+[unreleased]: https://github.com/vitalets/playwright-webext/compare/v0.3.5...HEAD
+[0.3.5]: https://github.com/vitalets/playwright-webext/compare/v0.3.4...v0.3.5
 [0.3.4]: https://github.com/vitalets/playwright-webext/compare/v0.3.3...v0.3.4
 [0.3.3]: https://github.com/vitalets/playwright-webext/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/vitalets/playwright-webext/compare/v0.3.1...v0.3.2
