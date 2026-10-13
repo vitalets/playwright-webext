@@ -49,6 +49,13 @@ test('saves the tab URL when the browser action is clicked', async ({ extension 
 });
 ```
 
+You can also retrieve the active tab and pass it to the handler:
+
+```ts
+const [activeTab] = await extension.evaluate(() => chrome.tabs.query({ active: true }));
+await extension.dispatch('action.onClicked', activeTab);
+```
+
 Dispatch does not wait for listeners to register. Before dispatching, wait for at least one listener:
 
 ```ts
@@ -63,6 +70,6 @@ instead. Dispatch also does not wait for asynchronous listener work to finish.
 - Events reach only the current service worker, not popups, options pages, or content scripts.
 - Dispatch does not create tabs, open popups, or grant `activeTab` access.
 - Arguments must be serializable; callbacks and ports are not supported.
-- Pass a real tab properties if the handler uses them to interact with a page.
+- Pass real tab properties if the handler uses them to interact with a page.
 
-See the [`extensino.dispatch()`](../api/extension.md#dispatch) reference for argument forms and error behavior.
+See the [`extension.dispatch()`](../api/extension.md#dispatch) reference for argument forms and error behavior.
