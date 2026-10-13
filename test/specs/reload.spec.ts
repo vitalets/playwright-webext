@@ -39,3 +39,29 @@ test('chrome.runtime.reload() disables the unpacked extension without Developer 
   expect(await management.isEnabled()).toBe(false);
   expect(() => extension.worker).toThrow('Extension service worker is not available.');
 });
+
+test('enableDevMode allows worker reloads and is safe to repeat', async ({ extension }) => {
+  const oldWorker = extension.worker;
+  const oldManifest = extension.manifest;
+  const pages = extension.context.pages();
+  await extension.enableDevMode();
+  await extension.enableDevMode();
+  expect(extension.worker).toBe(oldWorker);
+  expect(extension.context.pages()).toEqual(pages);
+
+  const [worker] = await Promise.all([
+    extension.context.waitForEvent('serviceworker', {
+      predicate: (worker) => worker.url().startsWith(extension.getURL()),
+    }),
+    oldWorker.waitForEvent('close'),
+    extension.evaluate(() => {
+      setTimeout(() => chrome.runtime.reload());
+    }),
+  ]);
+
+  expect(await worker.evaluate(() => chrome.runtime.id)).toBe(extension.id);
+  expect(extension.worker).toBe(worker);
+  expect(extension.manifest).toBe(oldManifest);
+  const management = new ExtensionManagement(extension.context, extension.id);
+  expect(await management.isEnabled()).toBe(true);
+});

@@ -51,7 +51,7 @@ None.
 ### manifest
 
 A manifest snapshot read through `chrome.runtime.getManifest()` when the extension becomes ready.
-Installation, reload, upgrade, and re-enabling refresh the snapshot.
+Installation, upgrade, and re-enabling refresh the snapshot.
 
 #### Usage
 
@@ -214,6 +214,26 @@ returns without restarting the worker.
 await extension.disable();
 await extension.enable();
 ```
+
+#### Arguments
+
+None.
+
+#### Returns
+
+`Promise<void>`
+
+### enableDevMode
+
+Enables Chromium's Developer mode for esxtensions. Requires an installed extension, but works while it is disabled.
+
+#### Usage
+
+```ts
+await extension.enableDevMode();
+```
+
+Resolves when the setting is applied. Usefull when your extension triggers reload internally with `chrome.runtime.reload()`.
 
 #### Arguments
 

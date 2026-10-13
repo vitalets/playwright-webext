@@ -4,6 +4,9 @@
 
 ## [Unreleased]
 
+- Add `extension.enableDevMode()` to enable Developer mode before the extension calls
+  `chrome.runtime.reload()` itself.
+
 ## [0.3.3] - 2026-10-12
 
 - Add `extension.reload()` to enable Developer mode, reload the extension, and wait for its

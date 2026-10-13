@@ -215,13 +215,21 @@ export class Extension {
   }
 
   /**
+   * Enables Developer mode for the browser profile without restarting the extension.
+   * Safe to call repeatedly and while the installed extension is disabled.
+   */
+  async enableDevMode() {
+    const management = new ExtensionManagement(this.context, this.id);
+    await management.enableDevMode();
+  }
+
+  /**
    * Reloads the running extension and waits for its replacement worker and manifest.
    * Enables Developer mode so Chromium permits reloading an unpacked extension.
    */
   async reload() {
     const worker = this.worker;
-    const management = new ExtensionManagement(this.context, this.id);
-    await management.enableDeveloperMode();
+    await this.enableDevMode();
     await Promise.all([
       worker.waitForEvent('close'),
       this.waitForReady(),
@@ -244,7 +252,7 @@ export class Extension {
     // CDP can initially load our unpacked extension with Developer mode off; on this reload,
     // Chromium disables it with unsupportedDeveloperExtension instead of restarting its worker.
     // Enable Developer mode first so the extension stays enabled and waitForReady() can complete.
-    await management.enableDeveloperMode();
+    await management.enableDevMode();
     await Promise.all([
       enabled ? this.waitForStopped() : undefined,
       enabled ? this.waitForReady() : undefined,
