@@ -18,6 +18,7 @@ import ProjectBrand from '@site/src/components/ProjectBrand';
 - Open [popup](../guides/popup.md), [options](../guides/options.md), and
   [side panel](../guides/side-panel.md) pages.
 - Read and write [extension storage](../guides/storage.md).
+- Dispatch [Chrome events](../api/extension.md#dispatch) directly from tests.
 - Defer [extension installation](../basics/configuration.md#extensionautoinstall) to prepare the browser state first.
 - Test [internationalization (i18n)](../guides/i18n.md) without changing your system language.
 - Test [data migrations](../guides/migration.md) between extension versions.

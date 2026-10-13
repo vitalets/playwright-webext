@@ -8,6 +8,7 @@ import type { BrowserContext, Worker } from '@playwright/test';
 import { ExtensionInstaller, type InstallOptions } from './install.js';
 import { ExtensionManagement } from './management.js';
 import { createStorage } from './storage.js';
+import { dispatch, type ExtensionEventName, type ExtensionEventArgs } from './dispatch.js';
 import { poll, type PollOptions } from './utils/poll.js';
 import { pollForPage, type PageMatcher } from './utils/poll-for-page.js';
 import { runAll } from './utils/run-all.js';
@@ -106,6 +107,17 @@ export class Extension {
   evaluate<R>(...args: Parameters<typeof this.worker.evaluate<R>>): Promise<R>;
   evaluate(...args: Parameters<Worker['evaluate']>) {
     return this.worker.evaluate(...args);
+  }
+
+  /**
+   * Dispatches a synthetic Chrome event in the current worker using its listener arguments.
+   * Requires serializable arguments. Does not wait for asynchronous listener work or retry.
+   */
+  async dispatch<Name extends ExtensionEventName>(
+    name: Name,
+    ...args: ExtensionEventArgs<NoInfer<Name>>
+  ) {
+    await dispatch(this.worker, name, args);
   }
 
   /**

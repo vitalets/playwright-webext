@@ -4,14 +4,16 @@
 
 ## [Unreleased]
 
+- Add `extension.dispatch(name, ...args)` to dispatch synthetic Chrome events with typed event names
+  and listener arguments in the current service worker.
+
 ## [0.3.4] - 2026-10-13
 
-- Add `extension.enableDevMode()` to enable Developer mode before the extension calls
-  `chrome.runtime.reload()` itself.
+- Add `extension.enableDevMode()` to enable Developer mode.
 
 ## [0.3.3] - 2026-10-12
 
-- Add `extension.reload()` to enable Developer mode, reload the extension, and wait for its
+- Add `extension.reload()` to reload the extension, and wait for its
   replacement service worker and refreshed manifest.
 
 ## [0.3.2] - 2026-10-11
