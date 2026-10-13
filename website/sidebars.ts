@@ -38,6 +38,7 @@ const sidebars: SidebarsConfig = {
         'guides/options',
         'guides/welcome-page',
         'guides/side-panel',
+        'guides/dispatching-events',
         'guides/i18n',
         'guides/migration',
         'guides/uninstall',
