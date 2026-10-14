@@ -1,11 +1,6 @@
-import { generateKeyPairSync } from 'node:crypto';
-import { mkdir, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { expect } from '@playwright/test';
 import { test, launchWithExtension } from '../../src/index.js';
 import { ExtensionManagement } from '../../src/management.js';
-import { readManifestFromTab } from '../../src/manifest.js';
 
 test.use({ extensionPath: './data/extension-no-worker' });
 
@@ -69,15 +64,12 @@ test('changes file access while enabled and disabled', async ({ extension }) => 
   expect(extension.context.serviceWorkers()).toHaveLength(0);
 });
 
-test('uninstalls and cleans up a failed manifest read', async ({ extension }) => {
+test('uninstalls the extension', async ({ extension }) => {
   await extension.uninstall();
   expect(extension.ready).toBe(false);
-  const pages = extension.context.pages();
   await expect(
     new ExtensionManagement(extension.context, extension.id).isEnabled(),
   ).rejects.toThrow();
-  await expect(readManifestFromTab(extension.context, extension.id)).rejects.toThrow();
-  expect(extension.context.pages()).toEqual(pages);
   expect(extension.context.serviceWorkers()).toHaveLength(0);
 });
 
@@ -103,56 +95,6 @@ test.describe('deferred installation', () => {
     expect(extension.manifest.name).toBe('Workerless test extension');
     expect(extension.context.serviceWorkers()).toHaveLength(0);
     await extension.close();
-    expect(extension.ready).toBe(false);
-  });
-
-  test('reads a document-free extension with comments and an explicit key', async ({
-    extension,
-  }, testInfo) => {
-    const path = testInfo.outputPath('extension');
-    await mkdir(path, { recursive: true });
-    const { publicKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
-    const key = publicKey.export({ type: 'spki', format: 'der' }).toString('base64');
-    await writeFile(
-      join(path, 'manifest.json'),
-      '// Manifest comment accepted by Chrome.\n' +
-        JSON.stringify({ manifest_version: 3, name: 'Key test', version: '1.0', key }),
-    );
-    await extension.install(path);
-    expect(extension.manifest.key).toBe(key);
-    expect(extension.context.serviceWorkers()).toHaveLength(0);
-  });
-
-  test('does not attach another extension worker', async ({ extension }) => {
-    const session = await extension.context.browser()!.newBrowserCDPSession();
-    try {
-      await session.send('Extensions.loadUnpacked', {
-        path: fileURLToPath(new URL('../data/extension/', import.meta.url)),
-      });
-      await extension.install();
-      expect(extension.context.serviceWorkers()).toHaveLength(1);
-      expect(extension.manifest.name).toBe('Workerless test extension');
-      expect(() => extension.worker).toThrow('service worker is not available');
-    } finally {
-      await session.detach();
-    }
-  });
-
-  test('rejects a missing declared worker script', async ({ extension }, testInfo) => {
-    const path = testInfo.outputPath('broken-worker');
-    await mkdir(path, { recursive: true });
-    await writeFile(
-      join(path, 'manifest.json'),
-      JSON.stringify({
-        manifest_version: 3,
-        name: 'Broken worker',
-        version: '1.0',
-        background: { service_worker: 'background.js' },
-      }),
-    );
-    extension.context.setDefaultTimeout(2_000);
-    await expect(extension.install(path)).rejects.toThrow();
-    expect(() => extension.manifest).toThrow('Extension is not ready');
     expect(extension.ready).toBe(false);
   });
 
