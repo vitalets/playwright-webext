@@ -16,7 +16,7 @@ export type ExtensionConfiguration = {
   pinnedToToolbar?: boolean;
 };
 
-type ExtensionsChrome = typeof chrome & {
+declare const chrome: typeof globalThis.chrome & {
   developerPrivate: {
     reload(
       id: string,
@@ -68,10 +68,7 @@ export class ExtensionManagement {
    */
   async getExtensionInfo() {
     return this.withPage((page) =>
-      page.evaluate(
-        (id) => (chrome as ExtensionsChrome).developerPrivate.getExtensionInfo(id),
-        this.id,
-      ),
+      page.evaluate((id) => chrome.developerPrivate.getExtensionInfo(id), this.id),
     );
   }
 
@@ -82,7 +79,7 @@ export class ExtensionManagement {
     await this.withPage((page) =>
       page.evaluate(
         ({ id, configuration }) =>
-          (chrome as ExtensionsChrome).developerPrivate.updateExtensionConfiguration({
+          chrome.developerPrivate.updateExtensionConfiguration({
             ...configuration,
             extensionId: id,
           }),
@@ -97,7 +94,7 @@ export class ExtensionManagement {
   async enableDevMode() {
     await this.withPage((page) =>
       page.evaluate(() =>
-        (chrome as ExtensionsChrome).developerPrivate.updateProfileConfiguration({
+        chrome.developerPrivate.updateProfileConfiguration({
           inDeveloperMode: true,
         }),
       ),
@@ -111,7 +108,7 @@ export class ExtensionManagement {
     const error = await this.withPage((page) =>
       page.evaluate(
         (id) =>
-          (chrome as ExtensionsChrome).developerPrivate.reload(id, {
+          chrome.developerPrivate.reload(id, {
             failQuietly: true,
             populateErrorForUnpacked: true,
           }),
