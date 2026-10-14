@@ -1,6 +1,7 @@
 import { generateKeyPairSync } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { expect } from '@playwright/test';
 import { test, launchWithExtension } from '../../src/index.js';
 import { ExtensionManagement } from '../../src/management.js';
@@ -126,7 +127,7 @@ test.describe('deferred installation', () => {
     const session = await extension.context.browser()!.newBrowserCDPSession();
     try {
       await session.send('Extensions.loadUnpacked', {
-        path: new URL('../data/extension/', import.meta.url).pathname,
+        path: fileURLToPath(new URL('../data/extension/', import.meta.url)),
       });
       await extension.install();
       expect(extension.context.serviceWorkers()).toHaveLength(1);

@@ -12,7 +12,7 @@ test('dispatch without arguments', async ({ extension }) => {
 });
 
 test('dispatch with args', async ({ extension }) => {
-  await extension.waitForFunction(() => chrome.runtime.onInstalled.hasListeners());
+  await extension.storage.local.expect('onInstalled').toEqual({ reason: 'install' });
   await extension.dispatch('runtime.onInstalled', { reason: 'update', previousVersion: '1.0' });
   await extension.storage.local.expect('onInstalled').toEqual({
     reason: 'update',
