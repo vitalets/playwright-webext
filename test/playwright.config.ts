@@ -2,7 +2,8 @@ import { defineConfig } from '@playwright/test';
 import type { WebextOptions } from '../src/index.js';
 
 export default defineConfig<WebextOptions>({
-  workers: 3,
+  // Let Playwright choose the worker count on CI; use three workers locally.
+  workers: process.env.CI ? undefined : 3,
   expect: {
     timeout: 10_000,
   },
