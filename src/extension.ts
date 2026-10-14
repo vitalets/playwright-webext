@@ -7,6 +7,8 @@
 import type { BrowserContext, Worker } from '@playwright/test';
 import { ExtensionInstaller, type InstallOptions } from './install.js';
 import { ExtensionManagement } from './management.js';
+import { uninstallWithWorker, uninstallWithCDP } from './uninstall.js';
+import { readManifestFromTab, readManifestFromWorker } from './manifest.js';
 import { createStorage } from './storage.js';
 import { dispatch, type ExtensionEventName, type ExtensionEventArgs } from './dispatch.js';
 import { poll, type PollOptions } from './utils/poll.js';
@@ -21,12 +23,16 @@ export class Extension {
   readonly storage = createStorage(() => this.worker);
   readonly #installer: ExtensionInstaller;
   #id?: string;
+  #ready = false;
   #manifest?: chrome.runtime.ManifestV3;
   #closePromise?: Promise<void>;
 
   constructor(context: BrowserContext, options: InstallOptions) {
     this.context = context;
     this.#installer = new ExtensionInstaller(context, options);
+    context.on('close', () => {
+      this.#ready = false;
+    });
   }
 
   /**
@@ -47,7 +53,14 @@ export class Extension {
   }
 
   /**
-   * Returns the manifest read from the ready extension service worker.
+   * Whether initial installation and manifest acquisition completed; remains true while disabled.
+   */
+  get ready() {
+    return this.#ready;
+  }
+
+  /**
+   * Returns the loaded manifest snapshot read through the extension runtime API.
    */
   get manifest() {
     if (!this.#manifest) throw new Error('Extension is not ready. Call extension.install() first.');
@@ -55,13 +68,19 @@ export class Extension {
   }
 
   /**
+   * Returns whether the loaded build declares a worker, or undefined before installation.
+   * A declared worker may currently be stopped or disabled.
+   */
+  get hasServiceWorker() {
+    return this.#installer.hasServiceWorker;
+  }
+
+  /**
    * Returns the configured popup URL, or throws when no popup is declared.
    */
   get popupUrl() {
     const popupPath = this.manifest.action?.default_popup;
-    if (!popupPath) {
-      throw new Error('Extension does not define action.default_popup.');
-    }
+    if (!popupPath) throw new Error('Extension does not define action.default_popup.');
     return this.getURL(popupPath);
   }
 
@@ -122,7 +141,7 @@ export class Extension {
 
   /**
    * Polls the current service worker until evaluation returns a truthy value.
-   * Retries while the worker is unavailable.
+   * Retries while a declared worker is unavailable; rejects if no worker is declared.
    * Uses poll options and returns the value, rather than a JSHandle.
    * Playwright's page implementation reference: waitForFunctionExpression in
    * https://github.com/microsoft/playwright/blob/main/packages/playwright-core/src/server/frames.ts#L1471-L1537
@@ -133,9 +152,12 @@ export class Extension {
   waitForFunction<R>(
     ...args: [...Parameters<typeof this.worker.evaluate<R>>, options?: PollOptions]
   ): Promise<Awaited<R>>;
-  waitForFunction(
+  async waitForFunction(
     ...[pageFunction, arg, options]: [...Parameters<Worker['evaluate']>, options?: PollOptions]
   ) {
+    if (!this.hasServiceWorker) {
+      throw new Error('Extension does not declare a background service worker.');
+    }
     return poll(() => this.findWorker()?.evaluate(pageFunction, arg), options);
   }
 
@@ -213,9 +235,9 @@ export class Extension {
    */
   async enable() {
     const management = new ExtensionManagement(this.context, this.id);
-    // important to early return, otherwise we will wait for new worker forever.
     if (await management.isEnabled()) return;
-    await Promise.all([management.setEnabled(true), this.waitForReady()]);
+    await management.setEnabled(true);
+    await this.waitForReady();
   }
 
   /**
@@ -223,7 +245,7 @@ export class Extension {
    */
   async disable() {
     const management = new ExtensionManagement(this.context, this.id);
-    await Promise.all([management.setEnabled(false), this.waitForStopped()]);
+    await Promise.all([this.waitForStopped(), management.setEnabled(false)]);
   }
 
   /**
@@ -240,15 +262,21 @@ export class Extension {
    * Enables Developer mode so Chromium permits reloading an unpacked extension.
    */
   async reload() {
-    const worker = this.worker;
-    await this.enableDevMode();
-    await Promise.all([
-      worker.waitForEvent('close'),
-      this.waitForReady(),
-      worker.evaluate(() => {
-        setTimeout(() => chrome.runtime.reload());
-      }),
-    ]);
+    const management = new ExtensionManagement(this.context, this.id);
+    if (!(await management.isEnabled())) throw new Error('Extension is disabled.');
+    await management.enableDevMode();
+    const worker = this.findWorker();
+    if (worker) {
+      await Promise.all([
+        worker.waitForEvent('close'),
+        worker.evaluate(() => {
+          setTimeout(() => chrome.runtime.reload());
+        }),
+      ]);
+    } else {
+      await management.reload();
+    }
+    await this.waitForReady();
   }
 
   /**
@@ -267,45 +295,54 @@ export class Extension {
     await management.enableDevMode();
     await Promise.all([
       enabled ? this.waitForStopped() : undefined,
-      enabled ? this.waitForReady() : undefined,
       management.updateConfiguration({ fileAccess: allowed }),
     ]);
+    if (enabled) await this.waitForReady();
   }
 
   /**
    * Installs the configured build, or a private copy of a custom build for later upgrade.
    */
   async install(path?: string) {
-    [this.#id] = await Promise.all([this.#installer.install(path), this.waitForReady()]);
+    this.#id = await this.#installer.install(path);
+    await this.waitForReady();
+    this.#ready = true;
   }
 
   /**
    * Replaces the loaded old extension with the configured current version and reloads it.
    */
   async upgrade() {
-    await Promise.all([this.#installer.upgrade(), this.waitForStopped(), this.waitForReady()]);
+    await Promise.all([this.waitForStopped(), this.#installer.upgrade()]);
+    await this.waitForReady();
   }
 
   /**
    * Removes the extension from its browser profile.
    */
   async uninstall() {
-    await Promise.all([
-      this.worker.evaluate(() => {
-        setTimeout(() => {
-          void chrome.management.uninstallSelf({ showConfirmDialog: false });
-        });
-      }),
-      this.waitForStopped(),
-    ]);
+    const worker = this.findWorker();
+    if (worker) {
+      await uninstallWithWorker(worker);
+    } else {
+      await uninstallWithCDP(this.context, this.id);
+    }
+    this.#ready = false;
   }
 
   private async waitForReady() {
-    const worker = await this.context.waitForEvent('serviceworker', {
-      predicate: (worker) => worker.url().startsWith('chrome-extension://'),
+    if (this.hasServiceWorker) {
+      const worker = this.findWorker() ?? (await this.waitForWorker());
+      this.#manifest = await readManifestFromWorker(worker);
+    } else {
+      this.#manifest = await readManifestFromTab(this.context, this.id);
+    }
+  }
+
+  private async waitForWorker() {
+    return await this.context.waitForEvent('serviceworker', {
+      predicate: (worker) => worker.url().startsWith(this.getURL()),
     });
-    const manifest = await worker.evaluate(() => chrome.runtime.getManifest());
-    this.#manifest = manifest as chrome.runtime.ManifestV3;
   }
 
   private async waitForStopped() {

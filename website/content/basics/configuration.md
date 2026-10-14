@@ -29,9 +29,12 @@ The directory containing your unpacked extension. Relative paths resolve from
 the Playwright configuration file's directory, or the current working directory when there is no
 config file. Absolute paths are also accepted.
 
-Build the extension before running tests. The extension must use Chromium Manifest V3
-and have a background service worker. This path is also the current build used by
+Build the extension before running tests. The extension must use Chromium Manifest V3; a background
+service worker is optional and detected automatically. This path is also the current build used by
 [`extension.upgrade()`](../api/extension.md#upgrade).
+
+Extensions without a worker support manifest access, extension pages, and lifecycle operations.
+Worker evaluation, event dispatch, storage helpers, and `waitForFunction()` require a declared worker.
 
 ### extensionAutoInstall
 

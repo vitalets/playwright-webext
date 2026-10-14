@@ -10,8 +10,8 @@ description: Utilities for launching extensions and waiting on asynchronous test
 
 `launchWithExtension()` creates a persistent Chromium context and returns an
 [Extension](extension.md). Use it for [custom shared fixtures](../advanced/shared-context.md) or
-outside Playwright Test. It requires an unpacked Chromium Manifest V3 extension with a background
-service worker.
+outside Playwright Test. It requires an unpacked Chromium Manifest V3 extension. A background
+service worker is optional.
 
 #### Usage {#launchwithextension-usage}
 
@@ -58,7 +58,8 @@ fixture setup and test execution through its [fixture and test timeouts](https:/
 
 #### Returns {#launchwithextension-returns}
 
-`Promise<Extension>` — ready for worker operations when automatic installation is enabled. With
+`Promise<Extension>` — installed and ready when automatic installation is enabled, including a
+ready worker if one is declared. With
 `extensionAutoInstall: false`, the context is available immediately, but metadata and worker
 operations require `await extension.install()` first.
 

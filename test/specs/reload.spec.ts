@@ -22,7 +22,7 @@ test('reload enables Developer mode and waits for the replacement worker', async
 
 test('reload rejects when the extension is disabled', async ({ extension }) => {
   await extension.disable();
-  await expect(extension.reload()).rejects.toThrow('Extension service worker is not available.');
+  await expect(extension.reload()).rejects.toThrow('Extension is disabled.');
 });
 
 test('chrome.runtime.reload() disables the unpacked extension without Developer mode', async ({

@@ -1,5 +1,5 @@
 /**
- * Manages one extension through Chromium APIs exposed on chrome://extensions.
+ * Manages one extension through Chromium management APIs and CDP.
  */
 
 /// <reference types="chrome" preserve="true" />
@@ -18,6 +18,10 @@ export type ExtensionConfiguration = {
 
 type ExtensionsChrome = typeof chrome & {
   developerPrivate: {
+    reload(
+      id: string,
+      options: { failQuietly: boolean; populateErrorForUnpacked: boolean },
+    ): Promise<{ error: string } | undefined>;
     updateProfileConfiguration(configuration: { inDeveloperMode: boolean }): Promise<void>;
     getExtensionInfo(id: string): Promise<{ fileAccess: { isActive: boolean } }>;
     updateExtensionConfiguration(
@@ -29,7 +33,7 @@ type ExtensionsChrome = typeof chrome & {
 /**
  * Provides API access to a specific extension in the current browser profile.
  *
- * Each operation opens and closes its own management page.
+ * Management-page operations close their page afterward.
  * Operations await Chromium's API completion; callers synchronize worker lifecycle separately.
  */
 export class ExtensionManagement {
@@ -98,6 +102,23 @@ export class ExtensionManagement {
         }),
       ),
     );
+  }
+
+  /**
+   * Reloads an unpacked extension and waits for Chromium to finish loading it.
+   */
+  async reload() {
+    const error = await this.withPage((page) =>
+      page.evaluate(
+        (id) =>
+          (chrome as ExtensionsChrome).developerPrivate.reload(id, {
+            failQuietly: true,
+            populateErrorForUnpacked: true,
+          }),
+        this.id,
+      ),
+    );
+    if (error) throw new Error(`Extension reload failed: ${error.error}`);
   }
 
   private async withPage<T>(action: (page: Page) => Promise<T>) {

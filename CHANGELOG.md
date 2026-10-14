@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+- Support extensions without a background service worker.
+- Add `extension.ready` to track initial setup completion.
+- Add `extension.hasServiceWorker` to check the worker declaration.
+- Support uninstalling extensions when no service worker is running.
+
 ## [0.3.5] - 2026-10-13
 
 - Add `extension.dispatch(name, ...args)` to dispatch synthetic Chrome events with typed event names

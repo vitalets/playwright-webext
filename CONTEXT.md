@@ -9,7 +9,7 @@ The person or team developing and testing its own web extension.
 _Avoid_: Harness user, package consumer
 
 **Extension Under Test**:
-The author's unpacked Chromium Manifest V3 extension currently exercised by a test run. In v0 it has a background service worker.
+The author's unpacked Chromium Manifest V3 extension currently exercised by a test run. It may or may not declare a background service worker.
 _Avoid_: Target extension, tested extension
 
 **Extension Details Page**:
@@ -37,5 +37,5 @@ A transition from an older local version of the Extension Under Test to a newer 
 _Avoid_: Store update, version swap
 
 **Manifest Snapshot**:
-The manifest Chrome exposes for the loaded extension version through its runtime API. A later upgrade produces a new snapshot rather than mutating the existing one.
+The manifest Chrome exposes for the loaded extension version through its runtime API. A later transition produces a new snapshot rather than mutating the existing one.
 _Avoid_: Live manifest, current manifest
