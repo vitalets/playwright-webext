@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.3.6] - 2026-10-14
+
 - Support extensions without a background service worker.
 - Add `extension.ready` to track initial setup completion.
 - Add `extension.hasServiceWorker` to check the worker declaration.
@@ -84,7 +86,8 @@
 
 - Initial release.
 
-[unreleased]: https://github.com/vitalets/playwright-webext/compare/v0.3.5...HEAD
+[unreleased]: https://github.com/vitalets/playwright-webext/compare/v0.3.6...HEAD
+[0.3.6]: https://github.com/vitalets/playwright-webext/compare/v0.3.5...v0.3.6
 [0.3.5]: https://github.com/vitalets/playwright-webext/compare/v0.3.4...v0.3.5
 [0.3.4]: https://github.com/vitalets/playwright-webext/compare/v0.3.3...v0.3.4
 [0.3.3]: https://github.com/vitalets/playwright-webext/compare/v0.3.2...v0.3.3
