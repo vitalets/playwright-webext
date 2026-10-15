@@ -26,16 +26,59 @@ A package for testing browser extensions with [**Playwright**](https://playwrigh
 - Open [popup](https://vitalets.github.io/playwright-webext/guides/popup/), [options](https://vitalets.github.io/playwright-webext/guides/options/), and
   [side panel](https://vitalets.github.io/playwright-webext/guides/side-panel/) pages.
 - Read and write [extension storage](https://vitalets.github.io/playwright-webext/guides/storage/) directly from test.
-- Dispatch [Chrome events](https://vitalets.github.io/playwright-webext/api/extension/#dispatch) directly from tests.
+- Emulate events to [trigger extension behavior](https://vitalets.github.io/playwright-webext/api/extension/#dispatch).
 - Defer [extension installation](https://vitalets.github.io/playwright-webext/basics/configuration/#extensionautoinstall) to prepare the browser state.
 - Test [internationalization (i18n)](https://vitalets.github.io/playwright-webext/guides/i18n/) without changing your system language.
 - Test [data migrations](https://vitalets.github.io/playwright-webext/guides/migration/) between extension versions.
 - Test extension behavior when [disabled](https://vitalets.github.io/playwright-webext/api/extension/#disable), [re-enabled](https://vitalets.github.io/playwright-webext/api/extension/#enable), or
   [uninstalled](https://vitalets.github.io/playwright-webext/guides/uninstall/).
 
+## Quick start
+
+Install the package:
+
+```bash
+npm install -D playwright-webext
+```
+
+Point `playwright.config.ts` at your built extension:
+
+```ts
+import { defineConfig } from '@playwright/test';
+import type { WebextOptions } from 'playwright-webext';
+
+export default defineConfig<WebextOptions>({
+  use: {
+    extensionPath: './dist',
+  },
+});
+```
+
+Use the `extension` fixture in your test:
+
+```ts
+import { expect } from '@playwright/test';
+import { test } from 'playwright-webext';
+
+test('shows the popup', async ({ extension }) => {
+  const popup = await extension.openPopup();
+  await expect(popup.getByRole('heading')).toHaveText('My popup');
+});
+```
+
+Run tests:
+
+```
+npx playwright test
+```
+
 ## Documentation
 
 Check out the [documentation website](https://vitalets.github.io/playwright-webext/).
+
+## Example
+
+See the [complete example](example/) for a TypeScript extension built with CRXJS.
 
 ## Motivation
 
@@ -46,8 +89,6 @@ starting point, but leaves you to maintain the setup fixtures and write helpers 
 Playwright-webext provides helpers beyond the default guide: storage setup, localization
 testing, migrations and much more. These helpers let you focus on your extension's
 behavior using familiar Playwright pages, locators, and assertions.
-
-Proceed to [Getting started](https://vitalets.github.io/playwright-webext/getting-started/installation/).
 
 ## License
 

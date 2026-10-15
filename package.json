@@ -1,11 +1,14 @@
 {
   "name": "playwright-webext",
-  "version": "0.3.6",
+  "version": "0.3.7",
   "description": "A Playwright-powered testing harness for browser extensions",
   "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vitalets/playwright-webext.git"
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
   },
   "types": "./dist/index.d.ts",
   "exports": {
@@ -28,6 +31,8 @@
     "prettier": "prettier --check --ignore-unknown .",
     "prettier:w": "prettier --write --ignore-unknown .",
     "test": "npx playwright test --config test/playwright.config.ts",
+    "sync:example": "npm --prefix example install . --no-save --package-lock=false --install-links --ignore-scripts",
+    "test:example": "npm run build && npm run sync:example && npm --prefix example test",
     "deps": "npx npm-check-updates -i --interactiveSelect none --format group,dep,repo --cooldown 3",
     "build": "rm -rf ./dist && tsc -p tsconfig.build.json",
     "update:rules": "cp ../agentic-dev/rules/ts-file-structure/ts-file-structure.md .agents/rules/",
@@ -35,9 +40,6 @@
     "docs:build": "npm --prefix website run build",
     "docs:release": "git checkout docs && git pull --no-edit && git merge --no-edit main && git push origin docs && git checkout main",
     "docs:tsc": "npm --prefix website run typecheck"
-  },
-  "engines": {
-    "node": "^20.19.0 || >=22.12.0"
   },
   "dependencies": {
     "@types/chrome": "^0.3.5"

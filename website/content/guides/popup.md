@@ -37,6 +37,14 @@ test('saves preferences from the popup', async ({ extension }) => {
 Use Playwright's [locators](https://playwright.dev/docs/locators) and
 [retrying assertions](https://playwright.dev/docs/test-assertions) to interact with the document.
 
+If your popup has a button that closes its tab, use
+[`extension.pollForPageClosed()`](../api/extension.md#pollforpageclosed) after clicking it:
+
+```ts
+await popupPage.getByRole('button', { name: 'Close' }).click();
+await extension.pollForPageClosed(popupPage);
+```
+
 ## Wrap as POM
 
 If your popup has many elements to interact with, wrap it in a Page Object Model (POM)

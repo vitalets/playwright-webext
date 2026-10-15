@@ -1,0 +1,42 @@
+name: test-example
+
+on:
+  push:
+    branches: ['**', '!docs']
+    paths:
+      - '.github/workflows/test-example.yaml'
+      - 'src/**'
+      - 'example/**'
+      - 'package*.json'
+      - 'tsconfig*.json'
+      - '.npmrc'
+  pull_request:
+    branches: [main]
+    paths:
+      # no way to avoid repeating the paths here
+      - '.github/workflows/test-example.yaml'
+      - 'src/**'
+      - 'example/**'
+      - 'package*.json'
+      - 'tsconfig*.json'
+      - '.npmrc'
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npm run build
+      - run: npm ci
+        working-directory: example
+      - run: npm run sync:example
+      - run: npx playwright install --with-deps chromium
+        working-directory: example
+      - run: npm run tsc
+        working-directory: example
+      - run: npm test
+        working-directory: example

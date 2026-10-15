@@ -1,0 +1,23 @@
+{
+  "extensionName": {
+    "message": "Example extension"
+  },
+  "extensionDescription": {
+    "message": "An extension with a welcome page and popup."
+  },
+  "popupTitle": {
+    "message": "Popup"
+  },
+  "optionsTitle": {
+    "message": "Options"
+  },
+  "checked": {
+    "message": "Checked"
+  },
+  "welcomeTitle": {
+    "message": "Welcome"
+  },
+  "close": {
+    "message": "Close"
+  }
+}

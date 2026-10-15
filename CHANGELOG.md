@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+## [0.3.7] - 2026-10-15
+
+- Add `extension.pollForPageClosed()` to wait for a page to close.
+- Add a complete TypeScript extension example with CRXJS, localization, an options page, and end-to-end tests.
+
 ## [0.3.6] - 2026-10-14
 
 - Support extensions without a background service worker.
@@ -86,7 +91,8 @@
 
 - Initial release.
 
-[unreleased]: https://github.com/vitalets/playwright-webext/compare/v0.3.6...HEAD
+[unreleased]: https://github.com/vitalets/playwright-webext/compare/v0.3.7...HEAD
+[0.3.7]: https://github.com/vitalets/playwright-webext/compare/v0.3.6...v0.3.7
 [0.3.6]: https://github.com/vitalets/playwright-webext/compare/v0.3.5...v0.3.6
 [0.3.5]: https://github.com/vitalets/playwright-webext/compare/v0.3.4...v0.3.5
 [0.3.4]: https://github.com/vitalets/playwright-webext/compare/v0.3.3...v0.3.4

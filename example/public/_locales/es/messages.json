@@ -1,0 +1,23 @@
+{
+  "extensionName": {
+    "message": "Extensión de ejemplo"
+  },
+  "extensionDescription": {
+    "message": "Una extensión con una página de bienvenida y una ventana emergente."
+  },
+  "popupTitle": {
+    "message": "Ventana emergente"
+  },
+  "optionsTitle": {
+    "message": "Opciones"
+  },
+  "checked": {
+    "message": "Marcado"
+  },
+  "welcomeTitle": {
+    "message": "Bienvenido"
+  },
+  "close": {
+    "message": "Cerrar"
+  }
+}

@@ -30,3 +30,6 @@ npx playwright test
 
 Each test requesting `extension` gets a fresh Chromium profile with the extension installed.
 Installation waits for the service worker to become ready. The fixture closes the browser context after the test.
+
+To try a complete extension and test suite, follow the
+[example’s setup instructions](https://github.com/vitalets/playwright-webext/tree/main/example#run-the-example).

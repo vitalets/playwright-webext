@@ -645,3 +645,26 @@ Both options follow [`poll()`](utils.md#arguments), including its defaults.
 <code>Promise&lt;<a href="https://playwright.dev/docs/api/class-page">Page</a>&gt;</code> — Resolves to the matching page.
 Rejects if no matching page appears before the timeout, the predicate throws or rejects, or the
 pattern is invalid or unsupported by the runtime.
+
+### pollForPageClosed
+
+Waits until a Playwright page is closed. Also succeeds if the page has already closed, so you can
+call it after the action that closes the page.
+
+#### Usage
+
+```ts
+const popupPage = await extension.openPopup();
+await popupPage.getByRole('button', { name: 'Close' }).click();
+await extension.pollForPageClosed(popupPage);
+```
+
+#### Arguments
+
+- `page` ([Page](https://playwright.dev/docs/api/class-page)) — Page to wait for.
+- `options` (object, optional) — `timeout` and `intervals`, following
+  [`poll()`](utils.md#arguments), including its defaults.
+
+#### Returns
+
+`Promise<void>` — Resolves when the page is closed. Rejects if the polling timeout expires.

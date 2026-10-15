@@ -20,4 +20,3 @@ jobs:
       - run: npm run prettier
       # - run: npm run knip
       - run: npm run tsc
-      - run: npm run build

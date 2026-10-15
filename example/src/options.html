@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title></title>
+    <style>
+      body {
+        margin: 24px;
+        font-family: system-ui, sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <h1></h1>
+    <label><input type="checkbox" disabled /> <span></span></label>
+    <script type="module">
+      document.documentElement.lang = chrome.i18n.getUILanguage();
+      document.title = chrome.i18n.getMessage('optionsTitle');
+      document.querySelector('h1').textContent = document.title;
+      document.querySelector('label span').textContent = chrome.i18n.getMessage('checked');
+
+      const checkbox = document.querySelector('input');
+      const { checked = false } = await chrome.storage.local.get('checked');
+      checkbox.checked = checked;
+      checkbox.disabled = false;
+      checkbox.addEventListener('change', () => {
+        void chrome.storage.local.set({ checked: checkbox.checked });
+      });
+    </script>
+  </body>
+</html>

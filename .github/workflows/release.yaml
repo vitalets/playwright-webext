@@ -47,6 +47,7 @@ jobs:
         run: |
           gh run list --workflow=lint.yaml --branch=${{ github.ref_name }} --limit=1 --json conclusion --jq '.[0].conclusion' | grep -q "success" || (echo "lint.yaml workflow must pass before publishing" && exit 1)
           gh run list --workflow=test.yaml --branch=${{ github.ref_name }} --limit=1 --json conclusion --jq '.[0].conclusion' | grep -q "success" || (echo "test.yaml workflow must pass before publishing" && exit 1)
+          gh run list --workflow=test-example.yaml --branch=${{ github.ref_name }} --limit=1 --json conclusion --jq '.[0].conclusion' | grep -q "success" || (echo "test-example.yaml workflow must pass before publishing" && exit 1)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

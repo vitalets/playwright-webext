@@ -54,7 +54,6 @@ import { test } from 'playwright-webext';
 test('shows the popup', async ({ extension }) => {
   const popupPage = await extension.openPopup();
   await expect(popupPage.getByRole('heading')).toContainText('My popup');
-  await popupPage.close();
 });
 ```
 
