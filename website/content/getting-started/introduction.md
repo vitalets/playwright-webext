@@ -12,9 +12,6 @@ import ProjectBrand from '@site/src/components/ProjectBrand';
 **playwright-webext** is a package that helps you test browser extensions with
 [Playwright](https://playwright.dev/). It provides ready-to-use APIs for testing extension pages, background behavior, storage, migrations, i18n, and much more.
 
-See the [complete example](https://github.com/vitalets/playwright-webext/tree/main/example): a TypeScript
-extension built with CRXJS, with tests for installation, popup, welcome page, localization, and uninstall.
-
 ## Features
 
 - Access your extension’s APIs with the built-in [`extension`](writing-tests.md) fixture.
@@ -27,6 +24,9 @@ extension built with CRXJS, with tests for installation, popup, welcome page, lo
 - Test [data migrations](../guides/migration.md) between extension versions.
 - Test extension behavior when [disabled](../api/extension.md#disable), [re-enabled](../api/extension.md#enable), or
   [uninstalled](../guides/uninstall.md).
+
+See the [**complete example**](https://github.com/vitalets/playwright-webext/tree/main/example): a TypeScript
+extension built with CRXJS, with tests for installation, popup, welcome page, localization, and uninstall.
 
 ## Motivation
 

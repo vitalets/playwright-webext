@@ -78,7 +78,7 @@ Check out the [documentation website](https://vitalets.github.io/playwright-webe
 
 ## Example
 
-See the [complete example](example/) for a TypeScript extension built with CRXJS.
+See the [complete example](https://github.com/vitalets/playwright-webext/blob/main/example) for a TypeScript extension tested with `playwright-webext`.
 
 ## Motivation
 
