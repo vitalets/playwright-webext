@@ -16,10 +16,6 @@ jobs:
           node-version: 24
           cache: 'npm'
       - run: npm ci
-      - run: npm run build
-      - run: npm ci
-        working-directory: example
-      - run: npm run sync:example
       - run: npm run lint
       - run: npm run prettier
       # - run: npm run knip

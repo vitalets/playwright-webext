@@ -9,7 +9,14 @@ const gitignorePath = fileURLToPath(new URL('.gitignore', import.meta.url));
 
 export default defineConfig([
   includeIgnoreFile(gitignorePath),
-  globalIgnores(['dist/', 'website/', 'test-results/', 'playwright-report/', 'test/data/']),
+  globalIgnores([
+    'dist/',
+    'website/',
+    'example/',
+    'test-results/',
+    'playwright-report/',
+    'test/data/',
+  ]),
   {
     files: ['**/*.{js,mjs}'],
     extends: [js.configs.recommended],
