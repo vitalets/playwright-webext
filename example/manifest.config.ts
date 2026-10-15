@@ -15,4 +15,8 @@ export default defineManifest({
     default_popup: 'src/popup.html',
     default_title: '__MSG_popupTitle__',
   },
+  options_ui: {
+    page: 'src/options.html',
+    open_in_tab: true,
+  },
 });

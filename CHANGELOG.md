@@ -5,7 +5,7 @@
 ## [Unreleased]
 
 - Add `extension.pollForPageClosed()` to wait for a page to close.
-- Add a complete TypeScript extension example with CRXJS, localization, and end-to-end tests.
+- Add a complete TypeScript extension example with CRXJS, localization, an options page, and end-to-end tests.
 
 ## [0.3.6] - 2026-10-14
 

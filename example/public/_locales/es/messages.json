@@ -8,6 +8,12 @@
   "popupTitle": {
     "message": "Ventana emergente"
   },
+  "optionsTitle": {
+    "message": "Opciones"
+  },
+  "checked": {
+    "message": "Marcado"
+  },
   "welcomeTitle": {
     "message": "Bienvenido"
   },

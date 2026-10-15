@@ -8,6 +8,12 @@
   "popupTitle": {
     "message": "Popup"
   },
+  "optionsTitle": {
+    "message": "Options"
+  },
+  "checked": {
+    "message": "Checked"
+  },
   "welcomeTitle": {
     "message": "Welcome"
   },
