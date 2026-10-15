@@ -19,6 +19,9 @@ export const test = base.extend({
 
 Import your extended `test` from this file in your tests.
 
+See the example’s [page and background fixtures](https://github.com/vitalets/playwright-webext/tree/main/example/test/fixtures)
+and [tests that use them](https://github.com/vitalets/playwright-webext/tree/main/example/test).
+
 ## Combine fixtures with mergeTests
 
 Use Playwright's [`mergeTests()`](https://playwright.dev/docs/test-fixtures#combine-custom-fixtures-from-multiple-modules)
