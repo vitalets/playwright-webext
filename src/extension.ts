@@ -4,7 +4,7 @@
 
 /// <reference types="chrome" preserve="true" />
 
-import type { BrowserContext, Worker } from '@playwright/test';
+import type { BrowserContext, Page, Worker } from '@playwright/test';
 import { ExtensionInstaller, type InstallOptions } from './install.js';
 import { ExtensionManagement } from './management.js';
 import { uninstallWithWorker, uninstallWithCDP } from './uninstall.js';
@@ -182,6 +182,13 @@ export class Extension {
       urlOrPredicate = this.getURL(urlOrPredicate);
     }
     return pollForPage(this.context, urlOrPredicate, options);
+  }
+
+  /**
+   * Polls until the page is closed, including pages that have already closed.
+   */
+  async pollForPageClosed(page: Page, options?: PollOptions) {
+    await poll(() => page.isClosed(), options);
   }
 
   /**

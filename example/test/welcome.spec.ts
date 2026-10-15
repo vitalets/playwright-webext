@@ -5,11 +5,11 @@ test.beforeEach(async ({ welcome }) => {
   await welcome.waitForOpen();
 });
 
-test('opens the welcome page on installation and closes it', async ({ welcome }) => {
+test('opens the welcome page on installation and closes it', async ({ welcome, extension }) => {
   await expect(welcome.heading).toHaveText('Welcome');
   await expect(welcome.closeButton).toHaveText('Close');
   await welcome.closeButton.click();
-  await expect.poll(() => welcome.page.isClosed()).toBe(true);
+  await extension.pollForPageClosed(welcome.page);
 });
 
 test.describe('es', () => {
