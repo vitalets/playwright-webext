@@ -66,7 +66,7 @@ test('shows the popup', async ({ extension }) => {
 });
 ```
 
-Run:
+Run tests:
 
 ```
 npx playwright test
@@ -89,8 +89,6 @@ starting point, but leaves you to maintain the setup fixtures and write helpers 
 Playwright-webext provides helpers beyond the default guide: storage setup, localization
 testing, migrations and much more. These helpers let you focus on your extension's
 behavior using familiar Playwright pages, locators, and assertions.
-
-Proceed to [Getting started](https://vitalets.github.io/playwright-webext/getting-started/installation/).
 
 ## License
 
