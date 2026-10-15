@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+- Add a complete TypeScript extension example with CRXJS, localization, and end-to-end tests.
+
 ## [0.3.6] - 2026-10-14
 
 - Support extensions without a background service worker.

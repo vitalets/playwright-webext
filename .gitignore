@@ -1,14 +1,15 @@
 node_modules/
 .DS_Store
 .vscode/
-/.env
-/dist/
-/test-results/
-/playwright-report/
-/.playwright-cli/
+.env
+dist/
+test-results/
+playwright-report/
+.playwright-cli/
 
 /todo.txt
 
 /website/build/
 /website/.docusaurus/
 /website/.docusaurus-dev/
+

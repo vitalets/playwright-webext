@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title></title>
+    <style>
+      body {
+        min-width: 240px;
+        margin: 24px;
+        font-family: system-ui, sans-serif;
+      }
+
+      button {
+        padding: 8px 16px;
+        font: inherit;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1></h1>
+    <button type="button"></button>
+    <script type="module">
+      document.documentElement.lang = chrome.i18n.getUILanguage();
+      document.title = chrome.i18n.getMessage('popupTitle');
+      document.querySelector('h1').textContent = document.title;
+      document.querySelector('button').textContent = chrome.i18n.getMessage('close');
+      document.querySelector('button').addEventListener('click', () => window.close());
+    </script>
+  </body>
+</html>

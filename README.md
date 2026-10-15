@@ -37,6 +37,9 @@ A package for testing browser extensions with [**Playwright**](https://playwrigh
 
 Check out the [documentation website](https://vitalets.github.io/playwright-webext/).
 
+See the [complete example](example/) for a TypeScript extension built with CRXJS and tested in English
+and Spanish.
+
 ## Motivation
 
 [Playwright's extension guide](https://playwright.dev/docs/chrome-extensions) shows how to launch
