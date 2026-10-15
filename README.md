@@ -33,12 +33,44 @@ A package for testing browser extensions with [**Playwright**](https://playwrigh
 - Test extension behavior when [disabled](https://vitalets.github.io/playwright-webext/api/extension/#disable), [re-enabled](https://vitalets.github.io/playwright-webext/api/extension/#enable), or
   [uninstalled](https://vitalets.github.io/playwright-webext/guides/uninstall/).
 
+## Quick start
+
+```bash
+npm install -D playwright-webext
+```
+
+Point `playwright.config.ts` at your built extension:
+
+```ts
+import { defineConfig } from '@playwright/test';
+import type { WebextOptions } from 'playwright-webext';
+
+export default defineConfig<WebextOptions>({
+  use: {
+    extensionPath: './dist',
+  },
+});
+```
+
+Use the `extension` fixture in your test:
+
+```ts
+import { expect } from '@playwright/test';
+import { test } from 'playwright-webext';
+
+test('shows the popup', async ({ extension }) => {
+  const popup = await extension.openPopup();
+  await expect(popup.getByRole('heading')).toHaveText('My popup');
+});
+```
+
 ## Documentation
 
 Check out the [documentation website](https://vitalets.github.io/playwright-webext/).
 
-See the [complete example](example/) for a TypeScript extension built with CRXJS and tested in English
-and Spanish.
+## Example
+
+See the [complete example](example/) for a TypeScript extension built with CRXJS.
 
 ## Motivation
 
