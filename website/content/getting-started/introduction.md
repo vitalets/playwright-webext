@@ -21,7 +21,7 @@ extension built with CRXJS, with tests for installation, popup, welcome page, lo
 - Open [popup](../guides/popup.md), [options](../guides/options.md), and
   [side panel](../guides/side-panel.md) pages.
 - Read and write [extension storage](../guides/storage.md).
-- Dispatch [Chrome events](../guides/dispatching-events.md) directly from tests.
+- Emulate events to [trigger extension behavior](../guides/dispatching-events.md).
 - Defer [extension installation](../basics/configuration.md#extensionautoinstall) to prepare the browser state first.
 - Test [internationalization (i18n)](../guides/i18n.md) without changing your system language.
 - Test [data migrations](../guides/migration.md) between extension versions.

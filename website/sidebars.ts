@@ -34,11 +34,11 @@ const sidebars: SidebarsConfig = {
       items: [
         'guides/worker',
         'guides/storage',
+        'guides/dispatching-events',
         'guides/popup',
         'guides/options',
         'guides/welcome-page',
         'guides/side-panel',
-        'guides/dispatching-events',
         'guides/i18n',
         'guides/migration',
         'guides/uninstall',

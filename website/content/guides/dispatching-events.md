@@ -11,7 +11,7 @@ waiting for real event:
 await extension.dispatch(eventName, params);
 ```
 
-## Example: triggering an alarm
+## Example
 
 Suppose your extension marks a reminder as due when its alarm fires. Its manifest declares the
 `alarms` and `storage` permissions.

@@ -26,7 +26,7 @@ A package for testing browser extensions with [**Playwright**](https://playwrigh
 - Open [popup](https://vitalets.github.io/playwright-webext/guides/popup/), [options](https://vitalets.github.io/playwright-webext/guides/options/), and
   [side panel](https://vitalets.github.io/playwright-webext/guides/side-panel/) pages.
 - Read and write [extension storage](https://vitalets.github.io/playwright-webext/guides/storage/) directly from test.
-- Dispatch [Chrome events](https://vitalets.github.io/playwright-webext/api/extension/#dispatch) directly from tests.
+- Emulate events to [trigger extension behavior](https://vitalets.github.io/playwright-webext/api/extension/#dispatch).
 - Defer [extension installation](https://vitalets.github.io/playwright-webext/basics/configuration/#extensionautoinstall) to prepare the browser state.
 - Test [internationalization (i18n)](https://vitalets.github.io/playwright-webext/guides/i18n/) without changing your system language.
 - Test [data migrations](https://vitalets.github.io/playwright-webext/guides/migration/) between extension versions.
@@ -34,6 +34,8 @@ A package for testing browser extensions with [**Playwright**](https://playwrigh
   [uninstalled](https://vitalets.github.io/playwright-webext/guides/uninstall/).
 
 ## Quick start
+
+Install the package:
 
 ```bash
 npm install -D playwright-webext
@@ -62,6 +64,12 @@ test('shows the popup', async ({ extension }) => {
   const popup = await extension.openPopup();
   await expect(popup.getByRole('heading')).toHaveText('My popup');
 });
+```
+
+Run:
+
+```
+npx playwright test
 ```
 
 ## Documentation
