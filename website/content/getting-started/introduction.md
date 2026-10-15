@@ -14,7 +14,7 @@ import ProjectBrand from '@site/src/components/ProjectBrand';
 
 ## Features
 
-- Access your extension’s APIs with the built-in [`extension`](writing-tests.md) fixture.
+- Access your extension’s APIs with the built-in [extension](writing-tests.md) fixture.
 - Open [popup](../guides/popup.md), [options](../guides/options.md), and
   [side panel](../guides/side-panel.md) pages.
 - Read and write [extension storage](../guides/storage.md).
