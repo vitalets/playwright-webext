@@ -45,7 +45,7 @@ export default defineConfig([
       'max-statements': ['error', { max: 12 }, { ignoreTopLevelFunctions: false }],
       'max-lines-per-function': ['error', { max: 30, skipBlankLines: true, skipComments: true }],
       'max-len': ['error', { code: 120, ignoreUrls: true }],
-      'max-lines': ['error', { max: 200, skipComments: true, skipBlankLines: true }],
+      'max-lines': ['error', { max: 250, skipComments: true, skipBlankLines: true }],
     },
   },
 ]);

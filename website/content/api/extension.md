@@ -30,6 +30,21 @@ None.
 
 [`BrowserContext`](https://playwright.dev/docs/api/class-browsercontext)
 
+### hasServiceWorker
+
+Returns whether the loaded build declares a service worker, or `undefined` before installation.
+A declared worker may currently be stopped or disabled. The value refreshes on install and upgrade.
+
+#### Usage
+
+```ts
+expect(extension.hasServiceWorker).toBe(false);
+```
+
+#### Returns
+
+`boolean | undefined`
+
 ### id
 
 The installed extension's ID. The ID is preserved during [unpacked upgrades](../guides/migration.md).
@@ -48,10 +63,28 @@ None.
 
 `string`
 
+### ready
+
+Whether initial installation and manifest acquisition have completed. Starts as `false` with deferred
+installation, becomes `true` once ready, and stays `true` while disabled. Successful uninstall or browser
+context closure sets it to `false`. It does not query changes made outside this instance.
+
+#### Usage
+
+```ts
+if (!extension.ready) await extension.install();
+```
+
+#### Returns
+
+`boolean`
+
 ### manifest
 
-A manifest snapshot read through `chrome.runtime.getManifest()` when the extension becomes ready.
-Installation, upgrade, and re-enabling refresh the snapshot.
+A resolved manifest snapshot read through `chrome.runtime.getManifest()` when the extension becomes
+ready. Uses the service worker when declared, or a temporary extension document otherwise. The
+temporary document is closed after reading.
+Installation, reload, upgrade, and re-enabling refresh the snapshot.
 
 #### Usage
 
@@ -350,8 +383,8 @@ const url = extension.getURL('settings/advanced.html');
 Installs `extensionPath` when no path is supplied. With a custom path, installs a private copy of
 that build so it can later be replaced by `upgrade()`.
 
-Waits for the extension worker and refreshes the manifest. It does not wait for all application
-startup handlers to finish. Use with [`extensionAutoInstall: false`](../basics/configuration.md#extensionautoinstall)
+Refreshes the manifest and waits for the extension worker if one is declared. It does not wait for
+all application startup handlers to finish. Use with [`extensionAutoInstall: false`](../basics/configuration.md#extensionautoinstall)
 to control initial installation. Each instance supports one successful installation;
 calling `install()` again, including after uninstalling, rejects.
 
@@ -441,9 +474,9 @@ None.
 
 ### reload
 
-Reloads the running extension using `chrome.runtime.reload()`, waits for the replacement service
-worker, and refreshes the manifest. Enables Chromium's Developer mode so the unpacked extension
-can reload. Rejects when the extension has no running worker, including while disabled.
+Reloads the enabled extension, refreshes the manifest, and waits for a replacement service worker
+if one is declared. Works without a background worker. Enables Chromium's Developer mode so the
+unpacked extension can reload. Rejects while the extension is disabled.
 
 #### Usage
 
@@ -501,9 +534,10 @@ None.
 ### upgrade
 
 Updates the installed extension with the build at the configured `extensionPath` and reloads it.
-Preserves the extension ID and profile state, waits for worker replacement, and refreshes the
-manifest. Requires a prior `install(path)` with a custom path; an extension instance supports one
-upgrade. Repeated calls reject.
+Preserves the extension ID and profile state, refreshes the manifest, and waits for a worker if
+the new build declares one. Supports upgrades that add or remove a background worker. Requires a
+prior `install(path)` with a custom path; an extension instance supports one upgrade. Repeated calls
+reject.
 
 #### Usage
 
@@ -526,8 +560,8 @@ None.
 ### waitForFunction
 
 Polls a function or expression in the current service worker until its evaluated result is truthy.
-Asynchronous results are awaited on each attempt. Retries while the worker is unavailable;
-evaluation errors reject the call.
+Asynchronous results are awaited on each attempt. Retries while a declared worker is unavailable.
+Rejects immediately if the installed manifest declares no worker; evaluation errors also reject the call.
 
 #### Usage
 

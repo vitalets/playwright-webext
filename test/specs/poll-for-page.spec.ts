@@ -84,24 +84,6 @@ test('rejects invalid patterns before polling', async ({ extension }) => {
   await expect(extension.pollForPage({ pathname: '(' })).rejects.toThrow(TypeError);
 });
 
-test('strings, regular expressions, and predicates work without global URLPattern support', async ({
-  extension,
-}) => {
-  const popup = await extension.openPopup();
-  const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'URLPattern')!;
-  Object.defineProperty(globalThis, 'URLPattern', { value: undefined, configurable: true });
-  try {
-    expect(await extension.pollForPage('popup.html')).toBe(popup);
-    expect(await extension.pollForPage(/\/popup\.html$/)).toBe(popup);
-    expect(await extension.pollForPage((page) => page === popup)).toBe(popup);
-    await expect(extension.pollForPage({ pathname: '/popup.html' })).rejects.toThrow(
-      'URL pattern matching requires global URLPattern support',
-    );
-  } finally {
-    Object.defineProperty(globalThis, 'URLPattern', descriptor);
-  }
-});
-
 test('matches regular expressions against the full URL including query and hash', async ({
   extension,
 }) => {

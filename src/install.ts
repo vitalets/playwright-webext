@@ -3,9 +3,10 @@
  * Worker lifecycle synchronization is supplied by the extension facade.
  */
 
-import { resolve } from 'node:path';
+import { join, resolve } from 'node:path';
 import type { BrowserContext } from '@playwright/test';
 import { ExtensionCopy } from './copy.js';
+import { hasServiceWorker } from './manifest.js';
 import { isDefaultLocale, localizeExtension } from './i18n.js';
 
 type InstallState = 'not-installed' | 'installing' | 'installed' | 'upgrading' | 'upgraded';
@@ -24,12 +25,20 @@ export class ExtensionInstaller {
   #state: InstallState = 'not-installed';
   #canUpgrade = false;
   #id?: string;
+  #hasServiceWorker?: boolean;
 
   constructor(
     private readonly context: BrowserContext,
     private readonly options: InstallOptions,
   ) {
     this.#extensionPath = resolve(options.extensionPath);
+  }
+
+  /**
+   * Whether the last loaded build declares a background service worker.
+   */
+  get hasServiceWorker() {
+    return this.#hasServiceWorker;
   }
 
   /**
@@ -44,6 +53,7 @@ export class ExtensionInstaller {
       this.#id = await this.loadUnpacked(installPath);
       this.#state = 'installed';
       this.#canUpgrade = path !== undefined;
+      await this.updateHasServiceWorker(installPath);
       return this.#id;
     } catch (error) {
       if (this.#state === 'installing') this.#state = 'not-installed';
@@ -63,6 +73,7 @@ export class ExtensionInstaller {
       this.#canUpgrade = false;
       const id = await this.loadUnpacked(this.#copy.path);
       if (id !== this.#id) throw new Error('Extension upgrade changed the extension ID.');
+      await this.updateHasServiceWorker(this.#copy.path);
     } catch (error) {
       if (this.#state === 'upgrading') this.#state = 'installed';
       throw error;
@@ -101,6 +112,10 @@ export class ExtensionInstaller {
     } finally {
       await session.detach();
     }
+  }
+
+  private async updateHasServiceWorker(path: string) {
+    this.#hasServiceWorker = await hasServiceWorker(join(path, 'manifest.json'));
   }
 
   private verifyStateForInstall() {

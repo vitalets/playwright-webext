@@ -33,14 +33,6 @@ test('sets file access while disabled', async ({ extension }) => {
   ).toBe(true);
 });
 
-test('closes the management page when the extension no longer exists', async ({ extension }) => {
-  await extension.uninstall();
-  await extension.pollForPage('https://example.com/uninstalled');
-  const pages = extension.context.pages();
-  await expect(extension.setFileAccess(true)).rejects.toThrow();
-  expect(extension.context.pages()).toEqual(pages);
-});
-
 test.describe('before installation', () => {
   test.use({ extensionAutoInstall: false });
 

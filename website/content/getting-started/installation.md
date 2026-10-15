@@ -9,7 +9,7 @@ import TabItem from '@theme/TabItem';
 ## Prerequisites
 
 - Only Chromium extensions are supported.
-- A Manifest V3 extension, unpacked and with a background service worker.
+- An unpacked Chromium Manifest V3 extension.
 - Node.js 20 (20.19+) or 22.12+, with ES modules (ESM) enabled in your project.
 - Playwright Test 1.59 or later.
 
