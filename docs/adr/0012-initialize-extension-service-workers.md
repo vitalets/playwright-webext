@@ -1,107 +1,47 @@
----
-status: proposed
----
-
 # Initialize extension service workers from a prepared build
 
-The required behavior is to run initialization in the Extension Under Test's background service
-worker before any extension code, on first installation and every worker restart. Website service
-workers are outside this investigation. No implementation approach has been accepted yet.
+Proposal — not accepted or implemented.
 
-Investigated on 2026-10-14. The leading proposal is an `extensionInitScript` launch option and a
-prepared extension directory reused across tests with identical configuration. Preparing once per
-Playwright test worker would avoid copying the entire extension for every test while preserving
-separate browser profiles. The option alone does not provide this reuse; preparation needs a lifetime
-separate from each `Extension` instance.
+Investigated on 2026-10-14. Not implemented; no approach has been accepted.
 
-## Instrumentation proposal
+The goal is to run initialization before extension code on installation and every background-worker
+restart. Evaluating after the `serviceworker` event is too late to guarantee this ordering.
 
-Change `background.service_worker` from the original entry, such as `background.js`, to a generated
-sibling file, such as `pw-background.js`. Preserve the existing worker type and other manifest fields.
-Generate a separate `pw-init.js` containing the initialization code, leaving the original worker and
-its dependencies unchanged. Generated filenames must avoid collisions with extension files.
+## Leading proposal
 
-For a module worker, the wrapper would contain:
+Prepare a build with a generated sibling worker entry that loads initialization before the original
+entry. Use separate static imports for module workers and `importScripts()` for classic workers;
+placing statements before a static import does not make them execute before imported dependencies.
+Preserve worker type and relative-URL resolution, and avoid generated filename collisions.
 
-```js
-import './pw-init.js';
-import './background.js';
-```
+This changes the worker URL and loaded manifest. Editing the original entry instead would preserve
+both, but requires handling directives, imports, and source maps. The proposal assumes synchronous
+initialization that does not import the extension's module graph; asynchronous behavior is undecided.
 
-For a classic worker, the wrapper would contain:
+Reuse an immutable prepared directory across tests with separate browser profiles. Preparation needs
+its own lifetime so closing one extension cannot delete another's files. Any reuse must distinguish
+source revisions, initialization content, locale, and instrumentation version. Upgrades need private
+mutable copies. Moving builds may change path-derived extension IDs.
 
-```js
-importScripts('./pw-init.js', './background.js');
-```
+## Alternatives
 
-The separate initialization module is necessary because statements placed before a static import
-still execute after imported dependencies. The initial proposal assumes synchronous initialization
-that does not import the extension's module graph. Asynchronous initialization remains undecided.
-[Chrome supports static imports and importScripts, but not dynamic import() in extension service workers](https://developer.chrome.com/docs/extensions/develop/concepts/service-workers/basics).
+- CDP pause/inject/resume preserves extension files, but cooperation with Playwright's worker startup
+  and routing commands to child sessions needs experiments. It has not been ruled out.
+- An author-provided bootstrap avoids harness-side transformation but requires build integration.
+- Upstream Playwright support could integrate initialization into worker startup.
 
-The wrapper changes the worker's URL and the entry reported by `chrome.runtime.getManifest()`.
-Placing it beside the original entry preserves the base directory for relative URLs. Directly
-instrumenting the original entry would preserve the manifest and worker URL, but requires careful
-source editing around directives, imports, and source maps.
+## Evidence and next checks
 
-## Preparation and performance
+A temporary probe confirmed initialization before a classic worker entry and its imported script.
+Two fresh profiles loaded the same prepared directory with the same extension ID. The module-worker
+probe did not complete; installation-event timing was not fully tested. No performance measurements
+were obtained.
 
-The current `ExtensionCopy` copies the full directory and belongs to an individual installer.
-Shared preparation would need its own cleanup ownership: closing one extension must not remove files
-used by another browser. Keep the prepared directory unchanged until all consumers close. Reusing
-files does not require sharing browser contexts or extension storage.
+Before accepting a design, verify module dependency ordering and cycles, installation events,
+reloads, natural worker restarts, upgrades, and identity. Define script serialization, error handling,
+asynchronous behavior, configuration scope, invalidation, and cleanup. Benchmark preparation against
+browser startup before adding caching complexity.
 
-Reuse must distinguish the source build revision, initialization content, locale, and instrumentation
-version. A source path alone cannot detect rebuilds. Explicit preparation in a worker-scoped fixture
-is a simpler starting point than a persistent disk cache. Run-wide preparation could reduce copying
-further, at the cost of coordinating publication and cleanup across processes.
-
-Upgrade tests replace files at the installed path and therefore need a private mutable directory.
-They must not modify a shared prepared build. Moving an unpacked extension to a different directory
-can also change its ID when the manifest does not supply a fixed key; identity requirements need
-verification before choosing the directory lifecycle.
-
-Other possible optimizations are build-time instrumentation, hard-linking unchanged files, and
-copy-on-write clones. Hard links require preventing writes through shared files, including source
-rebuilds. Node's `COPYFILE_FICLONE` attempts a copy-on-write reflink and falls back to copying; it still
-requires directory traversal and is not a portable performance guarantee.
-[Node filesystem documentation](https://nodejs.org/api/fs.html#fspromisescopyfilesrc-dest-mode).
-
-CDP does not accept a ZIP or CRX payload for extension installation. `Extensions.loadUnpacked`
-accepts an unpacked filesystem path. Extracting an archive once could supply a reusable directory,
-but does not remove the filesystem requirement.
-[CDP Extensions protocol definition](https://github.com/ChromeDevTools/devtools-protocol/blob/master/pdl/domains/Extensions.pdl).
-
-## Other approaches considered
-
-- **CDP pause, inject, resume:** Arm target auto-attachment before installation, evaluate initialization
-  in each paused worker, then resume it. This preserves extension files. However, installed Playwright
-  1.62.1 already sends `Runtime.runIfWaitingForDebugger` during worker startup. Cooperation between
-  debugger sessions, child-session command routing, and identifying the extension before installation
-  returns its ID require experiments. This remains an alternative, not a proven failure.
-- **Author-provided test bootstrap:** Explicit initialization in the extension's own build avoids
-  harness-side transformation but requires author integration.
-- **Upstream Playwright support:** Initialization inside Playwright's worker startup sequence could
-  provide tighter integration, but depends on upstream adoption or maintaining a patch.
-- **Script-load interception:** Rewriting the worker response is speculative for extension resources.
-  Ordinary Playwright routing has service-worker script limitations.
-- **Evaluate after the serviceworker event:** Does not guarantee execution before extension code.
-  Playwright's existing `addInitScript` covers pages and frames, not service workers.
-
-References: [CDP auto-attachment](https://chromedevtools.github.io/devtools-protocol/tot/Target/#method-setAutoAttach),
-[Playwright init scripts](https://playwright.dev/docs/api/class-browsercontext#browser-context-add-init-script),
-and [Playwright service-worker routing](https://playwright.dev/docs/service-workers).
-
-## Evidence and remaining verification
-
-A temporary Chromium probe confirmed that a classic wrapper initialized a global before both the
-original entry and a script it imported. The same prepared directory loaded into two fresh browser
-profiles with the same extension ID. An installation listener observed the initialized value in one
-run; this was not a complete installation-event timing test. The probe was stopped before the module
-case completed. No product implementation was changed.
-
-Before accepting the design, verify module dependency ordering, cyclic graphs, installation events,
-reloads, natural worker termination and restart, and upgrades. Define script input and serialization,
-error reporting, asynchronous behavior, configuration scope, cache invalidation, and cleanup.
-Benchmark representative extension builds against browser startup and installation costs; no copying
-or end-to-end performance measurements were obtained during this investigation.
+References: [Chrome worker imports](https://developer.chrome.com/docs/extensions/develop/concepts/service-workers/basics),
+[CDP auto-attachment](https://chromedevtools.github.io/devtools-protocol/tot/Target/#method-setAutoAttach),
+and [Playwright init scripts](https://playwright.dev/docs/api/class-browsercontext#browser-context-add-init-script).
