@@ -109,6 +109,8 @@ are available, but some native toolbar popup behaviors cannot be tested this way
 - Runtime messages from this document include `sender.tab`; messages from a native toolbar popup
   normally do not.
 
-Chromium's native `chrome.action.openPopup()` surface is not exposed as an interactable Playwright
-`Page`, so it cannot be used to test these behaviors with Playwright locators. See
+Chromium can open the native toolbar popup through `chrome.action.openPopup()` or the CDP command
+`Extensions.triggerAction`. However, Playwright does not expose that popup as a `Page` through its
+supported API, so opening it does not let you interact with it using Playwright locators and
+assertions. `extension.openPopup()` opens the popup document in a regular tab to provide that access. See
 [Chrome's extension testing guidance](https://developer.chrome.com/docs/extensions/how-to/test/end-to-end-testing).
