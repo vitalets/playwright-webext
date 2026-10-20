@@ -7,7 +7,7 @@
 <h2 align="center">playwright-webext</h2>
 <div align="center">
 
-A package for testing browser extensions with Playwright.
+Testing browser extensions with Playwright.
 
 </div>
 
