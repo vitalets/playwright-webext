@@ -2,40 +2,38 @@
 slug: /
 title: Introduction
 hide_title: true
-description: playwright-webext is a package that helps you test browser extensions with Playwright.
+description: Playwright fixtures and helpers that make testing browser extensions easier.
 ---
 
 import ProjectBrand from '@site/src/components/ProjectBrand';
 
 <ProjectBrand />
 
-**playwright-webext** is a package that helps you test browser extensions with
-[Playwright](https://playwright.dev/). It provides ready-to-use APIs for testing extension pages, background behavior, storage, migrations, i18n, and much more.
+**playwright-webext** is a set of [Playwright](https://playwright.dev/) fixtures and helpers
+that make testing browser extensions easier.
 
 ## Features
 
 - Access your extension’s APIs with the built-in [extension](writing-tests.md) fixture.
 - Open [popup](../guides/popup.md), [options](../guides/options.md), and
   [side panel](../guides/side-panel.md) pages.
-- Read and write [extension storage](../guides/storage.md).
-- Emulate events to [trigger extension behavior](../guides/dispatching-events.md).
-- Defer [extension installation](../basics/configuration.md#extensionautoinstall) to prepare the browser state first.
-- Test [internationalization (i18n)](../guides/i18n.md) without changing your system language.
-- Test [data migrations](../guides/migration.md) between extension versions.
-- Test extension behavior when [disabled](../api/extension.md#disable), [re-enabled](../api/extension.md#enable), or
-  [uninstalled](../guides/uninstall.md).
+- Read and write [extension storage](../guides/storage.md) directly from test.
+- Trigger extension actions by [emulating browser events](../guides/dispatching-events.md).
+- Prepare browser state before [extension installation](../basics/configuration.md#extensionautoinstall).
+- Check [internationalization (i18n)](../guides/i18n.md) without changing your system language.
+- Verify [data migration](../guides/migration.md) between extension versions.
+- Test the behavior when extension is [uninstalled](../guides/uninstall.md) or [disabled](../api/extension.md#disable).
 
-See the [**complete example**](https://github.com/vitalets/playwright-webext/tree/main/example): a TypeScript
-extension built with CRXJS, with tests for installation, popup, welcome page, localization, and uninstall.
+See the [complete example](https://github.com/vitalets/playwright-webext/tree/main/example): a TypeScript
+extension tested with playwright-webext.
 
 ## Motivation
 
-[Playwright's extension guide](https://playwright.dev/docs/chrome-extensions) shows how to launch
-browser with an extension, wait for its service worker, and find its ID. That gives you a working
-starting point, but leaves you to maintain the setup fixtures and write helpers for extension tasks.
+[Playwright's extension guide](https://playwright.dev/docs/chrome-extensions) shows how to launch a
+browser with an extension, wait for its service worker, and find its ID. You then need to maintain
+that setup and write helpers for extension tasks.
 
-Playwright-webext provides helpers beyond the default guide: storage setup, localization
-testing, migrations and much more. These helpers let you focus on your extension's
-behavior using familiar Playwright pages, locators, and assertions.
+Playwright-webext handles browser setup and extension installation, so you can focus on testing
+your extension's functionality using familiar Playwright pages, locators, and assertions.
 
 Proceed to [Getting started](installation.md).
