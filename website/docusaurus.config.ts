@@ -75,12 +75,16 @@ const config: Config = {
         { type: 'search', position: 'right' },
         {
           href: 'https://www.npmjs.com/package/playwright-webext',
-          label: 'npm',
+          className: 'navbar-icon navbar-icon--npm',
+          'aria-label': 'npm',
+          title: 'npm',
           position: 'right',
         },
         {
           href: 'https://github.com/vitalets/playwright-webext',
-          label: 'GitHub',
+          className: 'navbar-icon navbar-icon--github',
+          'aria-label': 'GitHub',
+          title: 'GitHub',
           position: 'right',
         },
       ],

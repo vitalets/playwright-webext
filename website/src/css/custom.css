@@ -67,8 +67,36 @@
   --ifm-footer-background-color: #142b22;
 }
 
-.navbar a[target='_blank'] > svg {
-  vertical-align: -0.1em;
+.navbar-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.navbar-icon::before {
+  content: '';
+  width: 24px;
+  height: 24px;
+  background-color: currentColor;
+  mask: var(--navbar-icon) center / contain no-repeat;
+}
+
+.navbar-icon > svg {
+  display: none;
+}
+
+.navbar-icon--github {
+  --navbar-icon: url('../../static/img/github.svg');
+}
+
+.navbar-icon--npm {
+  --navbar-icon: url('../../static/img/npm.svg');
+}
+
+.navbar-icon--npm::before {
+  width: 36px;
 }
 
 .footer__copyright a {
