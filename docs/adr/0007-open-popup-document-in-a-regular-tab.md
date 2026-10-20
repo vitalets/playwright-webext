@@ -1,7 +1,3 @@
----
-status: accepted
----
-
 # Open the popup document in a regular tab
 
 `Extension.openPopup()` opens the Popup Document in a regular browser tab and returns its

@@ -1,7 +1,5 @@
 # Publish documentation from the docs branch
 
-Public documentation lives in `website/`, while `docs/` remains internal documentation. Keep upcoming
-package documentation on `main` and publish a single site from source on the `docs` branch, promoted
-manually, so unreleased behavior does not automatically appear in the public reference. GitHub Pages
-deploys on pushes to `docs` or manual workflow runs from that branch; npm releases and pushes to
-`main` do not promote documentation.
+Keep public documentation in `website/` and internal documentation in `docs/`. Publish the site only
+from the manually promoted `docs` branch so unreleased behavior on `main` does not appear in the
+public reference. Package releases do not automatically promote documentation.
