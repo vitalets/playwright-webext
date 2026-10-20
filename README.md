@@ -5,11 +5,6 @@
 </div>
 
 <h2 align="center">playwright-webext</h2>
-<div align="center">
-
-A package for testing browser extensions with [**Playwright**](https://playwright.dev/).
-
-</div>
 
 <div align="center">
 
@@ -20,18 +15,19 @@ A package for testing browser extensions with [**Playwright**](https://playwrigh
 
 </div>
 
+A set of [Playwright](https://playwright.dev/) fixtures and helpers that make browser extensions testing easier.
+
 ## Features
 
 - Access your extension’s APIs with the built-in [extension](https://vitalets.github.io/playwright-webext/getting-started/writing-tests/) fixture.
 - Open [popup](https://vitalets.github.io/playwright-webext/guides/popup/), [options](https://vitalets.github.io/playwright-webext/guides/options/), and
   [side panel](https://vitalets.github.io/playwright-webext/guides/side-panel/) pages.
 - Read and write [extension storage](https://vitalets.github.io/playwright-webext/guides/storage/) directly from test.
-- Emulate events to [trigger extension behavior](https://vitalets.github.io/playwright-webext/api/extension/#dispatch).
-- Defer [extension installation](https://vitalets.github.io/playwright-webext/basics/configuration/#extensionautoinstall) to prepare the browser state.
-- Test [internationalization (i18n)](https://vitalets.github.io/playwright-webext/guides/i18n/) without changing your system language.
-- Test [data migrations](https://vitalets.github.io/playwright-webext/guides/migration/) between extension versions.
-- Test extension behavior when [disabled](https://vitalets.github.io/playwright-webext/api/extension/#disable), [re-enabled](https://vitalets.github.io/playwright-webext/api/extension/#enable), or
-  [uninstalled](https://vitalets.github.io/playwright-webext/guides/uninstall/).
+- Trigger extension actions by [emulating browser events](https://vitalets.github.io/playwright-webext/api/extension/#dispatch).
+- Prepare browser state before [extension installation](https://vitalets.github.io/playwright-webext/basics/configuration/#extensionautoinstall).
+- Check [internationalization (i18n)](https://vitalets.github.io/playwright-webext/guides/i18n/) without changing your system language.
+- Verify [data migration](https://vitalets.github.io/playwright-webext/guides/migration/) between extension versions.
+- Test the behavior when extension is [uninstalled](https://vitalets.github.io/playwright-webext/guides/uninstall/) or [disabled](https://vitalets.github.io/playwright-webext/api/extension/#disable).
 
 ## Quick start
 
