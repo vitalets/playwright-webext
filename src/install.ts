@@ -5,26 +5,30 @@
 
 import { join, resolve } from 'node:path';
 import type { BrowserContext } from '@playwright/test';
-import { ExtensionCopy } from './copy.js';
+import { PreparedExtensionDir } from './prepare-dir.js';
 import { hasServiceWorker } from './manifest.js';
-import { isDefaultLocale, localizeExtension } from './i18n.js';
+import { isDefaultLocale } from './i18n.js';
+import { registerContextInitScript } from './init-script.js';
 
 type InstallState = 'not-installed' | 'installing' | 'installed' | 'upgrading' | 'upgraded';
 
 export type InstallOptions = {
   extensionPath: string;
   locale?: string;
+  extensionInitScript?: string;
 };
 
 /**
  * Coordinates one initial installation and an optional upgrade at the same filesystem path.
  */
 export class ExtensionInstaller {
-  readonly #copy = new ExtensionCopy();
+  readonly #directory = new PreparedExtensionDir();
   readonly #extensionPath: string;
   #state: InstallState = 'not-installed';
   #canUpgrade = false;
   #id?: string;
+  #initScript?: string;
+  #initScriptRegistered = false;
   #hasServiceWorker?: boolean;
 
   constructor(
@@ -49,6 +53,7 @@ export class ExtensionInstaller {
     this.verifyStateForInstall();
     this.#state = 'installing';
     try {
+      await this.registerInitScript();
       const installPath = await this.resolveInstallPath(path);
       this.#id = await this.loadUnpacked(installPath);
       this.#state = 'installed';
@@ -68,12 +73,12 @@ export class ExtensionInstaller {
     this.verifyStateForUpgrade();
     this.#state = 'upgrading';
     try {
-      await this.prepareCopy(this.#extensionPath);
+      await this.prepareDirectory(this.#extensionPath);
       this.#state = 'upgraded';
       this.#canUpgrade = false;
-      const id = await this.loadUnpacked(this.#copy.path);
+      const id = await this.loadUnpacked(this.#directory.path);
       if (id !== this.#id) throw new Error('Extension upgrade changed the extension ID.');
-      await this.updateHasServiceWorker(this.#copy.path);
+      await this.updateHasServiceWorker(this.#directory.path);
     } catch (error) {
       if (this.#state === 'upgrading') this.#state = 'installed';
       throw error;
@@ -84,22 +89,33 @@ export class ExtensionInstaller {
    * Removes the private build copy owned by this installer.
    */
   async cleanup() {
-    await this.#copy.cleanup();
+    await this.#directory.cleanup();
   }
 
   private async resolveInstallPath(path?: string) {
     const source = path === undefined ? this.#extensionPath : resolve(path);
-    return path !== undefined || !isDefaultLocale(this.options.locale)
-      ? this.prepareCopy(source)
+    return path !== undefined ||
+      this.#initScript !== undefined ||
+      !isDefaultLocale(this.options.locale)
+      ? this.prepareDirectory(source)
       : source;
   }
 
-  private async prepareCopy(source: string) {
-    await this.#copy.copyFrom(source);
-    if (!isDefaultLocale(this.options.locale)) {
-      await localizeExtension(this.#copy.path, this.options.locale);
-    }
-    return this.#copy.path;
+  private async prepareDirectory(source: string) {
+    await this.#directory.prepare(source, {
+      locale: isDefaultLocale(this.options.locale) ? undefined : this.options.locale,
+      initScript: this.#initScript,
+    });
+    return this.#directory.path;
+  }
+
+  private async registerInitScript() {
+    if (this.#initScriptRegistered || !this.options.extensionInitScript) return;
+    this.#initScript = await registerContextInitScript(
+      this.context,
+      this.options.extensionInitScript,
+    );
+    this.#initScriptRegistered = true;
   }
 
   private async loadUnpacked(path: string) {

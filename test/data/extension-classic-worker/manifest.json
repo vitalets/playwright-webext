@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "Classic worker test",
+  "version": "1.0.0",
+  "permissions": ["storage"],
+  "background": {
+    "service_worker": "background/worker.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  }
+}

@@ -64,6 +64,81 @@ See [Migration](../guides/migration.md) for assertions on the upgrade's effects.
 `extensionPath` is required even when automatic installation is disabled. `extension.context`
 exists before installation, but metadata and worker operations require an installed, ready extension.
 
+### extensionInitScript
+
+**Type:** `string`. **Default:** unset.
+
+A JavaScript file that runs before your extension code in service worker and all extension pages:
+
+```ts title="playwright.config.ts"
+import { defineConfig } from '@playwright/test';
+import type { WebextOptions } from 'playwright-webext';
+
+export default defineConfig<WebextOptions>({
+  use: {
+    extensionPath: './dist',
+    extensionInitScript: './test/extension-init.js',
+  },
+});
+```
+
+For example, override the language in all extension contexts:
+
+```js title="test/extension-init.js"
+chrome.i18n.getUILanguage = () => 'es';
+```
+
+To run different code in the worker and popup, check their paths:
+
+```js title="test/extension-init.js"
+const manifest = chrome.runtime.getManifest();
+if (location.pathname === `/${manifest.background?.service_worker}`) {
+  // Code for the service worker.
+} else if (location.pathname === `/${manifest.action?.default_popup}`) {
+  // Code for the popup.
+}
+```
+
+#### Rules
+
+- Relative paths resolve from the Playwright configuration directory, or from the current working
+  directory with `launchWithExtension()`.
+- Use plain JavaScript without imports or exports.
+- Use `globalThis` for values that extension code needs to access.
+- The extension does not wait for async work to finish.
+- The script runs again when an extension page loads or the worker restarts.
+- It does not run on ordinary websites or in content scripts.
+
+<details>
+<summary>Under the hood</summary>
+
+For extension pages, the package uses Playwright's `context.addInitScript()` with a check that skips
+ordinary websites. This API does not run in service workers, so the package changes the prepared
+manifest to point to a worker wrapper. Schematically:
+
+```diff title="manifest.json"
+ {
+   "background": {
+-    "service_worker": "worker.js"
++    "service_worker": "webext-wrapper.js"
+   }
+ }
+```
+
+The wrapper loads your init script first, then the original worker:
+
+```diff title="webext-wrapper.js"
++import './webext-init-script.js';
++import './worker.js';
+```
+
+Each extension instance gets a private temporary directory, normally once per test. It contains the
+adjusted manifest and generated scripts. Unchanged files and whole subdirectories are symlinked to
+the source build, with copying as a fallback when links are unavailable. Locale overrides use the
+same directory. Nothing is written to the source build.
+
+</details>
+
 ## Forwarded Playwright options
 
 - [browserName](https://playwright.dev/docs/api/class-testoptions#test-options-browser-name) (Chromium only)

@@ -7,30 +7,12 @@
 import { dirname, resolve } from 'node:path';
 import { test as base } from '@playwright/test';
 import { Extension } from './extension.js';
+import type { WebextTestOptions, WebextWorkerOptions } from './options.js';
 import { launchContext } from './launch.js';
 import { createVideoRecording } from './video.js';
 import { runAll } from './utils/run-all.js';
 import { throwIf } from './utils/throw-if.js';
 import { removeUndefined } from './utils/remove-undefined.js';
-
-/**
- * Configuration accepted by the extension test fixtures.
- */
-export type WebextOptions = WebextTestOptions & WebextWorkerOptions;
-
-/**
- * Options available to both test-scoped and worker-scoped fixtures.
- */
-export type WebextWorkerOptions = {
-  extensionPath: string;
-};
-
-/**
- * Options that can vary between tests.
- */
-export type WebextTestOptions = {
-  extensionAutoInstall?: boolean;
-};
 
 /**
  * Fixtures added to the base Playwright test.
@@ -40,6 +22,7 @@ export type WebextFixtures = {
 };
 
 export { Extension } from './extension.js';
+export type { WebextOptions, WebextTestOptions, WebextWorkerOptions } from './options.js';
 export type { ExtensionEventName, ExtensionEventArgs } from './dispatch.js';
 export { launchWithExtension, type LaunchWithExtensionOptions } from './launch.js';
 export { poll, type PollOptions } from './utils/poll.js';
@@ -50,11 +33,13 @@ export { poll, type PollOptions } from './utils/poll.js';
 export const test = base.extend<WebextTestOptions & WebextFixtures, WebextWorkerOptions>({
   extensionPath: ['', { option: true, scope: 'worker' }],
   extensionAutoInstall: [true, { option: true }],
+  extensionInitScript: [undefined, { option: true }],
   // eslint-disable-next-line max-lines-per-function
   extension: async (
     {
       extensionPath,
       extensionAutoInstall,
+      extensionInitScript,
       // playwright fixtures
       browserName,
       headless,
@@ -129,6 +114,9 @@ export const test = base.extend<WebextTestOptions & WebextFixtures, WebextWorker
       });
       extension = new Extension(context, {
         extensionPath: resolve(baseDir, extensionPath),
+        extensionInitScript: extensionInitScript
+          ? resolve(baseDir, extensionInitScript)
+          : undefined,
         locale,
       });
       videoRecording?.track(context);

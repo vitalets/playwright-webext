@@ -5,6 +5,7 @@
 import { chromium } from '@playwright/test';
 import type { BrowserContext, BrowserContextOptions, LaunchOptions } from '@playwright/test';
 import { Extension } from './extension.js';
+import { defaults } from './options.js';
 import { throwIf } from './utils/throw-if.js';
 import { mergeOptions } from './utils/merge-options.js';
 
@@ -14,15 +15,9 @@ import { mergeOptions } from './utils/merge-options.js';
 export type LaunchWithExtensionOptions = {
   extensionPath: string;
   extensionAutoInstall?: boolean;
+  extensionInitScript?: string;
   launchOptions?: LaunchOptions;
   contextOptions?: BrowserContextOptions;
-};
-
-/**
- * Defaults for optional launch settings.
- */
-const defaults: Required<Pick<LaunchWithExtensionOptions, 'extensionAutoInstall'>> = {
-  extensionAutoInstall: true,
 };
 
 /**
@@ -35,6 +30,7 @@ export async function launchWithExtension(options: LaunchWithExtensionOptions) {
   const context = await launchContext(resolvedOptions);
   const extension = new Extension(context, {
     extensionPath: options.extensionPath,
+    extensionInitScript: options.extensionInitScript,
     locale: resolvedOptions.contextOptions?.locale,
   });
   try {

@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+- Add `extensionInitScript` to initialize extension documents and background workers before application code.
+
 ## [0.3.7] - 2026-10-15
 
 - Add `extension.pollForPageClosed()` to wait for a page to close.

@@ -130,3 +130,28 @@
     width: 80px;
   }
 }
+
+/* Keep diff additions and deletions distinct in both code themes. */
+.language-diff .token.inserted {
+  color: #1a7f37 !important;
+}
+
+.language-diff .token.deleted {
+  color: #cf222e !important;
+}
+
+.language-diff .token-line:has(.inserted:not(:empty)) {
+  background-color: rgb(46 160 67 / 15%);
+}
+
+.language-diff .token-line:has(.deleted:not(:empty)) {
+  background-color: rgb(248 81 73 / 15%);
+}
+
+[data-theme='dark'] .language-diff .token.inserted {
+  color: #7ee787 !important;
+}
+
+[data-theme='dark'] .language-diff .token.deleted {
+  color: #ff7b72 !important;
+}

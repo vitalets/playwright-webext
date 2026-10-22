@@ -14,7 +14,7 @@ service worker, access storage, and manage the extension's lifecycle.
 
 The persistent Chromium context hosting the extension. The `extension` fixture creates one per test.
 With `launchWithExtension()`, close it through `await extension.close()` to release the browser
-and temporary extension copies.
+and prepared extension directories.
 
 #### Usage
 
@@ -201,7 +201,7 @@ None.
 
 ### close
 
-Closes the browser context and removes temporary extension copies. Use this to release instances
+Closes the browser context and removes prepared extension directories. Use this to release instances
 created with `launchWithExtension()`; the built-in `extension` fixture handles teardown automatically.
 
 Cleanup still runs if closing the context fails. Repeated calls await the same teardown and report
@@ -380,7 +380,7 @@ const url = extension.getURL('settings/advanced.html');
 
 ### install
 
-Installs `extensionPath` when no path is supplied. With a custom path, installs a private copy of
+Installs `extensionPath` when no path is supplied. With a custom path, prepares a private directory for
 that build so it can later be replaced by `upgrade()`.
 
 Refreshes the manifest and waits for the extension worker if one is declared. It does not wait for
