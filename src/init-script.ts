@@ -6,13 +6,18 @@ import { randomUUID } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { dirname, join, posix, resolve } from 'node:path';
 import type { BrowserContext } from '@playwright/test';
+import type { ExtensionInitScript } from './options.js';
 
 /**
  * Reads initialization once and registers it before application scripts in extension documents.
  * Context init scripts also run on website pages, so the generated guard limits their execution.
  */
-export async function registerContextInitScript(context: BrowserContext, path: string) {
-  const content = await readFile(resolve(path), 'utf8');
+export async function registerContextInitScript(
+  context: BrowserContext,
+  script: ExtensionInitScript,
+) {
+  const content =
+    typeof script === 'string' ? await readFile(resolve(script), 'utf8') : script.content;
   await context.addInitScript({
     content: [
       "if (globalThis.location.protocol === 'chrome-extension:' && globalThis.chrome?.runtime?.id) {",

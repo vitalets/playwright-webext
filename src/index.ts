@@ -22,7 +22,12 @@ export type WebextFixtures = {
 };
 
 export { Extension } from './extension.js';
-export type { WebextOptions, WebextTestOptions, WebextWorkerOptions } from './options.js';
+export type {
+  WebextOptions,
+  WebextTestOptions,
+  WebextWorkerOptions,
+  ExtensionInitScript,
+} from './options.js';
 export type { ExtensionEventName, ExtensionEventArgs } from './dispatch.js';
 export { launchWithExtension, type LaunchWithExtensionOptions } from './launch.js';
 export { poll, type PollOptions } from './utils/poll.js';
@@ -114,9 +119,10 @@ export const test = base.extend<WebextTestOptions & WebextFixtures, WebextWorker
       });
       extension = new Extension(context, {
         extensionPath: resolve(baseDir, extensionPath),
-        extensionInitScript: extensionInitScript
-          ? resolve(baseDir, extensionInitScript)
-          : undefined,
+        extensionInitScript:
+          typeof extensionInitScript === 'string' && extensionInitScript
+            ? resolve(baseDir, extensionInitScript)
+            : extensionInitScript,
         locale,
       });
       videoRecording?.track(context);

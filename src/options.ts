@@ -19,8 +19,14 @@ export type WebextWorkerOptions = {
  */
 export type WebextTestOptions = {
   extensionAutoInstall?: boolean;
-  extensionInitScript?: string;
+  extensionInitScript?: ExtensionInitScript;
 };
+
+/**
+ * JavaScript to run before extension code in background workers and extension pages.
+ * Pass a file path as a string or inline source as `{ content }`.
+ */
+export type ExtensionInitScript = string | { content: string };
 
 /**
  * Defaults for optional launch settings.

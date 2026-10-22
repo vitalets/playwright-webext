@@ -13,3 +13,15 @@ test('initializes classic workers again after reload', async ({ extension }) => 
   await expect(popup.getByRole('heading')).toHaveText('test-language');
   expect(await popup.evaluate(() => chrome.runtime.sendMessage('language'))).toBe('test-language');
 });
+
+test.describe('inline script', () => {
+  test.use({
+    extensionInitScript: { content: 'Math.random = () => 42;' },
+  });
+
+  test('initializes the worker and extension pages', async ({ extension }) => {
+    expect(await extension.evaluate(() => Math.random())).toBe(42);
+    const popup = await extension.openPopup();
+    expect(await popup.evaluate(() => Math.random())).toBe(42);
+  });
+});

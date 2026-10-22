@@ -66,9 +66,10 @@ exists before installation, but metadata and worker operations require an instal
 
 ### extensionInitScript
 
-**Type:** `string`. **Default:** unset.
+**Type:** `string | { content: string }`.  
+**Default:** unset.
 
-A JavaScript file that runs before your extension code in service worker and all extension pages:
+JavaScript that runs before your extension code in the service worker and all extension pages:
 
 ```ts title="playwright.config.ts"
 import { defineConfig } from '@playwright/test';
@@ -82,20 +83,44 @@ export default defineConfig<WebextOptions>({
 });
 ```
 
-For example, override the language in all extension contexts:
-
 ```js title="test/extension-init.js"
-chrome.i18n.getUILanguage = () => 'es';
+Math.random = () => 42;
+```
+
+You can also pass inline source:
+
+```ts
+extensionInitScript: { content: 'Math.random = () => 42;' },
+```
+
+To pass values into inline source, use `JSON.stringify()` when interpolating them. It adds the
+quotes and escaping needed for string values containing quotes, backslashes, or newlines:
+
+```ts
+import { test } from 'playwright-webext';
+
+const userName = 'Alex "AJ" Smith';
+
+test.use({
+  extensionInitScript: {
+    content: `globalThis.testUserName = ${JSON.stringify(userName)};`,
+  },
+});
 ```
 
 To run different code in the worker and popup, check their paths:
 
 ```js title="test/extension-init.js"
 const manifest = chrome.runtime.getManifest();
+
+// For service worker
 if (location.pathname === `/${manifest.background?.service_worker}`) {
-  // Code for the service worker.
-} else if (location.pathname === `/${manifest.action?.default_popup}`) {
-  // Code for the popup.
+  // ...
+}
+
+// For popup
+if (location.pathname === `/${manifest.action?.default_popup}`) {
+  // ...
 }
 ```
 

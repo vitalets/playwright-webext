@@ -35,3 +35,15 @@ test('initializes workerless documents through launchWithExtension', async () =>
     await extension.close();
   }
 });
+
+test.describe('inline script', () => {
+  test.use({
+    extensionInitScript: { content: 'Math.random = () => 42;' },
+  });
+
+  test('initializes the worker and extension pages', async ({ extension }) => {
+    expect(await extension.evaluate(() => Math.random())).toBe(42);
+    const popup = await extension.openPopup();
+    expect(await popup.evaluate(() => Math.random())).toBe(42);
+  });
+});

@@ -4,6 +4,7 @@
 
 import { chromium } from '@playwright/test';
 import type { BrowserContext, BrowserContextOptions, LaunchOptions } from '@playwright/test';
+import type { ExtensionInitScript } from './options.js';
 import { Extension } from './extension.js';
 import { defaults } from './options.js';
 import { throwIf } from './utils/throw-if.js';
@@ -15,7 +16,7 @@ import { mergeOptions } from './utils/merge-options.js';
 export type LaunchWithExtensionOptions = {
   extensionPath: string;
   extensionAutoInstall?: boolean;
-  extensionInitScript?: string;
+  extensionInitScript?: ExtensionInitScript;
   launchOptions?: LaunchOptions;
   contextOptions?: BrowserContextOptions;
 };

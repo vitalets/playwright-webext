@@ -5,6 +5,7 @@
 
 import { join, resolve } from 'node:path';
 import type { BrowserContext } from '@playwright/test';
+import type { ExtensionInitScript } from './options.js';
 import { PreparedExtensionDir } from './prepare-dir.js';
 import { hasServiceWorker } from './manifest.js';
 import { isDefaultLocale } from './i18n.js';
@@ -15,7 +16,7 @@ type InstallState = 'not-installed' | 'installing' | 'installed' | 'upgrading' |
 export type InstallOptions = {
   extensionPath: string;
   locale?: string;
-  extensionInitScript?: string;
+  extensionInitScript?: ExtensionInitScript;
 };
 
 /**

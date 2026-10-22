@@ -4,7 +4,7 @@
 
 ## [Unreleased]
 
-- Add `extensionInitScript` to initialize extension documents and background workers before application code.
+- Add `extensionInitScript` with a file path or inline source to initialize extension documents and background workers before application code.
 
 ## [0.3.7] - 2026-10-15
 
