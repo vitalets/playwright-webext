@@ -100,14 +100,23 @@ test('saves preferences from the popup', async ({ extension }) => {
 `openPopup()` opens the popup document in a regular browser tab. Its extension APIs and storage
 are available, but some native toolbar popup behaviors cannot be tested this way:
 
+- The new tab becomes active. Calling `chrome.tabs.query({ active: true, currentWindow: true })`
+  returns the popup document's own tab, not the website you are testing against. Code that uses
+  that tab ID to send messages to content scripts or inject scripts targets the wrong tab.
 - The document uses a normal tab viewport and does not close when focus moves elsewhere. Native
-  popup sizing and dismissal are not reproduced.
-- The new tab becomes active. Code querying the active tab sees the popup document's tab, not the
-  previously active website.
+  popup sizing, dismissal, and the resulting cleanup are not reproduced. Each `openPopup()` call
+  creates another tab, so tests must close it to end that document's lifetime.
 - Opening the document does not grant the toolbar action's temporary `activeTab` permission or
   reproduce its user gesture.
 - Runtime messages from this document include `sender.tab`; messages from a native toolbar popup
   normally do not.
+- Chrome treats the document as a tab view. For example,
+  [`chrome.extension.getViews({ type: 'popup' })`](https://developer.chrome.com/docs/extensions/reference/api/extension#method-getViews)
+  does not include it.
+- The helper reads `action.default_popup` from the manifest snapshot and ignores
+  [`chrome.action.setPopup()`](https://developer.chrome.com/docs/extensions/reference/api/action#method-setPopup)
+  overrides, including per-tab paths. Without a manifest default popup, the helper throws even if
+  a popup was configured at runtime. Opening the document also bypasses the action's enabled state.
 
 Chromium can open the native toolbar popup through `chrome.action.openPopup()` or the CDP command
 `Extensions.triggerAction`. However, Playwright does not expose that popup as a `Page` through its
