@@ -9,6 +9,7 @@ test.describe('extension upgrade', () => {
     expect(extension.manifest.version).toBe('0.1.0');
 
     const oldId = extension.id;
+    const oldPath = extension.loadedPath;
     const oldWorker = extension.worker;
     await extension.storage.local.set({ foo: 'bar' });
 
@@ -16,6 +17,7 @@ test.describe('extension upgrade', () => {
 
     expect(extension.manifest.version).toBe('1.0.0');
     expect(extension.id).toBe(oldId);
+    expect(extension.loadedPath).toBe(oldPath);
     expect(extension.worker).not.toBe(oldWorker);
     await extension.storage.local.expect('foo').toEqual('bar');
     await extension.storage.local.expect('onInstalled').toEqual({

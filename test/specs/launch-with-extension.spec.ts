@@ -1,16 +1,15 @@
-import { relative } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { expect, test } from '@playwright/test';
-import { launchWithExtension } from '../../src/index.js';
-
-const extensionPath = fileURLToPath(new URL('../data/extension', import.meta.url));
-const oldPath = fileURLToPath(new URL('../data/extension-0.1.0', import.meta.url));
+import { dirname, relative, resolve } from 'node:path';
+import { expect } from '@playwright/test';
+import { test, launchWithExtension } from '../../src/index.js';
 
 test.use({ locale: 'en', viewport: { width: 900, height: 600 } });
 
-test('applies explicit context options and localizes the extension', async () => {
+test('applies explicit context options and localizes the extension', async ({
+  extensionPath,
+}, testInfo) => {
+  const configDir = dirname(testInfo.config.configFile!);
   const extension = await launchWithExtension({
-    extensionPath,
+    extensionPath: resolve(configDir, extensionPath),
     contextOptions: {
       locale: 'es',
       viewport: { width: 640, height: 480 },
@@ -30,9 +29,13 @@ test('applies explicit context options and localizes the extension', async () =>
   }
 });
 
-test('manual installation and upgrade resolve direct paths from cwd', async () => {
+test('manual installation and upgrade resolve direct paths from cwd', async ({
+  extensionPath,
+}, testInfo) => {
+  const configDir = dirname(testInfo.config.configFile!);
+  const oldPath = resolve(configDir, './data/extension-0.1.0');
   const extension = await launchWithExtension({
-    extensionPath: relative(process.cwd(), extensionPath),
+    extensionPath: relative(process.cwd(), resolve(configDir, extensionPath)),
     extensionAutoInstall: false,
   });
   expect(extension.context.serviceWorkers()).toHaveLength(0);

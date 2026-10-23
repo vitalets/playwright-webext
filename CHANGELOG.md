@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+- Add `extension.loadedPath` to inspect the directory used to load the extension.
+- Isolate extensions with static declarative network rules to prevent shared metadata conflicts between browsers.
 - Fix loading extensions with static declarative network rules when using localization, init scripts, or upgrades.
 - Add `extensionInitScript` with file paths, inline source, or an ordered array of both to initialize extension documents and background workers before application code.
 

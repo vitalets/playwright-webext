@@ -2,9 +2,11 @@
   {
     "id": 1,
     "priority": 1,
-    "action": { "type": "block" },
+    "action": {
+      "type": "block"
+    },
     "condition": {
-      "urlFilter": "||blocked.example.test^",
+      "urlFilter": "/blocked",
       "resourceTypes": ["xmlhttprequest"]
     }
   }

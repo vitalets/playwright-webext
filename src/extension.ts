@@ -53,6 +53,13 @@ export class Extension {
   }
 
   /**
+   * Returns the absolute directory used to load the extension, or throws before installation.
+   */
+  get loadedPath() {
+    return this.#installer.loadedPath;
+  }
+
+  /**
    * Whether initial installation and manifest acquisition completed; remains true while disabled.
    */
   get ready() {

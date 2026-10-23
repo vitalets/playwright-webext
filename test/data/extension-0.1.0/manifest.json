@@ -6,8 +6,5 @@
   "background": {
     "service_worker": "background.js"
   },
-  "permissions": ["storage", "declarativeNetRequest"],
-  "declarative_net_request": {
-    "rule_resources": [{ "id": "rules", "enabled": true, "path": "src/rules.json" }]
-  }
+  "permissions": ["storage"]
 }

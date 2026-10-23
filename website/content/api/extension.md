@@ -63,6 +63,21 @@ None.
 
 `string`
 
+### loadedPath
+
+The absolute directory used to load the extension. This can be the source build or a temporary directory prepared for installation. Remains
+unchanged during reloads and upgrades.
+
+#### Usage
+
+```ts
+const installedDirectory = extension.loadedPath;
+```
+
+#### Returns
+
+`string` (readonly)
+
 ### ready
 
 Whether initial installation and manifest acquisition have completed. Starts as `false` with deferred

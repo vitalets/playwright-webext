@@ -7,7 +7,7 @@ import { join, resolve } from 'node:path';
 import type { BrowserContext } from '@playwright/test';
 import type { ExtensionInitScript } from './options.js';
 import { PreparedExtensionDir } from './prepare-dir.js';
-import { hasServiceWorker } from './manifest.js';
+import { hasServiceWorker, hasStaticDnrRules } from './manifest.js';
 import { isDefaultLocale } from './i18n.js';
 import { registerContextInitScript } from './init-script.js';
 
@@ -28,6 +28,7 @@ export class ExtensionInstaller {
   #state: InstallState = 'not-installed';
   #canUpgrade = false;
   #id?: string;
+  #loadedPath?: string;
   #initScriptContent?: string;
   #initScriptRegistered = false;
   #hasServiceWorker?: boolean;
@@ -44,6 +45,15 @@ export class ExtensionInstaller {
    */
   get hasServiceWorker() {
     return this.#hasServiceWorker;
+  }
+
+  /**
+   * Returns the absolute installation directory, or throws before a successful load.
+   */
+  get loadedPath() {
+    if (!this.#loadedPath)
+      throw new Error('Extension is not installed. Call extension.install() first.');
+    return this.#loadedPath;
   }
 
   /**
@@ -95,11 +105,17 @@ export class ExtensionInstaller {
 
   private async resolveInstallPath(path?: string) {
     const source = path === undefined ? this.#extensionPath : resolve(path);
-    return path !== undefined ||
-      this.#initScriptContent !== undefined ||
-      !isDefaultLocale(this.options.locale)
+    return path !== undefined || (await this.requiresPreparedDirectory(source))
       ? this.prepareDirectory(source)
       : source;
+  }
+
+  private async requiresPreparedDirectory(source: string) {
+    return (
+      this.#initScriptContent !== undefined ||
+      !isDefaultLocale(this.options.locale) ||
+      (await hasStaticDnrRules(join(source, 'manifest.json')))
+    );
   }
 
   private async prepareDirectory(source: string) {
@@ -125,6 +141,7 @@ export class ExtensionInstaller {
     const session = await browser.newBrowserCDPSession();
     try {
       const { id } = await session.send('Extensions.loadUnpacked', { path });
+      this.#loadedPath = path;
       return id;
     } finally {
       await session.detach();

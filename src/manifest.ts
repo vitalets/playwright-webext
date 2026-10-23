@@ -1,5 +1,5 @@
 /**
- * Reads Chrome's resolved manifest and detects service worker declarations in manifest files.
+ * Reads Chrome's resolved manifest and detects declarations in source manifest files.
  */
 
 import { readFile } from 'node:fs/promises';
@@ -31,4 +31,12 @@ export async function readManifestFromWorker(worker: Worker) {
 export async function hasServiceWorker(manifestPath: string) {
   const source = await readFile(manifestPath, 'utf8');
   return source.includes('"service_worker"');
+}
+
+/**
+ * Detects static DNR rulesets, including those disabled by default.
+ */
+export async function hasStaticDnrRules(manifestPath: string) {
+  const manifest = JSON.parse(await readFile(manifestPath, 'utf8')) as chrome.runtime.ManifestV3;
+  return Boolean(manifest.declarative_net_request?.rule_resources?.length);
 }

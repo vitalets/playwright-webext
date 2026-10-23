@@ -15,6 +15,11 @@ For TypeScript implementation files, follow `.agents/rules/ts-file-structure.md`
 Apply this rule whenever creating, modifying, or refactoring implementation files. Do not
 apply it to tests or test fixtures.
 
+## Tests
+
+When creating or editing test files, read and follow
+`.agents/rules/good-tests.md`.
+
 ## Validation
 
 After changes, run `npm run prettier`, `npm run tsc`, ESLint on changed files, and focused tests
