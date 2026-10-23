@@ -20,10 +20,10 @@ A set of [Playwright](https://playwright.dev/) fixtures that make browser extens
 ## Features
 
 - Access your extension’s APIs with the built-in [extension](https://vitalets.github.io/playwright-webext/getting-started/writing-tests/) fixture.
-- Open [popup](https://vitalets.github.io/playwright-webext/guides/popup/), [options](https://vitalets.github.io/playwright-webext/guides/options/), and
+- Open and interact with the [popup](https://vitalets.github.io/playwright-webext/guides/popup/), [options](https://vitalets.github.io/playwright-webext/guides/options/), and
   [side panel](https://vitalets.github.io/playwright-webext/guides/side-panel/) pages.
 - Read and write [extension storage](https://vitalets.github.io/playwright-webext/guides/storage/) directly from test.
-- Trigger extension actions by [emulating browser events](https://vitalets.github.io/playwright-webext/api/extension/#dispatch).
+- Trigger actions by [emulating browser events](https://vitalets.github.io/playwright-webext/api/extension/#dispatch).
 - Inject a custom [init script](https://vitalets.github.io/playwright-webext/basics/configuration/#extensioninitscript) into the service worker and all extension pages.
 - Install extension [lazily](https://vitalets.github.io/playwright-webext/basics/configuration/#extensionautoinstall) to prepare browser state.
 - Check [internationalization (i18n)](https://vitalets.github.io/playwright-webext/guides/i18n/) without changing your system language.

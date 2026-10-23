@@ -15,10 +15,10 @@ that make testing browser extensions easier.
 ## Features
 
 - Access your extension’s APIs with the built-in [extension](writing-tests.md) fixture.
-- Open [popup](../guides/popup.md), [options](../guides/options.md), and
+- Open and interact with the [popup](../guides/popup.md), [options](../guides/options.md), and
   [side panel](../guides/side-panel.md) pages.
 - Read and write [extension storage](../guides/storage.md) directly from test.
-- Trigger extension actions by [emulating browser events](../guides/dispatching-events.md).
+- Trigger actions by [emulating browser events](../guides/dispatching-events.md).
 - Inject a custom [init script](../basics/configuration.md#extensioninitscript) into the service worker and all extension pages.
 - Install extension [lazily](../basics/configuration.md#extensionautoinstall) to prepare browser state.
 - Check [internationalization (i18n)](../guides/i18n.md) without changing your system language.
