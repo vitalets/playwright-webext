@@ -1,39 +1,34 @@
 import { expect } from '@playwright/test';
 import { test, launchWithExtension } from '../../../src/index.js';
 
-test.use({
-  extensionPath: './data/extension',
-  extensionInitScript: './specs/init-script/init-script.js',
-});
-
-test('initializes before worker dependencies and page scripts', async ({ extension }) => {
-  const popup = await extension.openPopup();
-  expect(await popup.evaluate(() => chrome.runtime.sendMessage('language'))).toBe('test-language');
-  await expect(popup.locator('#language')).toHaveText('test-language');
-  await popup.reload();
-  await expect(popup.locator('#language')).toHaveText('test-language');
-  await extension.reload();
-  const reopened = await extension.openPopup();
-  expect(await reopened.evaluate(() => chrome.runtime.sendMessage('language'))).toBe(
-    'test-language',
-  );
-
-  const website = await extension.context.newPage();
-  await website.goto('data:text/html,<h1>Website</h1>');
-  expect(await website.evaluate(() => globalThis.chrome?.i18n)).toBeUndefined();
-});
-
-test('initializes workerless documents through launchWithExtension', async () => {
-  const extension = await launchWithExtension({
-    extensionPath: './test/data/extension-no-worker',
-    extensionInitScript: './test/specs/init-script/init-script.js',
+test.describe('external script', () => {
+  test.use({
+    extensionInitScript: './specs/init-script/init-script.js',
   });
-  try {
+
+  test('initializes before worker dependencies and page scripts', async ({ extension }) => {
     const popup = await extension.openPopup();
-    expect(await popup.evaluate(() => chrome.i18n.getUILanguage())).toBe('test-language');
-  } finally {
-    await extension.close();
-  }
+    expect(await popup.evaluate(() => chrome.runtime.sendMessage('language'))).toBe('foo');
+    await expect(popup.locator('#language')).toHaveText('foo');
+    await popup.reload();
+    await expect(popup.locator('#language')).toHaveText('foo');
+    await extension.reload();
+    const reopened = await extension.openPopup();
+    expect(await reopened.evaluate(() => chrome.runtime.sendMessage('language'))).toBe('foo');
+
+    const website = await extension.context.newPage();
+    await website.goto('data:text/html,<h1>Website</h1>');
+    expect(await website.evaluate(() => globalThis.chrome?.i18n)).toBeUndefined();
+  });
+
+  test('rejects without service worker', async () => {
+    await expect(
+      launchWithExtension({
+        extensionPath: './test/data/extension-no-worker',
+        extensionInitScript: './test/specs/init-script/init-script.js',
+      }),
+    ).rejects.toThrow(/requires.*service worker/);
+  });
 });
 
 test.describe('inline script', () => {
@@ -45,5 +40,36 @@ test.describe('inline script', () => {
     expect(await extension.evaluate(() => Math.random())).toBe(42);
     const popup = await extension.openPopup();
     expect(await popup.evaluate(() => Math.random())).toBe(42);
+  });
+});
+
+test.describe('script array', () => {
+  test.use({
+    extensionInitScript: [
+      { content: "globalThis.foo = ['first'];" },
+      './specs/init-script/init-script.js',
+      { content: "globalThis.foo.push('last');" },
+    ],
+  });
+
+  test('runs mixed scripts in order, including after reload', async ({ extension }) => {
+    expect(await extension.evaluate('globalThis.foo')).toEqual(['first', 'file', 'last']);
+    const popup = await extension.openPopup();
+    expect(await popup.evaluate('globalThis.foo')).toEqual(['first', 'file', 'last']);
+    await popup.reload();
+    expect(await popup.evaluate('globalThis.foo')).toEqual(['first', 'file', 'last']);
+
+    await extension.reload();
+    expect(await extension.evaluate('globalThis.foo')).toEqual(['first', 'file', 'last']);
+    const reopened = await extension.openPopup();
+    expect(await reopened.evaluate('globalThis.foo')).toEqual(['first', 'file', 'last']);
+  });
+});
+
+test.describe('empty array', () => {
+  test.use({ extensionInitScript: [] });
+
+  test('installs without initialization', async ({ extension }) => {
+    expect(await extension.evaluate('globalThis.foo')).toBeUndefined();
   });
 });
