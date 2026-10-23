@@ -28,7 +28,7 @@ export class ExtensionInstaller {
   #state: InstallState = 'not-installed';
   #canUpgrade = false;
   #id?: string;
-  #initScript?: string;
+  #initScriptContent?: string;
   #initScriptRegistered = false;
   #hasServiceWorker?: boolean;
 
@@ -96,7 +96,7 @@ export class ExtensionInstaller {
   private async resolveInstallPath(path?: string) {
     const source = path === undefined ? this.#extensionPath : resolve(path);
     return path !== undefined ||
-      this.#initScript !== undefined ||
+      this.#initScriptContent !== undefined ||
       !isDefaultLocale(this.options.locale)
       ? this.prepareDirectory(source)
       : source;
@@ -105,14 +105,14 @@ export class ExtensionInstaller {
   private async prepareDirectory(source: string) {
     await this.#directory.prepare(source, {
       locale: isDefaultLocale(this.options.locale) ? undefined : this.options.locale,
-      initScript: this.#initScript,
+      initScriptContent: this.#initScriptContent,
     });
     return this.#directory.path;
   }
 
   private async registerInitScript() {
     if (this.#initScriptRegistered || !this.options.extensionInitScript) return;
-    this.#initScript = await registerContextInitScript(
+    this.#initScriptContent = await registerContextInitScript(
       this.context,
       this.options.extensionInitScript,
     );

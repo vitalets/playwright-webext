@@ -16,17 +16,17 @@ export async function registerContextInitScript(
   context: BrowserContext,
   script: ExtensionInitScript | ExtensionInitScript[],
 ) {
-  const content = await joinInitScripts(script);
+  const initScriptContent = await joinInitScripts(script);
   await context.addInitScript({
     content: [
       "if (globalThis.location.protocol === 'chrome-extension:' && globalThis.chrome?.runtime?.id) {",
       '(() => {',
-      content,
+      initScriptContent,
       '})();',
       '}',
     ].join('\n'),
   });
-  return content;
+  return initScriptContent;
 }
 
 /**
