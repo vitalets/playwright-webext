@@ -19,10 +19,11 @@ that make testing browser extensions easier.
   [side panel](../guides/side-panel.md) pages.
 - Read and write [extension storage](../guides/storage.md) directly from test.
 - Trigger extension actions by [emulating browser events](../guides/dispatching-events.md).
-- Prepare browser state before [extension installation](../basics/configuration.md#extensionautoinstall).
+- Inject a custom [init script](../basics/configuration.md#extensioninitscript) into the service worker and all extension pages.
+- Install extension [lazily](../basics/configuration.md#extensionautoinstall) to prepare browser state.
 - Check [internationalization (i18n)](../guides/i18n.md) without changing your system language.
-- Verify [data migration](../guides/migration.md) between extension versions.
-- Test the behavior when extension is [uninstalled](../guides/uninstall.md) or [disabled](../api/extension.md#disable).
+- Verify [data migration](../guides/migration.md) between upgrades.
+- Test the flow when extension is [uninstalled](../guides/uninstall.md) or [disabled](../api/extension.md#disable).
 
 See the [complete example](https://github.com/vitalets/playwright-webext/tree/main/example): a TypeScript
 extension tested with playwright-webext.
