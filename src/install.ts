@@ -3,11 +3,11 @@
  * Worker lifecycle synchronization is supplied by the extension facade.
  */
 
-import { join, resolve } from 'node:path';
+import { resolve } from 'node:path';
 import type { BrowserContext } from '@playwright/test';
 import type { ExtensionInitScript } from './options.js';
 import { PreparedExtensionDir } from './prepare-dir.js';
-import { hasServiceWorker, hasStaticDnrRules } from './manifest.js';
+import { Manifest } from './manifest.js';
 import { isDefaultLocale } from './i18n.js';
 import { registerContextInitScript } from './init-script.js';
 
@@ -24,6 +24,7 @@ export type InstallOptions = {
  */
 export class ExtensionInstaller {
   readonly #directory = new PreparedExtensionDir();
+  readonly #manifest = new Manifest();
   readonly #extensionPath: string;
   #state: InstallState = 'not-installed';
   #canUpgrade = false;
@@ -31,7 +32,6 @@ export class ExtensionInstaller {
   #loadedPath?: string;
   #initScriptContent?: string;
   #initScriptRegistered = false;
-  #hasServiceWorker?: boolean;
 
   constructor(
     private readonly context: BrowserContext,
@@ -41,10 +41,10 @@ export class ExtensionInstaller {
   }
 
   /**
-   * Whether the last loaded build declares a background service worker.
+   * Whether the loaded source manifest declares a background service worker.
    */
   get hasServiceWorker() {
-    return this.#hasServiceWorker;
+    return this.#manifest.hasServiceWorker;
   }
 
   /**
@@ -69,7 +69,6 @@ export class ExtensionInstaller {
       this.#id = await this.loadUnpacked(installPath);
       this.#state = 'installed';
       this.#canUpgrade = path !== undefined;
-      await this.updateHasServiceWorker(installPath);
       return this.#id;
     } catch (error) {
       if (this.#state === 'installing') this.#state = 'not-installed';
@@ -84,12 +83,12 @@ export class ExtensionInstaller {
     this.verifyStateForUpgrade();
     this.#state = 'upgrading';
     try {
+      await this.#manifest.load(this.#extensionPath);
       await this.prepareDirectory(this.#extensionPath);
       this.#state = 'upgraded';
       this.#canUpgrade = false;
       const id = await this.loadUnpacked(this.#directory.path);
       if (id !== this.#id) throw new Error('Extension upgrade changed the extension ID.');
-      await this.updateHasServiceWorker(this.#directory.path);
     } catch (error) {
       if (this.#state === 'upgrading') this.#state = 'installed';
       throw error;
@@ -105,21 +104,22 @@ export class ExtensionInstaller {
 
   private async resolveInstallPath(path?: string) {
     const source = path === undefined ? this.#extensionPath : resolve(path);
-    return path !== undefined || (await this.requiresPreparedDirectory(source))
+    await this.#manifest.load(source);
+    return path !== undefined || this.requiresPreparedDirectory()
       ? this.prepareDirectory(source)
       : source;
   }
 
-  private async requiresPreparedDirectory(source: string) {
+  private requiresPreparedDirectory() {
     return (
       this.#initScriptContent !== undefined ||
       !isDefaultLocale(this.options.locale) ||
-      (await hasStaticDnrRules(join(source, 'manifest.json')))
+      this.#manifest.hasDnr
     );
   }
 
   private async prepareDirectory(source: string) {
-    await this.#directory.prepare(source, {
+    await this.#directory.prepare(source, this.#manifest.data, {
       locale: isDefaultLocale(this.options.locale) ? undefined : this.options.locale,
       initScriptContent: this.#initScriptContent,
     });
@@ -146,10 +146,6 @@ export class ExtensionInstaller {
     } finally {
       await session.detach();
     }
-  }
-
-  private async updateHasServiceWorker(path: string) {
-    this.#hasServiceWorker = await hasServiceWorker(join(path, 'manifest.json'));
   }
 
   private verifyStateForInstall() {

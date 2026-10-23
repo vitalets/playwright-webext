@@ -2,7 +2,7 @@
  * Prepares private extension directories by linking unchanged resources and writing overrides.
  */
 
-import { copyFile, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, mkdtemp, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { resolveExtensionLocale } from './i18n.js';
@@ -30,12 +30,16 @@ export class PreparedExtensionDir {
   /**
    * Replaces the private directory contents with the supplied extension build.
    */
-  async prepare(extensionPath: string, options: PreparationOptions = {}) {
+  async prepare(
+    extensionPath: string,
+    manifest: chrome.runtime.ManifestV3,
+    options: PreparationOptions = {},
+  ) {
     this.sourcePath = resolve(extensionPath);
     // Chrome can generate _metadata after extension installation,
     // so we need to exclude it from linking to avoid errors.
     this.handledPaths = ['_metadata'];
-    this.manifest = await this.readManifest();
+    this.manifest = structuredClone(manifest);
     this.path = await this.createTargetPath();
     await this.clearContents();
     await this.handleLocale(options.locale);
@@ -93,12 +97,6 @@ export class PreparedExtensionDir {
 
   private async linkResources() {
     await symlinkDirEntries(this.sourcePath, this.path, this.handledPaths);
-  }
-
-  private async readManifest() {
-    return JSON.parse(
-      await readFile(join(this.sourcePath, 'manifest.json'), 'utf8'),
-    ) as chrome.runtime.ManifestV3;
   }
 
   private async writeManifest() {
