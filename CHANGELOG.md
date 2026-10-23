@@ -4,6 +4,7 @@
 
 ## [Unreleased]
 
+- Fix loading extensions with static declarative network rules when using localization, init scripts, or upgrades.
 - Add `extensionInitScript` with file paths, inline source, or an ordered array of both to initialize extension documents and background workers before application code.
 
 ## [0.3.7] - 2026-10-15

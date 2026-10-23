@@ -7,7 +7,10 @@
     "service_worker": "background.js",
     "type": "module"
   },
-  "permissions": ["storage", "sidePanel"],
+  "permissions": ["storage", "sidePanel", "declarativeNetRequest"],
+  "declarative_net_request": {
+    "rule_resources": [{ "id": "rules", "enabled": true, "path": "src/rules.json" }]
+  },
   "side_panel": {
     "default_path": "side-panel.html"
   },

@@ -5,6 +5,7 @@ node_modules/
 dist/
 test-results/
 playwright-report/
+test/data/**/_metadata/
 .playwright-cli/
 
 /todo.txt

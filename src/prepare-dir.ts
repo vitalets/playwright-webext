@@ -2,9 +2,9 @@
  * Prepares private extension directories by linking unchanged resources and writing overrides.
  */
 
-import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { resolveExtensionLocale } from './i18n.js';
 import { wrapServiceWorkerInitScript } from './init-script.js';
 import { symlink, symlinkDirEntries } from './utils/symlink.js';
@@ -32,12 +32,15 @@ export class PreparedExtensionDir {
    */
   async prepare(extensionPath: string, options: PreparationOptions = {}) {
     this.sourcePath = resolve(extensionPath);
-    this.handledPaths = [];
+    // Chrome can generate _metadata after extension installation,
+    // so we need to exclude it from linking to avoid errors.
+    this.handledPaths = ['_metadata'];
     this.manifest = await this.readManifest();
     this.path = await this.createTargetPath();
     await this.clearContents();
     await this.handleLocale(options.locale);
     await this.handleInitScript(options.initScriptContent);
+    await this.handleDnrRules();
     await this.writeManifest();
     await this.linkResources();
     return this;
@@ -72,6 +75,20 @@ export class PreparedExtensionDir {
     await symlink(join(this.sourcePath, workerPath), targetWorkerPath);
     await wrapServiceWorkerInitScript(this.path, this.manifest, initScriptContent);
     this.handledPaths.push(workerPath);
+  }
+
+  private async handleDnrRules() {
+    // Chrome requires static rulesets to resolve inside the loaded extension directory.
+    const rulesets = this.manifest.declarative_net_request?.rule_resources ?? [];
+    for (const { path } of rulesets) {
+      if (isAbsolute(path) || path.split(/[\\/]/).includes('..')) {
+        throw new Error(`Invalid declarative network rules path: "${path}".`);
+      }
+      const targetPath = join(this.path, path);
+      await mkdir(dirname(targetPath), { recursive: true });
+      await copyFile(join(this.sourcePath, path), targetPath);
+      this.handledPaths.push(path);
+    }
   }
 
   private async linkResources() {
