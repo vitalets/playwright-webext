@@ -16,7 +16,7 @@ type InstallState = 'not-installed' | 'installing' | 'installed' | 'upgrading' |
 export type InstallOptions = {
   extensionPath: string;
   locale?: string;
-  extensionInitScript?: ExtensionInitScript;
+  extensionInitScript?: ExtensionInitScript | ExtensionInitScript[];
 };
 
 /**

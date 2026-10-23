@@ -66,7 +66,7 @@ exists before installation, but metadata and worker operations require an instal
 
 ### extensionInitScript
 
-**Type:** `string | { content: string }`.  
+**Type:** `string | { content: string } | (string | { content: string })[]`.  
 **Default:** unset.
 
 JavaScript that runs before your extension code in the service worker and all extension pages:
@@ -91,6 +91,16 @@ You can also pass inline source:
 
 ```ts
 extensionInitScript: { content: 'Math.random = () => 42;' },
+```
+
+Pass an array to run multiple scripts in order. Each item has its own scope; use `globalThis` to
+share values between scripts:
+
+```ts
+extensionInitScript: [
+  './test/extension-init.js',
+  { content: 'Date.now = () => 0;' },
+],
 ```
 
 To pass values into inline source, use `JSON.stringify()` when interpolating them. It adds the

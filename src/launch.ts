@@ -16,7 +16,7 @@ import { mergeOptions } from './utils/merge-options.js';
 export type LaunchWithExtensionOptions = {
   extensionPath: string;
   extensionAutoInstall?: boolean;
-  extensionInitScript?: ExtensionInitScript;
+  extensionInitScript?: ExtensionInitScript | ExtensionInitScript[];
   launchOptions?: LaunchOptions;
   contextOptions?: BrowserContextOptions;
 };

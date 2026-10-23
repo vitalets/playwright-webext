@@ -9,6 +9,7 @@ import { test as base } from '@playwright/test';
 import { Extension } from './extension.js';
 import type { WebextTestOptions, WebextWorkerOptions } from './options.js';
 import { launchContext } from './launch.js';
+import { resolveInitScripts } from './init-script.js';
 import { createVideoRecording } from './video.js';
 import { runAll } from './utils/run-all.js';
 import { throwIf } from './utils/throw-if.js';
@@ -119,10 +120,7 @@ export const test = base.extend<WebextTestOptions & WebextFixtures, WebextWorker
       });
       extension = new Extension(context, {
         extensionPath: resolve(baseDir, extensionPath),
-        extensionInitScript:
-          typeof extensionInitScript === 'string' && extensionInitScript
-            ? resolve(baseDir, extensionInitScript)
-            : extensionInitScript,
+        extensionInitScript: resolveInitScripts(baseDir, extensionInitScript),
         locale,
       });
       videoRecording?.track(context);

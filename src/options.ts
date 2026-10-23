@@ -19,7 +19,7 @@ export type WebextWorkerOptions = {
  */
 export type WebextTestOptions = {
   extensionAutoInstall?: boolean;
-  extensionInitScript?: ExtensionInitScript;
+  extensionInitScript?: ExtensionInitScript | ExtensionInitScript[];
 };
 
 /**

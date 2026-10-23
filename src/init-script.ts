@@ -14,10 +14,9 @@ import type { ExtensionInitScript } from './options.js';
  */
 export async function registerContextInitScript(
   context: BrowserContext,
-  script: ExtensionInitScript,
+  script: ExtensionInitScript | ExtensionInitScript[],
 ) {
-  const content =
-    typeof script === 'string' ? await readFile(resolve(script), 'utf8') : script.content;
+  const content = await joinInitScripts(script);
   await context.addInitScript({
     content: [
       "if (globalThis.location.protocol === 'chrome-extension:' && globalThis.chrome?.runtime?.id) {",
@@ -34,23 +33,50 @@ export async function registerContextInitScript(
  * Context init scripts do not run in service workers. Redirect the prepared manifest to a
  * sibling wrapper that loads initialization before the original worker on every start.
  */
-export async function prepareWorkerInitScript(
-  target: string,
+export async function wrapServiceWorkerInitScript(
+  extensionDir: string,
   manifest: chrome.runtime.ManifestV3,
-  content: string,
+  initScriptContent: string,
 ) {
   const background = manifest.background!;
-  const worker = background.service_worker;
+  const origScript = background.service_worker;
   const suffix = randomUUID();
-  const init = `webext-init-script-${suffix}.js`;
+  const initScriptFile = `webext-init-script-${suffix}.js`;
   const wrapper = `webext-wrapper-${suffix}.js`;
-  const imports = [init, posix.basename(worker)].map((name) => `./${encodeURIComponent(name)}`);
+  const imports = [initScriptFile, posix.basename(origScript)].map(
+    (name) => `./${encodeURIComponent(name)}`,
+  );
   const code =
     background.type === 'module'
       ? imports.map((path) => `import ${JSON.stringify(path)};`).join('\n')
       : imports.map((path) => `importScripts(${JSON.stringify(path)});`).join('\n');
-  const directory = join(target, dirname(worker));
-  await writeFile(join(directory, init), `(() => {\n${content}\n})();\n`);
+  const directory = join(extensionDir, dirname(origScript));
+  await writeFile(join(directory, initScriptFile), `(() => {\n${initScriptContent}\n})();\n`);
   await writeFile(join(directory, wrapper), `${code}\n`);
-  background.service_worker = posix.join(posix.dirname(worker), wrapper);
+  background.service_worker = posix.join(posix.dirname(origScript), wrapper);
+}
+
+/**
+ * Resolves initialization file paths relative to the configuration directory.
+ */
+export function resolveInitScripts(
+  baseDir: string,
+  script?: ExtensionInitScript | ExtensionInitScript[],
+) {
+  if (script === undefined) return;
+  const resolveScript = (item: ExtensionInitScript) =>
+    typeof item === 'string' && item ? resolve(baseDir, item) : item;
+  return Array.isArray(script) ? script.map(resolveScript) : resolveScript(script);
+}
+
+async function joinInitScripts(script: ExtensionInitScript | Array<ExtensionInitScript>) {
+  const scripts = Array.isArray(script) ? script : [script];
+  const sources = await Promise.all(
+    scripts.map(async (item) => {
+      const source =
+        typeof item === 'string' ? await readFile(resolve(item), 'utf8') : item.content;
+      return `(() => {\n${source}\n})();`;
+    }),
+  );
+  return sources.join('\n');
 }

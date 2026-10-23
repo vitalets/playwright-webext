@@ -16,7 +16,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join, posix, resolve } from 'node:path';
 import { resolveExtensionLocale } from './i18n.js';
-import { prepareWorkerInitScript } from './init-script.js';
+import { wrapServiceWorkerInitScript } from './init-script.js';
 
 type PreparationOptions = {
   locale?: string;
@@ -82,7 +82,7 @@ async function prepareExtension(source: string, target: string, options: Prepara
   const directory = posix.dirname(worker || '.');
   await linkResources({ source, target, directory, locale: Boolean(locale) });
   await prepareLocale({ source, target, locale, manifest });
-  if (worker) await prepareWorkerInitScript(target, manifest, options.initScript!);
+  if (worker) await wrapServiceWorkerInitScript(target, manifest, options.initScript!);
   await writeFile(join(target, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
 }
 
