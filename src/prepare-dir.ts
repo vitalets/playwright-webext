@@ -2,21 +2,12 @@
  * Prepares private extension directories by linking unchanged resources and writing overrides.
  */
 
-import {
-  cp,
-  mkdir,
-  mkdtemp,
-  readFile,
-  readdir,
-  rm,
-  stat,
-  symlink,
-  writeFile,
-} from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, posix, resolve } from 'node:path';
 import { resolveExtensionLocale } from './i18n.js';
 import { wrapServiceWorkerInitScript } from './init-script.js';
+import { symlink } from './utils/symlink.js';
 
 type PreparationOptions = {
   locale?: string;
@@ -43,7 +34,7 @@ export class PreparedExtensionDir {
   async prepare(extensionPath: string, options: PreparationOptions = {}) {
     await this.ensurePath();
     await this.clearContents();
-    await prepareExtension(resolve(extensionPath), this.path, options);
+    await this.prepareDir(resolve(extensionPath), options);
     return this;
   }
 
@@ -53,6 +44,24 @@ export class PreparedExtensionDir {
   async cleanup() {
     if (!this.path) return;
     await rm(this.path, { recursive: true, force: true });
+  }
+
+  /**
+   * Populates an empty private directory with the requested manifest, locale, and worker startup.
+   */
+  private async prepareDir(source: string, options: PreparationOptions) {
+    const target = this.path;
+    const manifest = JSON.parse(
+      await readFile(join(source, 'manifest.json'), 'utf8'),
+    ) as chrome.runtime.ManifestV3;
+    const locale = options.locale && (await resolveExtensionLocale(source, options.locale));
+    const workerToWrap =
+      options.initScript !== undefined ? manifest.background?.service_worker : undefined;
+    const directory = posix.dirname(workerToWrap || '.');
+    await linkResources({ source, target, directory, locale: Boolean(locale) });
+    await prepareLocale({ source, target, locale, manifest });
+    if (workerToWrap) await wrapServiceWorkerInitScript(target, manifest, options.initScript!);
+    await writeFile(join(target, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
   }
 
   /**
@@ -71,21 +80,8 @@ export class PreparedExtensionDir {
 }
 
 /**
- * Populates an empty private directory with the requested manifest, locale, and worker startup.
+ * Links extension resources while leaving overridden files and worker directories writable.
  */
-async function prepareExtension(source: string, target: string, options: PreparationOptions) {
-  const manifest = JSON.parse(
-    await readFile(join(source, 'manifest.json'), 'utf8'),
-  ) as chrome.runtime.ManifestV3;
-  const locale = options.locale && (await resolveExtensionLocale(source, options.locale));
-  const worker = options.initScript !== undefined ? manifest.background?.service_worker : undefined;
-  const directory = posix.dirname(worker || '.');
-  await linkResources({ source, target, directory, locale: Boolean(locale) });
-  await prepareLocale({ source, target, locale, manifest });
-  if (worker) await wrapServiceWorkerInitScript(target, manifest, options.initScript!);
-  await writeFile(join(target, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
-}
-
 async function linkResources(options: LinkOptions) {
   const { source, target, directory, locale, relative = '' } = options;
   for (const entry of await readdir(source)) {
@@ -97,7 +93,7 @@ async function linkResources(options: LinkOptions) {
       await mkdir(to);
       await linkResources({ source: from, target: to, directory, locale, relative: path });
     } else {
-      await linkResource(from, to);
+      await symlink(from, to);
     }
   }
 }
@@ -115,26 +111,8 @@ async function prepareLocale({
 }) {
   if (!locale) return;
   await mkdir(join(target, '_locales'));
-  await linkResource(join(source, '_locales', locale), join(target, '_locales', locale));
+  await symlink(join(source, '_locales', locale), join(target, '_locales', locale));
   manifest.default_locale = locale;
-}
-
-async function linkResource(source: string, target: string) {
-  const directory = (await stat(source)).isDirectory();
-  try {
-    await symlink(source, target, directory ? 'junction' : 'file');
-  } catch (error) {
-    if (!isLinkUnsupported(error)) throw error;
-    await cp(source, target, { recursive: true, dereference: true });
-  }
-}
-
-function isLinkUnsupported(error: unknown) {
-  return (
-    error instanceof Error &&
-    'code' in error &&
-    ['EPERM', 'EACCES', 'ENOSYS', 'ENOTSUP'].includes(String(error.code))
-  );
 }
 
 function isOverridden(path: string, locale: boolean) {

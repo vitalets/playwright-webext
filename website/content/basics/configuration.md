@@ -169,8 +169,7 @@ The wrapper loads your init script first, then the original worker:
 
 Each extension instance gets a private temporary directory, normally once per test. It contains the
 adjusted manifest and generated scripts. Unchanged files and whole subdirectories are symlinked to
-the source build, with copying as a fallback when links are unavailable. Locale overrides use the
-same directory. Nothing is written to the source build.
+the source build. Locale overrides use the same directory. Nothing is written to the source build.
 
 </details>
 
