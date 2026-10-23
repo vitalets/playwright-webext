@@ -4,7 +4,7 @@
 
 import { copyFile, mkdir, mkdtemp, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { dirname, isAbsolute, join, resolve } from 'node:path';
+import { dirname, isAbsolute, join, normalize, resolve } from 'node:path';
 import { resolveExtensionLocale } from './i18n.js';
 import { wrapServiceWorkerInitScript } from './init-script.js';
 import { symlink, symlinkDirEntries } from './utils/symlink.js';
@@ -25,7 +25,7 @@ export class PreparedExtensionDir {
   // Original manifest modified for the prepared build.
   private manifest!: chrome.runtime.ManifestV3;
   // Paths relative to sourcePath excluded from bulk linking.
-  private handledPaths: string[] = [];
+  private handledPaths = new Set<string>();
 
   /**
    * Replaces the private directory contents with the supplied extension build.
@@ -36,13 +36,14 @@ export class PreparedExtensionDir {
     options: PreparationOptions = {},
   ) {
     this.sourcePath = resolve(extensionPath);
-    // Chrome can generate _metadata after extension installation,
-    // so we need to exclude it from linking to avoid errors.
-    this.handledPaths = ['_metadata'];
     this.manifest = structuredClone(manifest);
     this.path = await this.createTargetPath();
     await this.clearContents();
+    // Chrome can generate _metadata after extension installation,
+    // so we need to exclude it from linking to avoid errors.
+    this.addHandledPath('_metadata');
     await this.handleLocale(options.locale);
+    await this.handleContentScripts();
     await this.handleInitScript(options.initScriptContent);
     await this.handleDnrRules();
     await this.writeManifest();
@@ -65,7 +66,21 @@ export class PreparedExtensionDir {
     await mkdir(localesDir);
     await symlink(join(this.sourcePath, '_locales', locale), join(localesDir, locale));
     this.manifest.default_locale = locale;
-    this.handledPaths.push('_locales');
+    this.addHandledPath('_locales');
+  }
+
+  private async handleContentScripts() {
+    const scripts = this.manifest.content_scripts ?? [];
+    const paths = new Set(scripts.flatMap(({ js = [], css = [] }) => [...js, ...css]));
+    for (const path of paths) {
+      if (isAbsolute(path) || path.split(/[\\/]/).includes('..')) {
+        throw new Error(`Invalid content script path: "${path}".`);
+      }
+      const targetPath = join(this.path, path);
+      await mkdir(dirname(targetPath), { recursive: true });
+      await copyFile(join(this.sourcePath, path), targetPath);
+      this.addHandledPath(path);
+    }
   }
 
   private async handleInitScript(initScriptContent: string | undefined) {
@@ -76,9 +91,12 @@ export class PreparedExtensionDir {
     }
     const targetWorkerPath = join(this.path, workerPath);
     await mkdir(dirname(targetWorkerPath), { recursive: true });
-    await symlink(join(this.sourcePath, workerPath), targetWorkerPath);
+    // The worker may already be copied if it is also declared as a content script.
+    if (!this.isHandledPath(workerPath)) {
+      await symlink(join(this.sourcePath, workerPath), targetWorkerPath);
+    }
     await wrapServiceWorkerInitScript(this.path, this.manifest, initScriptContent);
-    this.handledPaths.push(workerPath);
+    this.addHandledPath(workerPath);
   }
 
   private async handleDnrRules() {
@@ -91,12 +109,12 @@ export class PreparedExtensionDir {
       const targetPath = join(this.path, path);
       await mkdir(dirname(targetPath), { recursive: true });
       await copyFile(join(this.sourcePath, path), targetPath);
-      this.handledPaths.push(path);
+      this.addHandledPath(path);
     }
   }
 
   private async linkResources() {
-    await symlinkDirEntries(this.sourcePath, this.path, this.handledPaths);
+    await symlinkDirEntries(this.sourcePath, this.path, [...this.handledPaths]);
   }
 
   private async writeManifest() {
@@ -104,7 +122,7 @@ export class PreparedExtensionDir {
       join(this.path, 'manifest.json'),
       `${JSON.stringify(this.manifest, null, 2)}\n`,
     );
-    this.handledPaths.push('manifest.json');
+    this.addHandledPath('manifest.json');
   }
 
   private async createTargetPath() {
@@ -115,9 +133,18 @@ export class PreparedExtensionDir {
    * Empties the private directory while preserving its path for extension upgrades.
    */
   private async clearContents() {
+    this.handledPaths.clear();
     const entries = await readdir(this.path);
     await Promise.all(
       entries.map((entry) => rm(join(this.path, entry), { recursive: true, force: true })),
     );
+  }
+
+  private addHandledPath(path: string) {
+    this.handledPaths.add(normalize(path));
+  }
+
+  private isHandledPath(path: string) {
+    return this.handledPaths.has(normalize(path));
   }
 }

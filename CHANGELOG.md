@@ -4,6 +4,7 @@
 
 ## [Unreleased]
 
+- Fix content-script JavaScript and CSS loading from temporary extension directories.
 - Add `extension.loadedPath` to inspect the directory used to load the extension.
 - Isolate extensions with static declarative network rules to prevent shared metadata conflicts between browsers.
 - Fix loading extensions with static declarative network rules when using localization, init scripts, or upgrades.

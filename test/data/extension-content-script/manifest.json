@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "Test extension",
+  "version": "1.0.0",
+  "background": {
+    "service_worker": "background.js"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["assets/image.svg"],
+      "matches": ["http://example.test/*"]
+    }
+  ],
+  "content_scripts": [
+    {
+      "matches": ["http://example.test/*"],
+      "js": ["assets/content.js"],
+      "css": ["assets/content.css"]
+    }
+  ]
+}
