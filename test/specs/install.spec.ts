@@ -8,6 +8,7 @@ test('auto install by default', ({ extension, extensionPath }, testInfo) => {
   expect(extension.hasServiceWorker).toBe(true);
   expect(extension.id).toBeDefined();
   expect(extension.manifest.version).toBe('1.0.0');
+  // Without DNR, an init script, or a custom locale, load directly from the original directory.
   expect(extension.loadedPath).toBe(resolve(configDir, extensionPath));
 });
 
