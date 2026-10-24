@@ -1,5 +1,5 @@
 import { expect } from '@playwright/test';
-import { test, launchWithExtension } from '../../../src/index.js';
+import { test } from '../../../src/index.js';
 
 test.describe('external script', () => {
   test.use({
@@ -19,15 +19,6 @@ test.describe('external script', () => {
     const website = await extension.context.newPage();
     await website.goto('data:text/html,<h1>Website</h1>');
     expect(await website.evaluate(() => globalThis.chrome?.i18n)).toBeUndefined();
-  });
-
-  test('rejects without service worker', async () => {
-    await expect(
-      launchWithExtension({
-        extensionPath: './test/data/extension-no-worker',
-        extensionInitScript: './test/specs/init-script/init-script.js',
-      }),
-    ).rejects.toThrow(/requires.*service worker/);
   });
 });
 

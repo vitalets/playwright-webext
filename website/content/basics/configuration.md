@@ -69,7 +69,8 @@ exists before installation, but metadata and worker operations require an instal
 **Type:** `string | { content: string } | (string | { content: string })[]`.  
 **Default:** unset.
 
-JavaScript that runs before your extension code in the service worker and all extension pages:
+JavaScript that runs before your extension code in the service worker and all extension pages.
+If the extension has no service worker, the init script runs only in extension pages.
 
 ```ts title="playwright.config.ts"
 import { defineConfig } from '@playwright/test';
@@ -167,9 +168,7 @@ The wrapper loads your init script first, then the original worker:
 +import './worker.js';
 ```
 
-Each extension instance gets a private temporary directory, normally once per test. It contains the
-adjusted manifest and generated scripts. Unchanged files and whole subdirectories are symlinked to
-the source build. Locale overrides use the same directory. Nothing is written to the source build.
+These changes apply in a temporary directory, leaving the source unchanged.
 
 </details>
 

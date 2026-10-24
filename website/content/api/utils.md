@@ -28,8 +28,8 @@ const extension = await launchWithExtension({
 await extension.close();
 ```
 
-`extension.close()` closes the context and removes temporary extension copies. Setup failures close the context and
-clean up copies before the launch rejects.
+`extension.close()` closes the context and removes temporary directories. Setup failures close the context and
+clean up temporary directories before the launch rejects.
 
 #### Arguments {#launchwithextension-arguments}
 

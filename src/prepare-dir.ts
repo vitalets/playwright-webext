@@ -1,13 +1,12 @@
 /**
- * Prepares private extension directories by linking unchanged resources and writing overrides.
+ * Prepares private extension directories by copying builds and applying manifest and script overrides.
  */
 
-import { copyFile, mkdir, mkdtemp, readdir, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdtemp, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { dirname, isAbsolute, join, normalize, resolve } from 'node:path';
+import { join, resolve } from 'node:path';
 import { resolveExtensionLocale } from './i18n.js';
 import { wrapServiceWorkerInitScript } from './init-script.js';
-import { symlink, symlinkDirEntries } from './utils/symlink.js';
 
 type PreparationOptions = {
   locale?: string;
@@ -24,8 +23,6 @@ export class PreparedExtensionDir {
   private sourcePath!: string;
   // Original manifest modified for the prepared build.
   private manifest!: chrome.runtime.ManifestV3;
-  // Paths relative to sourcePath excluded from bulk linking.
-  private handledPaths = new Set<string>();
 
   /**
    * Replaces the private directory contents with the supplied extension build.
@@ -39,15 +36,10 @@ export class PreparedExtensionDir {
     this.manifest = structuredClone(manifest);
     this.path = await this.createTargetPath();
     await this.clearContents();
-    // Chrome can generate _metadata after extension installation,
-    // so we need to exclude it from linking to avoid errors.
-    this.addHandledPath('_metadata');
+    await this.copyResources();
     await this.handleLocale(options.locale);
-    await this.handleContentScripts();
     await this.handleInitScript(options.initScriptContent);
-    await this.handleDnrRules();
     await this.writeManifest();
-    await this.linkResources();
     return this;
   }
 
@@ -59,62 +51,33 @@ export class PreparedExtensionDir {
     await rm(this.path, { recursive: true, force: true });
   }
 
+  private async copyResources() {
+    // Chrome can generate _metadata after extension installation,
+    // so we exclude it from the copy to keep each installation's metadata private.
+    await cp(this.sourcePath, this.path, {
+      recursive: true,
+      // Copy symlink targets so resources resolve inside the temporary directory.
+      dereference: true,
+      filter: (path) => path !== join(this.sourcePath, '_metadata'),
+    });
+  }
+
   private async handleLocale(requestedLocale: string | undefined) {
     if (!requestedLocale) return;
     const locale = await resolveExtensionLocale(this.sourcePath, requestedLocale);
     const localesDir = join(this.path, '_locales');
-    await mkdir(localesDir);
-    await symlink(join(this.sourcePath, '_locales', locale), join(localesDir, locale));
+    const entries = await readdir(localesDir);
+    await Promise.all(
+      entries
+        .filter((entry) => entry !== locale)
+        .map((entry) => rm(join(localesDir, entry), { recursive: true, force: true })),
+    );
     this.manifest.default_locale = locale;
-    this.addHandledPath('_locales');
-  }
-
-  private async handleContentScripts() {
-    const scripts = this.manifest.content_scripts ?? [];
-    const paths = new Set(scripts.flatMap(({ js = [], css = [] }) => [...js, ...css]));
-    for (const path of paths) {
-      if (isAbsolute(path) || path.split(/[\\/]/).includes('..')) {
-        throw new Error(`Invalid content script path: "${path}".`);
-      }
-      const targetPath = join(this.path, path);
-      await mkdir(dirname(targetPath), { recursive: true });
-      await copyFile(join(this.sourcePath, path), targetPath);
-      this.addHandledPath(path);
-    }
   }
 
   private async handleInitScript(initScriptContent: string | undefined) {
-    if (!initScriptContent) return;
-    const workerPath = this.manifest.background?.service_worker;
-    if (!workerPath) {
-      throw new Error('extensionInitScript requires a background service worker.');
-    }
-    const targetWorkerPath = join(this.path, workerPath);
-    await mkdir(dirname(targetWorkerPath), { recursive: true });
-    // The worker may already be copied if it is also declared as a content script.
-    if (!this.isHandledPath(workerPath)) {
-      await symlink(join(this.sourcePath, workerPath), targetWorkerPath);
-    }
+    if (!initScriptContent || !this.manifest.background?.service_worker) return;
     await wrapServiceWorkerInitScript(this.path, this.manifest, initScriptContent);
-    this.addHandledPath(workerPath);
-  }
-
-  private async handleDnrRules() {
-    // Chrome requires static rulesets to resolve inside the loaded extension directory.
-    const rulesets = this.manifest.declarative_net_request?.rule_resources ?? [];
-    for (const { path } of rulesets) {
-      if (isAbsolute(path) || path.split(/[\\/]/).includes('..')) {
-        throw new Error(`Invalid declarative network rules path: "${path}".`);
-      }
-      const targetPath = join(this.path, path);
-      await mkdir(dirname(targetPath), { recursive: true });
-      await copyFile(join(this.sourcePath, path), targetPath);
-      this.addHandledPath(path);
-    }
-  }
-
-  private async linkResources() {
-    await symlinkDirEntries(this.sourcePath, this.path, [...this.handledPaths]);
   }
 
   private async writeManifest() {
@@ -122,7 +85,6 @@ export class PreparedExtensionDir {
       join(this.path, 'manifest.json'),
       `${JSON.stringify(this.manifest, null, 2)}\n`,
     );
-    this.addHandledPath('manifest.json');
   }
 
   private async createTargetPath() {
@@ -133,18 +95,9 @@ export class PreparedExtensionDir {
    * Empties the private directory while preserving its path for extension upgrades.
    */
   private async clearContents() {
-    this.handledPaths.clear();
     const entries = await readdir(this.path);
     await Promise.all(
       entries.map((entry) => rm(join(this.path, entry), { recursive: true, force: true })),
     );
-  }
-
-  private addHandledPath(path: string) {
-    this.handledPaths.add(normalize(path));
-  }
-
-  private isHandledPath(path: string) {
-    return this.handledPaths.has(normalize(path));
   }
 }

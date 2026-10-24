@@ -88,12 +88,9 @@ test('migrates preferences from the old version', async ({ extension }) => {
 <details>
 <summary>Under the hood</summary>
 
-`extension.install(path)` prepares the old build in a private temporary directory and loads it into Chromium.
+`extension.install(path)` prepares the old build in a temporary directory and loads it into Chromium.
 `extension.upgrade()` repopulates that directory with the current build from `extensionPath` and reloads
 the extension from the same directory. This preserves the extension ID and browser-profile state.
-
-Unchanged build resources are linked where supported. Keep both source builds available and avoid
-rebuilding them during the test.
 
 The reload replaces the service worker. `upgrade()` waits for the new worker and refreshes
 `extension.manifest` before returning. Previously captured worker handles and manifest objects still

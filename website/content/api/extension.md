@@ -395,7 +395,7 @@ const url = extension.getURL('settings/advanced.html');
 
 ### install
 
-Installs `extensionPath` when no path is supplied. With a custom path, prepares a private directory for
+Installs `extensionPath` when no path is supplied. With a custom path, prepares a temporary directory for
 that build so it can later be replaced by `upgrade()`.
 
 Refreshes the manifest and waits for the extension worker if one is declared. It does not wait for
