@@ -1,5 +1,10 @@
 # Rules for agents
 
+## Planning
+
+When the user asks for a plan, do not edit files until they explicitly ask to implement it.
+Treat follow-up additions and corrections as updates to the plan, not permission to implement.
+
 ## Documentation
 
 For public documentation and README changes, use
