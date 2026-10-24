@@ -10,7 +10,11 @@ Treat follow-up additions and corrections as updates to the plan, not permission
 For public documentation and README changes, use
 [writing-docs](.agents/skills/writing-docs/SKILL.md).
 
-When implementing a meaningful feature, update `CHANGELOG.md` to describe the user-facing change.
+## Changelog
+
+Update `CHANGELOG.md` only for meaningful user-facing changes, such as new features, behavior changes,
+or bug fixes. Do not add entries for internal refactors, implementation details, or optimizations
+that preserve public behavior, such as avoiding unnecessary file copies during directory preparation.
 Keep entries concise: summarize the main change without implementation details or exhaustive behavior lists.
 
 ## Source file structure

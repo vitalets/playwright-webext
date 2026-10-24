@@ -2,6 +2,7 @@
  * Prepares private extension directories by copying builds and applying manifest and script overrides.
  */
 
+import { existsSync } from 'node:fs';
 import { cp, mkdtemp, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -37,7 +38,7 @@ export class PreparedExtensionDir {
     this.path = await this.createTargetPath();
     await this.clearContents();
     await this.copyResources();
-    await this.handleLocale(options.locale);
+    await this.handleLocales(options.locale);
     await this.handleInitScript(options.initScriptContent);
     await this.writeManifest();
     return this;
@@ -52,27 +53,37 @@ export class PreparedExtensionDir {
   }
 
   private async copyResources() {
-    // Chrome can generate _metadata after extension installation,
-    // so we exclude it from the copy to keep each installation's metadata private.
+    const exclude = [
+      // Chrome can generate _metadata after extension installation,
+      // so we exclude it from the copy to keep each installation's metadata private.
+      join(this.sourcePath, '_metadata'),
+      // handleLocales copies all catalogs or only the requested locale.
+      join(this.sourcePath, '_locales'),
+    ];
     await cp(this.sourcePath, this.path, {
       recursive: true,
       // Copy symlink targets so resources resolve inside the temporary directory.
       dereference: true,
-      filter: (path) => path !== join(this.sourcePath, '_metadata'),
+      filter: (path) => !exclude.includes(path),
     });
   }
 
-  private async handleLocale(requestedLocale: string | undefined) {
-    if (!requestedLocale) return;
-    const locale = await resolveExtensionLocale(this.sourcePath, requestedLocale);
-    const localesDir = join(this.path, '_locales');
-    const entries = await readdir(localesDir);
-    await Promise.all(
-      entries
-        .filter((entry) => entry !== locale)
-        .map((entry) => rm(join(localesDir, entry), { recursive: true, force: true })),
-    );
-    this.manifest.default_locale = locale;
+  private async handleLocales(requestedLocale: string | undefined) {
+    const sourceLocales = join(this.sourcePath, '_locales');
+    const targetLocales = join(this.path, '_locales');
+    if (requestedLocale) {
+      const locale = await resolveExtensionLocale(this.sourcePath, requestedLocale);
+      await cp(join(sourceLocales, locale), join(targetLocales, locale), {
+        recursive: true,
+        dereference: true,
+      });
+      this.manifest.default_locale = locale;
+      return;
+    }
+
+    if (existsSync(sourceLocales)) {
+      await cp(sourceLocales, targetLocales, { recursive: true, dereference: true });
+    }
   }
 
   private async handleInitScript(initScriptContent: string | undefined) {
