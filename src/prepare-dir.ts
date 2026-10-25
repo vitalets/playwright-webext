@@ -7,7 +7,7 @@ import { cp, mkdtemp, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { resolveExtensionLocale } from './i18n.js';
-import { wrapServiceWorkerInitScript } from './init-script.js';
+import { addInitScriptToServiceWorker } from './init-script.js';
 
 type PreparationOptions = {
   locale?: string;
@@ -88,7 +88,7 @@ export class PreparedExtensionDir {
 
   private async handleInitScript(initScriptContent: string | undefined) {
     if (!initScriptContent || !this.manifest.background?.service_worker) return;
-    await wrapServiceWorkerInitScript(this.path, this.manifest, initScriptContent);
+    await addInitScriptToServiceWorker(this.path, this.manifest, initScriptContent);
   }
 
   private async writeManifest() {

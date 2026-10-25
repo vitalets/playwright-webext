@@ -9,7 +9,7 @@ import type { ExtensionInitScript } from './options.js';
 import { PreparedExtensionDir } from './prepare-dir.js';
 import { Manifest } from './manifest.js';
 import { isDefaultLocale } from './i18n.js';
-import { registerContextInitScript } from './init-script.js';
+import { getInitScriptContent, addInitScriptToContext } from './init-script.js';
 
 type InstallState = 'not-installed' | 'installing' | 'installed' | 'upgrading' | 'upgraded';
 
@@ -128,10 +128,8 @@ export class ExtensionInstaller {
 
   private async registerInitScript() {
     if (this.#initScriptRegistered || !this.options.extensionInitScript) return;
-    this.#initScriptContent = await registerContextInitScript(
-      this.context,
-      this.options.extensionInitScript,
-    );
+    this.#initScriptContent = await getInitScriptContent(this.options.extensionInitScript);
+    await addInitScriptToContext(this.context, this.#initScriptContent);
     this.#initScriptRegistered = true;
   }
 

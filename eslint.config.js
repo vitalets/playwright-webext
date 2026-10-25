@@ -32,6 +32,11 @@ export default defineConfig([
     },
   },
   {
+    rules: {
+      'no-empty-pattern': 'off',
+    },
+  },
+  {
     files: ['test/**/*.{ts,tsx,mts}'],
     rules: {
       '@typescript-eslint/no-empty-object-type': 'off',

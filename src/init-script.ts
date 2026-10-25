@@ -3,20 +3,37 @@
  */
 
 import { randomUUID } from 'node:crypto';
-import { readFile, writeFile } from 'node:fs/promises';
+import { writeFile } from 'node:fs/promises';
 import { dirname, join, posix, resolve } from 'node:path';
 import type { BrowserContext } from '@playwright/test';
 import type { ExtensionInitScript } from './options.js';
+import { FileCache } from './utils/file-cache.js';
 
 /**
- * Reads initialization once and registers it before application scripts in extension documents.
+ * Shares script file contents for the lifetime of this process.
+ */
+const fileCache = new FileCache();
+
+/**
+ * Combines scripts in order, reusing file contents while applying current inline content.
+ * Script files are assumed unchanged for the lifetime of this process.
+ */
+export async function getInitScriptContent(script: ExtensionInitScript | ExtensionInitScript[]) {
+  const scripts = Array.isArray(script) ? script : [script];
+  const sources = await Promise.all(
+    scripts.map(async (item) => {
+      const source = typeof item === 'string' ? await fileCache.read(item) : item.content;
+      return `(() => {\n${source}\n})();`;
+    }),
+  );
+  return sources.join('\n');
+}
+
+/**
+ * Registers initialization before application scripts in each new browser context.
  * Context init scripts also run on website pages, so the generated guard limits their execution.
  */
-export async function registerContextInitScript(
-  context: BrowserContext,
-  script: ExtensionInitScript | ExtensionInitScript[],
-) {
-  const initScriptContent = await joinInitScripts(script);
+export async function addInitScriptToContext(context: BrowserContext, initScriptContent: string) {
   await context.addInitScript({
     content: [
       "if (globalThis.location.protocol === 'chrome-extension:' && globalThis.chrome?.runtime?.id) {",
@@ -26,14 +43,13 @@ export async function registerContextInitScript(
       '}',
     ].join('\n'),
   });
-  return initScriptContent;
 }
 
 /**
  * Context init scripts do not run in service workers. Redirect the prepared manifest to a
  * sibling wrapper that loads initialization before the original worker on every start.
  */
-export async function wrapServiceWorkerInitScript(
+export async function addInitScriptToServiceWorker(
   extensionDir: string,
   manifest: chrome.runtime.ManifestV3,
   initScriptContent: string,
@@ -67,16 +83,4 @@ export function resolveInitScripts(
   const resolveScript = (item: ExtensionInitScript) =>
     typeof item === 'string' && item ? resolve(baseDir, item) : item;
   return Array.isArray(script) ? script.map(resolveScript) : resolveScript(script);
-}
-
-async function joinInitScripts(script: ExtensionInitScript | Array<ExtensionInitScript>) {
-  const scripts = Array.isArray(script) ? script : [script];
-  const sources = await Promise.all(
-    scripts.map(async (item) => {
-      const source =
-        typeof item === 'string' ? await readFile(resolve(item), 'utf8') : item.content;
-      return `(() => {\n${source}\n})();`;
-    }),
-  );
-  return sources.join('\n');
 }
