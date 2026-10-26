@@ -7,6 +7,7 @@ import { resolve } from 'node:path';
 import type { BrowserContext } from '@playwright/test';
 import type { ExtensionInitScript } from './options.js';
 import { PreparedExtensionDir } from './prepare-dir.js';
+import type { ExtensionDirCache } from './extension-dir-cache.js';
 import { Manifest } from './manifest.js';
 import { isDefaultLocale } from './i18n.js';
 import { getInitScriptContent, addInitScriptToContext } from './init-script.js';
@@ -15,6 +16,7 @@ type InstallState = 'not-installed' | 'installing' | 'installed' | 'upgrading' |
 
 export type InstallOptions = {
   extensionPath: string;
+  extensionDirCache?: ExtensionDirCache;
   locale?: string;
   extensionInitScript?: ExtensionInitScript | ExtensionInitScript[];
 };
@@ -23,7 +25,7 @@ export type InstallOptions = {
  * Coordinates one initial installation and an optional upgrade at the same filesystem path.
  */
 export class ExtensionInstaller {
-  readonly #directory = new PreparedExtensionDir();
+  readonly #directory: PreparedExtensionDir;
   readonly #manifest = new Manifest();
   readonly #extensionPath: string;
   #state: InstallState = 'not-installed';
@@ -38,6 +40,7 @@ export class ExtensionInstaller {
     private readonly options: InstallOptions,
   ) {
     this.#extensionPath = resolve(options.extensionPath);
+    this.#directory = new PreparedExtensionDir(options.extensionDirCache);
   }
 
   /**
@@ -84,7 +87,7 @@ export class ExtensionInstaller {
     this.#state = 'upgrading';
     try {
       await this.#manifest.load(this.#extensionPath);
-      await this.prepareDirectory(this.#extensionPath);
+      await this.#directory.replace(this.createPreparationRequest(this.#extensionPath));
       this.#state = 'upgraded';
       this.#canUpgrade = false;
       const id = await this.loadUnpacked(this.#directory.path);
@@ -96,7 +99,7 @@ export class ExtensionInstaller {
   }
 
   /**
-   * Removes the private build copy owned by this installer.
+   * Retains reusable cached builds and removes private or upgraded copies.
    */
   async cleanup() {
     await this.#directory.cleanup();
@@ -106,7 +109,7 @@ export class ExtensionInstaller {
     const source = path === undefined ? this.#extensionPath : resolve(path);
     await this.#manifest.load(source);
     return path !== undefined || this.requiresPreparedDirectory()
-      ? this.prepareDirectory(source)
+      ? this.#directory.create(this.createPreparationRequest(source))
       : source;
   }
 
@@ -118,12 +121,13 @@ export class ExtensionInstaller {
     );
   }
 
-  private async prepareDirectory(source: string) {
-    await this.#directory.prepare(source, this.#manifest.data, {
+  private createPreparationRequest(sourcePath: string) {
+    return {
+      sourcePath,
+      manifest: this.#manifest.data,
       locale: isDefaultLocale(this.options.locale) ? undefined : this.options.locale,
       initScriptContent: this.#initScriptContent,
-    });
-    return this.#directory.path;
+    };
   }
 
   private async registerInitScript() {

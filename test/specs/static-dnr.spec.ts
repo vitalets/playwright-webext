@@ -6,7 +6,7 @@ import { test } from '../../src/index.js';
 
 test.use({ extensionPath: './data/extension-with-dnr' });
 
-test('loads an extension with static DNR rules from a temporary directory', async ({
+test('loads an extension with static DNR rules from prepared dir', async ({
   extension,
   extensionPath,
 }, testInfo) => {
@@ -14,5 +14,5 @@ test('loads an extension with static DNR rules from a temporary directory', asyn
   const originalPath = await realpath(resolve(configDir, extensionPath));
   const loadedPath = await realpath(extension.loadedPath);
   expect(loadedPath).not.toBe(originalPath);
-  expect(dirname(loadedPath)).toBe(await realpath(tmpdir()));
+  expect(dirname(dirname(loadedPath))).toBe(await realpath(tmpdir()));
 });

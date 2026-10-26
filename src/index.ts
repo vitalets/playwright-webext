@@ -6,6 +6,7 @@
 
 import { dirname, resolve } from 'node:path';
 import { test as base } from '@playwright/test';
+import { ExtensionDirCache } from './extension-dir-cache.js';
 import { Extension } from './extension.js';
 import type { WebextTestOptions, WebextWorkerOptions } from './options.js';
 import { launchContext } from './launch.js';
@@ -36,16 +37,30 @@ export { poll, type PollOptions } from './utils/poll.js';
 /**
  * Playwright test extended with extension configuration and fixtures.
  */
-export const test = base.extend<WebextTestOptions & WebextFixtures, WebextWorkerOptions>({
+export const test = base.extend<
+  WebextTestOptions & WebextFixtures,
+  WebextWorkerOptions & { extensionDirCache: ExtensionDirCache }
+>({
   extensionPath: ['', { option: true, scope: 'worker' }],
   extensionAutoInstall: [true, { option: true }],
   extensionInitScript: [undefined, { option: true }],
+  // internal
+  extensionDirCache: [
+    async ({}, use) => {
+      const extensionDirCache = new ExtensionDirCache();
+      await use(extensionDirCache);
+      await extensionDirCache.cleanup();
+    },
+    { scope: 'worker', box: true },
+  ],
   // eslint-disable-next-line max-lines-per-function
   extension: async (
     {
       extensionPath,
       extensionAutoInstall,
       extensionInitScript,
+      // internal
+      extensionDirCache,
       // playwright fixtures
       browserName,
       headless,
@@ -122,6 +137,7 @@ export const test = base.extend<WebextTestOptions & WebextFixtures, WebextWorker
         extensionPath: resolve(baseDir, extensionPath),
         extensionInitScript: resolveInitScripts(baseDir, extensionInitScript),
         locale,
+        extensionDirCache,
       });
       videoRecording?.track(context);
       if (extensionAutoInstall) await extension.install();

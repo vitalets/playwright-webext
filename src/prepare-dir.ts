@@ -1,55 +1,73 @@
 /**
- * Prepares private extension directories by copying builds and applying manifest and script overrides.
+ * Owns one extension instance's prepared directory throughout installation and upgrades.
  */
 
 import { existsSync } from 'node:fs';
 import { cp, mkdtemp, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import type { ExtensionDirCache } from './extension-dir-cache.js';
 import { resolveExtensionLocale } from './i18n.js';
 import { addInitScriptToServiceWorker } from './init-script.js';
 
-type PreparationOptions = {
+export type PreparedDirRequest = {
+  // Identifies the build and supplies the files to copy.
+  sourcePath: string;
+  // Reuses the already-loaded manifest to avoid another read; preparation clones it.
+  manifest: chrome.runtime.ManifestV3;
+  // Selects the translation catalog; default behavior is normalized to undefined.
   locale?: string;
+  // Supplies the service-worker initialization and distinguishes prepared variants.
   initScriptContent?: string;
 };
 
 /**
- * A private prepared directory owned by one extension instance.
+ * Manages directory creation, replacement, and cleanup with optional worker-cache reuse.
  */
 export class PreparedExtensionDir {
   // Extension directory created under the system temp directory for installation and upgrades.
   path = '';
+  private modified = false;
   // Absolute path to the original build being prepared.
   private sourcePath!: string;
   // Original manifest modified for the prepared build.
   private manifest!: chrome.runtime.ManifestV3;
 
-  /**
-   * Replaces the private directory contents with the supplied extension build.
-   */
-  async prepare(
-    extensionPath: string,
-    manifest: chrome.runtime.ManifestV3,
-    options: PreparationOptions = {},
-  ) {
-    this.sourcePath = resolve(extensionPath);
-    this.manifest = structuredClone(manifest);
-    this.path = await this.createTargetPath();
-    await this.clearContents();
-    await this.copyResources();
-    await this.handleLocales(options.locale);
-    await this.handleInitScript(options.initScriptContent);
-    await this.writeManifest();
-    return this;
+  constructor(private readonly cache?: ExtensionDirCache) {}
+
+  async create(request: PreparedDirRequest) {
+    if (this.cache) {
+      // Reuse the worker's prepared build for initial installation when caching is available.
+      this.path = await this.cache.acquireDir(request);
+    } else {
+      // Without a cache, prepare the owned directory directly.
+      this.path ||= await mkdtemp(join(tmpdir(), 'playwright-webext-'));
+      await this.prepare(request);
+    }
+    return this.path;
   }
 
-  /**
-   * Removes the private extension directory when one has been created.
-   */
+  async replace(request: PreparedDirRequest) {
+    // Upgrades replace files at the existing path to preserve extension identity.
+    // Mark it before preparation so failed upgrades are also discarded during cleanup.
+    this.modified = true;
+    await this.prepare(request);
+  }
+
   async cleanup() {
     if (!this.path) return;
-    await rm(this.path, { recursive: true, force: true });
+    if (!this.cache) return rm(this.path, { recursive: true, force: true });
+    if (this.modified) await this.cache.removeDir(this.path);
+  }
+
+  private async prepare(request: PreparedDirRequest) {
+    this.sourcePath = resolve(request.sourcePath);
+    this.manifest = structuredClone(request.manifest);
+    await this.clearContents();
+    await this.copyResources();
+    await this.handleLocales(request.locale);
+    await this.handleInitScript(request.initScriptContent);
+    await this.writeManifest();
   }
 
   private async copyResources() {
@@ -96,10 +114,6 @@ export class PreparedExtensionDir {
       join(this.path, 'manifest.json'),
       `${JSON.stringify(this.manifest, null, 2)}\n`,
     );
-  }
-
-  private async createTargetPath() {
-    return this.path || (await mkdtemp(join(tmpdir(), 'playwright-webext-')));
   }
 
   /**
