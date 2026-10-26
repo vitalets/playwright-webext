@@ -6,7 +6,7 @@
 
 import { dirname, resolve } from 'node:path';
 import { test as base } from '@playwright/test';
-import { ExtensionDirCache } from './extension-dir-cache.js';
+import { ExtensionDirCache } from './extension-dir/cache.js';
 import { Extension } from './extension.js';
 import type { WebextTestOptions, WebextWorkerOptions } from './options.js';
 import { launchContext } from './launch.js';

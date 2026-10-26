@@ -6,9 +6,9 @@ import { existsSync } from 'node:fs';
 import { cp, mkdtemp, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import type { ExtensionDirCache } from './extension-dir-cache.js';
-import { resolveExtensionLocale } from './i18n.js';
-import { addInitScriptToServiceWorker } from './init-script.js';
+import type { ExtensionDirCache } from './cache.js';
+import { resolveExtensionLocale } from '../i18n.js';
+import { addInitScriptToServiceWorker } from '../init-script.js';
 
 export type PreparedDirRequest = {
   // Identifies the build and supplies the files to copy.

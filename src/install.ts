@@ -6,8 +6,8 @@
 import { resolve } from 'node:path';
 import type { BrowserContext } from '@playwright/test';
 import type { ExtensionInitScript } from './options.js';
-import { PreparedExtensionDir } from './prepare-dir.js';
-import type { ExtensionDirCache } from './extension-dir-cache.js';
+import { PreparedExtensionDir } from './extension-dir/index.js';
+import type { ExtensionDirCache } from './extension-dir/cache.js';
 import { Manifest } from './manifest.js';
 import { isDefaultLocale } from './i18n.js';
 import { getInitScriptContent, addInitScriptToContext } from './init-script.js';

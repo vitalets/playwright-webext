@@ -6,8 +6,8 @@ import { createHash } from 'node:crypto';
 import { mkdir, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { PreparedExtensionDir, type PreparedDirRequest } from './prepare-dir.js';
-import { isDefaultLocale } from './i18n.js';
+import { PreparedExtensionDir, type PreparedDirRequest } from './index.js';
+import { isDefaultLocale } from '../i18n.js';
 
 /**
  * Caches unchanged source builds for one worker. Callers must close the previous browser
