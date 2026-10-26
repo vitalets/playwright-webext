@@ -12,6 +12,10 @@ await extension.evaluate(() => {
 });
 ```
 
+During tests, Playwright's debugger connection keeps the service worker active beyond Chrome's usual
+30-second idle timeout. Waiting for inactivity therefore does not reproduce the worker shutdown that
+occurs during normal extension use.
+
 ## Wrap into class
 
 Wrap repeated actions in a class to keep extension-specific behavior in one place. Tests can call
