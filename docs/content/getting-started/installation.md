@@ -8,10 +8,9 @@ import TabItem from '@theme/TabItem';
 
 ## Prerequisites
 
-- Only Chromium extensions are supported.
-- An unpacked Chromium Manifest V3 extension.
-- Node.js 20 (20.19+) or 22.12+, with ES modules (ESM) enabled in your project.
-- Playwright Test 1.59 or later.
+- Only Chromium Manifest V3 extensions are supported.
+- Node.js 20.19+ or 22.12+.
+- Playwright 1.59+.
 
 Also check [Playwright's Node.js requirements](https://playwright.dev/docs/intro#system-requirements)
 for your installed version.
