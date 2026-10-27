@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/test.yaml'
       - 'src/**'
+      - 'scripts/build-clock.ts'
       - 'test/**'
       - 'package*.json'
       - 'tsconfig*.json'
@@ -16,6 +17,7 @@ on:
       # no way to avoid repeating the paths here
       - '.github/workflows/test.yaml'
       - 'src/**'
+      - 'scripts/build-clock.ts'
       - 'test/**'
       - 'package*.json'
       - 'tsconfig*.json'

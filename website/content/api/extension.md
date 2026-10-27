@@ -10,6 +10,23 @@ service worker, access storage, and manage the extension's lifecycle.
 
 ## Properties
 
+### clock
+
+Controls fixed dates or fake timers in the service worker and all pages and frames in `extension.context`.
+Requires [`extensionClock`](../basics/configuration.md#extensionclock); accessing this property
+without the option throws. Clock commands require an installed extension.
+See [ExtensionClock](clock.md) for supported methods and modes.
+
+#### Usage
+
+```ts
+await extension.clock.setFixedTime('2026-02-01T00:00:00Z');
+```
+
+#### Returns
+
+[`ExtensionClock`](clock.md)
+
 ### context
 
 The persistent Chromium context hosting the extension. The `extension` fixture creates one per test.

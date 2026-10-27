@@ -40,6 +40,7 @@ const sidebars: SidebarsConfig = {
         'guides/welcome-page',
         'guides/side-panel',
         'guides/i18n',
+        'guides/fake-timers',
         'guides/migration',
         'guides/uninstall',
       ],
@@ -51,7 +52,7 @@ const sidebars: SidebarsConfig = {
       items: ['advanced/automatic-builds', 'advanced/shared-context', 'advanced/performance'],
     },
   ],
-  api: ['api/extension', 'api/storage', 'api/utils'],
+  api: ['api/extension', 'api/storage', 'api/clock', 'api/utils'],
 };
 
 export default sidebars;

@@ -14,25 +14,49 @@ import { dispatch, type ExtensionEventName, type ExtensionEventArgs } from './di
 import { poll, type PollOptions } from './utils/poll.js';
 import { pollForPage, type PageMatcher } from './utils/poll-for-page.js';
 import { runAll } from './utils/run-all.js';
+import { ExtensionClock, uninstallClock } from './clock/index.js';
 
 /**
  * Provides access to a loaded extension's context, metadata, worker, and resource URLs.
  */
 export class Extension {
-  readonly context: BrowserContext;
   readonly storage = createStorage(() => this.worker);
   readonly #installer: ExtensionInstaller;
+  #clock?: ExtensionClock;
   #id?: string;
   #ready = false;
   #manifest?: chrome.runtime.ManifestV3;
   #closePromise?: Promise<void>;
 
-  constructor(context: BrowserContext, options: InstallOptions) {
-    this.context = context;
+  constructor(
+    readonly context: BrowserContext,
+    private readonly options: InstallOptions,
+  ) {
     this.#installer = new ExtensionInstaller(context, options);
     context.on('close', () => {
       this.#ready = false;
     });
+  }
+
+  /**
+   * Lazily creates the controller for configured page and worker clocks.
+   */
+  get clock() {
+    if (!this.options.extensionClock) {
+      throw new Error('Clock is not enabled. Configure extensionClock before installation.');
+    }
+    // Resolve the current worker on each call because reloads and upgrades replace it.
+    const getWorker = () => {
+      if (!this.ready) {
+        throw new Error('Extension is not installed. Call extension.install() first.');
+      }
+      return this.hasServiceWorker ? this.worker : undefined;
+    };
+    return (this.#clock ??= new ExtensionClock(
+      this.context,
+      getWorker,
+      this.options.extensionClock,
+    ));
   }
 
   /**
@@ -281,6 +305,7 @@ export class Extension {
     await management.enableDevMode();
     const worker = this.findWorker();
     if (worker) {
+      await uninstallClock(worker);
       await Promise.all([
         worker.waitForEvent('close'),
         worker.evaluate(() => {

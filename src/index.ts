@@ -29,7 +29,9 @@ export type {
   WebextTestOptions,
   WebextWorkerOptions,
   ExtensionInitScript,
+  ExtensionClockOptions,
 } from './options.js';
+export type { ExtensionClock } from './clock/index.js';
 export type { ExtensionEventName, ExtensionEventArgs } from './dispatch.js';
 export { launchWithExtension, type LaunchWithExtensionOptions } from './launch.js';
 export { poll, type PollOptions } from './utils/poll.js';
@@ -44,6 +46,7 @@ export const test = base.extend<
   extensionPath: ['', { option: true, scope: 'worker' }],
   extensionAutoInstall: [true, { option: true }],
   extensionInitScript: [undefined, { option: true }],
+  extensionClock: [undefined, { option: true }],
   // internal
   extensionDirCache: [
     async ({}, use) => {
@@ -59,6 +62,7 @@ export const test = base.extend<
       extensionPath,
       extensionAutoInstall,
       extensionInitScript,
+      extensionClock,
       // internal
       extensionDirCache,
       // playwright fixtures
@@ -136,6 +140,7 @@ export const test = base.extend<
       extension = new Extension(context, {
         extensionPath: resolve(baseDir, extensionPath),
         extensionInitScript: resolveInitScripts(baseDir, extensionInitScript),
+        extensionClock,
         locale,
         extensionDirCache,
       });

@@ -20,7 +20,52 @@ export type WebextWorkerOptions = {
 export type WebextTestOptions = {
   extensionAutoInstall?: boolean;
   extensionInitScript?: ExtensionInitScript | ExtensionInitScript[];
+  extensionClock?: ExtensionClockOptions;
 };
+
+/**
+ * Fixes the date by default, or enables full timer control before extension code runs.
+ */
+export type ExtensionClockOptions = {
+  /**
+   * Fixed or starting date as Unix milliseconds, a date string, or a Date.
+   */
+  time: number | string | Date;
+} & (
+  | {
+      /**
+       * Keeps dates fixed and timers running. This is the default mode.
+       */
+      mode?: 'fixed-time';
+      paused?: never;
+      workerFake?: never;
+    }
+  | {
+      /**
+       * Enables full timer control in pages and the worker.
+       */
+      mode: 'full-control';
+      /**
+       * Starts fake time paused. Defaults to false.
+       */
+      paused?: boolean;
+      /**
+       * Worker APIs to fake; pages are unaffected. Defaults to Date, timeout/interval APIs, and performance.
+       * An empty array selects all supported APIs. Selected APIs must exist in the browser.
+       */
+      workerFake?: (
+        | 'Date'
+        | 'setTimeout'
+        | 'clearTimeout'
+        | 'setInterval'
+        | 'clearInterval'
+        | 'performance'
+        | 'queueMicrotask'
+        | 'Intl'
+        | 'Temporal'
+      )[];
+    }
+);
 
 /**
  * JavaScript to run before extension code in background workers and extension pages.

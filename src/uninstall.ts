@@ -3,11 +3,13 @@
  */
 
 import type { BrowserContext, Worker } from '@playwright/test';
+import { uninstallClock } from './clock/index.js';
 
 /**
  * Requests self-uninstallation and waits for the service worker to close.
  */
 export async function uninstallWithWorker(worker: Worker) {
+  await uninstallClock(worker);
   await Promise.all([
     worker.waitForEvent('close'),
     worker.evaluate(() => {

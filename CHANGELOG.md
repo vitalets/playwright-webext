@@ -4,6 +4,7 @@
 
 ## [Unreleased]
 
+- Add `extensionClock` and `extension.clock` to fix dates or control timers in extension pages and service workers.
 - Fix content-script JavaScript and CSS loading from temporary extension directories.
 - Add `extension.loadedPath` to inspect the directory used to load the extension.
 - Isolate extensions with static declarative network rules to prevent shared metadata conflicts between browsers.

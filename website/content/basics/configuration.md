@@ -172,6 +172,39 @@ These changes apply in a temporary directory, leaving the source unchanged.
 
 </details>
 
+### extensionClock
+
+**Type:** `ExtensionClockOptions`.  
+**Default:** unset.
+
+Sets the date in the service worker and all pages and frames in `extension.context` before the
+extension loads. In `'fixed-time'` mode (the default), the date stays fixed while timers keep running. Set
+`mode: 'full-control'` for full timer control. Omit `extensionClock` to keep the real date and timers.
+
+| Option       | Type                             | Default                                                                                 | Effect                                                                     |
+| ------------ | -------------------------------- | --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `time`       | `number \| string \| Date`       | Required                                                                                | Fixed or starting date; numbers are Unix milliseconds.                     |
+| `mode`       | `'fixed-time' \| 'full-control'` | `'fixed-time'`                                                                          | Fixed date with running timers, or full timer control.                     |
+| `paused`     | `boolean`                        | `false`                                                                                 | Starts the fully controlled clock paused. Requires `mode: 'full-control'`. |
+| `workerFake` | Array of Sinon API names         | `['Date', 'setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'performance']` | Worker APIs to fake. Requires `mode: 'full-control'`.                      |
+
+`workerFake` accepts [Sinon's `toFake` names](https://github.com/sinonjs/fake-timers#var-clock--faketimersinstallconfig)
+available in service workers. Use `['Date']` to fake only dates in the worker; an empty array selects
+all supported APIs. In `full-control` mode, page timers cannot be narrowed to selected functions
+because Playwright does not support it. Native worker APIs excluded by `workerFake` keep running,
+even with `paused: true`.
+
+```ts
+test.use({
+  extensionClock: { time: '2026-01-01T00:00:00Z' },
+});
+```
+
+Use `extension.clock.setFixedTime()` in the default mode. Full timer control enables `pause()`,
+`resume()`, `runFor()`, and `setSystemTime()` instead. See [Fake timers](../guides/fake-timers.md)
+for examples and the [API reference](../api/clock.md) for method availability.
+The same options are available in `launchWithExtension()`.
+
 ## Forwarded Playwright options
 
 - [browserName](https://playwright.dev/docs/api/class-testoptions#test-options-browser-name) (Chromium only)

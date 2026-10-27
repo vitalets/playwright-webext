@@ -25,7 +25,7 @@
     "README.md"
   ],
   "scripts": {
-    "prepare": "git config core.hooksPath scripts/git-hooks",
+    "prepare": "git config core.hooksPath scripts/git-hooks && npm run build:clock",
     "tsc": "tsc",
     "lint": "eslint .",
     "prettier": "prettier --check --ignore-unknown .",
@@ -34,7 +34,8 @@
     "sync:example": "npm --prefix example install . --no-save --package-lock=false --install-links --ignore-scripts",
     "test:example": "npm run build && npm run sync:example && npm --prefix example test",
     "deps": "npx npm-check-updates -i --interactiveSelect none --format group,dep,repo --cooldown 3",
-    "build": "rm -rf ./dist && tsc -p tsconfig.build.json",
+    "build:clock": "tsx scripts/build-clock.ts",
+    "build": "npm run build:clock && rm -rf ./dist && tsc -p tsconfig.build.json",
     "update:rules": "cp ../agentic-dev/rules/ts-file-structure/ts-file-structure.md ../agentic-dev/rules/good-tests/good-tests.md .agents/rules/",
     "docs": "npm --prefix website run start --",
     "docs:build": "npm --prefix website run build",
@@ -48,11 +49,14 @@
     "@eslint/compat": "^1.4.1",
     "@eslint/js": "^9.39.5",
     "@playwright/test": "1.64.0",
+    "@sinonjs/fake-timers": "^15.4.0",
     "@types/node": "^20.19.43",
+    "esbuild": "^0.28.2",
     "eslint": "^9.39.5",
     "eslint-plugin-visual-complexity": "^0.1.4",
     "lint-staged": "^17.6.0",
     "prettier": "^3.9.10",
+    "tsx": "^4.23.15",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.71.1"
   },

@@ -4,7 +4,7 @@
 
 import { chromium } from '@playwright/test';
 import type { BrowserContext, BrowserContextOptions, LaunchOptions } from '@playwright/test';
-import type { ExtensionInitScript } from './options.js';
+import type { ExtensionInitScript, ExtensionClockOptions } from './options.js';
 import { Extension } from './extension.js';
 import { defaults } from './options.js';
 import { throwIf } from './utils/throw-if.js';
@@ -17,6 +17,7 @@ export type LaunchWithExtensionOptions = {
   extensionPath: string;
   extensionAutoInstall?: boolean;
   extensionInitScript?: ExtensionInitScript | ExtensionInitScript[];
+  extensionClock?: ExtensionClockOptions;
   launchOptions?: LaunchOptions;
   contextOptions?: BrowserContextOptions;
 };
@@ -32,6 +33,7 @@ export async function launchWithExtension(options: LaunchWithExtensionOptions) {
   const extension = new Extension(context, {
     extensionPath: options.extensionPath,
     extensionInitScript: options.extensionInitScript,
+    extensionClock: options.extensionClock,
     locale: resolvedOptions.contextOptions?.locale,
   });
   try {
