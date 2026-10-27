@@ -1,6 +1,6 @@
 ---
 name: writing-docs
-description: Write, edit, and review playwright-webext documentation, including Docusaurus pages in website/content and the README. Use for clearer prose, useful examples, and documentation structure. Applies project editorial preferences; not implementation comments or website styling.
+description: Write, edit, and review playwright-webext documentation, including Docusaurus pages in docs/content and the README. Use for clearer prose, useful examples, and documentation structure. Applies project editorial preferences; not implementation comments or website styling.
 ---
 
 # Writing docs
@@ -11,7 +11,7 @@ TypeScript and Playwright knowledge, but explain behavior specific to this packa
 ## Before writing
 
 Read the target page, relevant neighboring pages, and the implementation or tests supporting its
-claims. Use `website/sidebars.ts` to understand the reading order. Existing docs are context, not an
+claims. Use `docs/sidebars.ts` to understand the reading order. Existing docs are context, not an
 unquestioned style template: some still contain repetition.
 
 Identify the reader's task and what this page needs to add. Infer these from the request and existing
@@ -89,7 +89,7 @@ the files within scope; do not reorganize the whole site during a wording fix.
 
 Preserve Docusaurus frontmatter, MDX imports, tabs, code titles, and working links. If changing a heading
 or path, check links to its anchor or page and update affected navigation. Never edit generated files
-in `website/.docusaurus` or `website/build`.
+in `docs/.docusaurus` or `docs/build`.
 
 Follow `AGENTS.md` validation. Read current package scripts before running commands. For website
 changes, also run `npm run docs:tsc` and `npm run docs:build`; use focused behavior tests when changing

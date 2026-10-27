@@ -5,8 +5,8 @@ to create new pages or preserve navigation against an explicit request to change
 
 ## Public documentation
 
-Public pages live in `website/content/`. Internal decisions and plans live directly in `specs/`. The site has
-separate guide and API navigation; check `website/sidebars.ts` before moving or adding pages.
+Public pages live in `docs/content/`. Internal decisions and plans live directly in `specs/`. The site has
+separate guide and API navigation; check `docs/sidebars.ts` before moving or adding pages.
 
 | Area            | Reader's need                               | What belongs here                                                                     |
 | --------------- | ------------------------------------------- | ------------------------------------------------------------------------------------- |

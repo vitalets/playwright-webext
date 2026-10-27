@@ -1,6 +1,6 @@
 # Documentation website
 
-The public documentation lives in `website/content/`. Internal architecture decisions and plans
+The public documentation lives in `docs/content/`. Internal architecture decisions and plans
 live in the repository's `specs/` directory. The site uses Docusaurus with separate guide and API
 sidebars and hand-written reference pages.
 
@@ -10,7 +10,7 @@ From the repository root, using Node.js 24:
 
 ```bash
 npm ci
-npm ci --prefix website
+npm ci --prefix docs
 npm run docs
 ```
 
@@ -26,7 +26,7 @@ npm run docs:tsc
 npm run docs:build
 ```
 
-The production build fails on broken internal links. To preview that build, run `npm --prefix website run serve`.
+The production build fails on broken internal links. To preview that build, run `npm --prefix docs run serve`.
 Keep examples aligned with the source and focused package tests. Include behavioral caveats next to
 the relevant example rather than on a separate limitations page.
 

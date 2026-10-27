@@ -11,7 +11,7 @@ test/data/**/_metadata/
 
 /todo.txt
 
-/website/build/
-/website/.docusaurus/
-/website/.docusaurus-dev/
+/docs/build/
+/docs/.docusaurus/
+/docs/.docusaurus-dev/
 

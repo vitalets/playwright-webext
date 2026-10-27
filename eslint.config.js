@@ -11,7 +11,7 @@ export default defineConfig([
   includeIgnoreFile(gitignorePath),
   globalIgnores([
     'dist/',
-    'website/',
+    'docs/',
     'example/',
     'test-results/',
     'playwright-report/',

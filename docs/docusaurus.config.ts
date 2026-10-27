@@ -56,7 +56,7 @@ const config: Config = {
           path: 'content',
           routeBasePath: '/',
           sidebarPath: './sidebars.ts',
-          editUrl: `https://github.com/vitalets/playwright-webext/edit/${sourceBranch}/website/`,
+          editUrl: `https://github.com/vitalets/playwright-webext/edit/${sourceBranch}/docs/`,
         },
         blog: false,
         gtag: googleAnalyticsId ? { trackingID: googleAnalyticsId } : undefined,

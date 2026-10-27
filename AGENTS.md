@@ -7,8 +7,8 @@ Treat follow-up additions and corrections as updates to the plan, not permission
 
 ## Documentation
 
-Public documentation lives in `website/`. Internal specifications and architecture decision records
-live directly in `specs/`, without an `adr/` subdirectory.
+Public documentation lives in `docs/`. Internal specifications and architecture decision records
+live directly in `specs/`.
 
 For public documentation and README changes, use
 [writing-docs](.agents/skills/writing-docs/SKILL.md).
