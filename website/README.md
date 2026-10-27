@@ -1,7 +1,7 @@
 # Documentation website
 
 The public documentation lives in `website/content/`. Internal architecture decisions and plans
-remain in the repository's `docs/` directory. The site uses Docusaurus with separate guide and API
+live in the repository's `specs/` directory. The site uses Docusaurus with separate guide and API
 sidebars and hand-written reference pages.
 
 ## Local development
