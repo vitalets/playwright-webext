@@ -22,14 +22,11 @@ Keep entries concise: summarize the main change without implementation details o
 
 ## Source file structure
 
-For TypeScript implementation files, follow `.agents/rules/ts-file-structure.md`.
-
-Apply this rule whenever creating, modifying, or refactoring implementation files. Do not
-apply it to tests or test fixtures.
+When creating or editing TypeScript files, follow `.agents/rules/ts-file-structure.md`.
 
 ## Tests
 
-When creating or editing test files, read and follow
+When creating or editing test files, follow
 `.agents/rules/good-tests.md`.
 
 ## Validation
