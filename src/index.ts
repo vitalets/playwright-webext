@@ -67,6 +67,7 @@ export const test = base.extend<
       extensionDirCache,
       // playwright fixtures
       browserName,
+      channel,
       headless,
       launchOptions,
       contextOptions,
@@ -107,7 +108,7 @@ export const test = base.extend<
     try {
       // Launch separately from launchWithExtension to track video before extension installation.
       const context = await launchContext({
-        launchOptions: { ...launchOptions, headless },
+        launchOptions: { ...launchOptions, channel, headless },
         contextOptions: {
           ...contextOptions,
           ...removeUndefined({
@@ -158,6 +159,7 @@ export const test = base.extend<
 
 function validateOptions(extensionPath: string, browserName: string) {
   throwIf(!extensionPath, 'The extension fixture requires use.extensionPath.');
+  // Edge also uses browserName 'chromium'; channel 'msedge' selects the Edge browser.
   throwIf(
     browserName !== 'chromium',
     `The extension fixture only supports Chromium projects; received "${browserName}".`,

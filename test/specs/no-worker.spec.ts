@@ -111,11 +111,11 @@ test.describe('deferred installation', () => {
   });
 });
 
-test('upgrades from a workerless extension to a worker-backed one', async () => {
+test('upgrades from a workerless extension to a worker-backed one', async ({ channel }) => {
   const extension = await launchWithExtension({
     extensionPath: './test/data/extension',
     extensionAutoInstall: false,
-    launchOptions: { headless: true },
+    launchOptions: { channel, headless: true },
   });
   try {
     await extension.install('./test/data/extension-no-worker');

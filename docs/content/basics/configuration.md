@@ -208,9 +208,13 @@ The same options are available in `launchWithExtension()`.
 ## Forwarded Playwright options
 
 - [browserName](https://playwright.dev/docs/api/class-testoptions#test-options-browser-name) (Chromium only)
+- [channel](https://playwright.dev/docs/api/class-testoptions#test-options-channel)
 - [headless](https://playwright.dev/docs/api/class-testoptions#test-options-headless)
 - [launchOptions](https://playwright.dev/docs/api/class-testoptions#test-options-launch-options)
 - [contextOptions](https://playwright.dev/docs/api/class-testoptions#test-options-context-options)
+
+Chromium is used by default. To run in Microsoft Edge, set `use.channel: 'msedge'`.
+Both browsers use `browserName: 'chromium'`.
 
 Context options, including `baseURL`, `storageState`, `permissions`, `locale`, and `viewport`,
 apply to `extension.context`.

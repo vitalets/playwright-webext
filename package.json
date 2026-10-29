@@ -31,6 +31,7 @@
     "prettier": "prettier --check --ignore-unknown .",
     "prettier:w": "prettier --write --ignore-unknown .",
     "test": "npx playwright test --config test/playwright.config.ts",
+    "test:edge": "npm test -- --project=edge",
     "sync:example": "npm --prefix example install . --no-save --package-lock=false --install-links --ignore-scripts",
     "test:example": "npm run build && npm run sync:example && npm --prefix example test",
     "deps": "npx npm-check-updates -i --interactiveSelect none --format group,dep,repo --cooldown 3",

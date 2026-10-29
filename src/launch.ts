@@ -54,7 +54,7 @@ export async function launchContext({
 }: Pick<LaunchWithExtensionOptions, 'launchOptions' | 'contextOptions'>) {
   const context = await chromium.launchPersistentContext('', {
     ...launchOptions,
-    channel: 'chromium',
+    channel: launchOptions?.channel ?? 'chromium',
     /**
      * Enables Extensions.loadUnpacked over CDP for installation and upgrades.
      */

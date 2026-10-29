@@ -32,8 +32,9 @@ test.describe('inline script', () => {
 });
 
 test.describe('script array', () => {
-  test('launchWithExtension runs mixed scripts in order', async () => {
+  test('launchWithExtension runs mixed scripts in order', async ({ channel }) => {
     const extension = await launchWithExtension({
+      launchOptions: { channel },
       extensionPath: './test/data/extension-classic-worker',
       extensionInitScript: [
         { content: "globalThis.foo = ['first'];" },

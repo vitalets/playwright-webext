@@ -8,7 +8,7 @@ import TabItem from '@theme/TabItem';
 
 ## Prerequisites
 
-- Only Chromium Manifest V3 extensions are supported.
+- Manifest V3 extensions are supported in Chromium and Microsoft Edge.
 - Node.js 20.19+ or 22.12+.
 - Playwright 1.59+.
 

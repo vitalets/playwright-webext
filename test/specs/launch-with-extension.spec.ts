@@ -7,9 +7,11 @@ test.use({ locale: 'en', viewport: { width: 900, height: 600 } });
 
 test('applies explicit context options and localizes the extension', async ({
   extensionPath,
+  channel,
 }, testInfo) => {
   const configDir = dirname(testInfo.config.configFile!);
   const extension = await launchWithExtension({
+    launchOptions: { channel },
     extensionPath: resolve(configDir, extensionPath),
     contextOptions: {
       locale: 'es',
@@ -30,10 +32,11 @@ test('applies explicit context options and localizes the extension', async ({
   }
 });
 
-test('manual installation and upgrade', async ({ extensionPath }, testInfo) => {
+test('manual installation and upgrade', async ({ extensionPath, channel }, testInfo) => {
   const configDir = dirname(testInfo.config.configFile!);
   const oldPath = resolve(configDir, './data/extension-0.1.0');
   const extension = await launchWithExtension({
+    launchOptions: { channel },
     extensionPath: relative(process.cwd(), resolve(configDir, extensionPath)),
     extensionAutoInstall: false,
   });
@@ -53,13 +56,15 @@ test('rejects a missing extension path before launch', async () => {
   );
 });
 
-test('standalone instances retain independent directories and cleanup', async () => {
+test('standalone instances retain independent directories and cleanup', async ({ channel }) => {
   const first = await launchWithExtension({
+    launchOptions: { channel },
     extensionPath: resolve('test/data/extension'),
     contextOptions: { locale: 'es' },
   });
   try {
     const second = await launchWithExtension({
+      launchOptions: { channel },
       extensionPath: resolve('test/data/extension'),
       contextOptions: { locale: 'es' },
     });

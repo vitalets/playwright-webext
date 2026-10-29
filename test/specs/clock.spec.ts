@@ -238,8 +238,9 @@ test('extension.clock requires extensionClock', ({ extension }) => {
   expect(() => extension.clock).toThrow(/Configure extensionClock/);
 });
 
-test('launchWithExtension applies extensionClock', async () => {
+test('launchWithExtension applies extensionClock', async ({ channel }) => {
   const extension = await launchWithExtension({
+    launchOptions: { channel },
     extensionPath: './test/data/extension',
     extensionClock: {
       time: new Date('2026-01-01T00:00:00Z'),
