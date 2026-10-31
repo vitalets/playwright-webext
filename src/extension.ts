@@ -14,7 +14,7 @@ import { dispatch, type ExtensionEventName, type ExtensionEventArgs } from './di
 import { poll, type PollOptions } from './utils/poll.js';
 import { pollForPage, type PageMatcher } from './utils/poll-for-page.js';
 import { runAll } from './utils/run-all.js';
-import { ExtensionClock, uninstallClock } from './clock/index.js';
+import { ExtensionClock } from './clock/index.js';
 
 /**
  * Provides access to a loaded extension's context, metadata, worker, and resource URLs.
@@ -22,7 +22,7 @@ import { ExtensionClock, uninstallClock } from './clock/index.js';
 export class Extension {
   readonly storage = createStorage(() => this.worker);
   readonly #installer: ExtensionInstaller;
-  #clock?: ExtensionClock;
+  readonly #clock?: ExtensionClock;
   #id?: string;
   #ready = false;
   #manifest?: chrome.runtime.ManifestV3;
@@ -30,33 +30,23 @@ export class Extension {
 
   constructor(
     readonly context: BrowserContext,
-    private readonly options: InstallOptions,
+    options: InstallOptions,
   ) {
-    this.#installer = new ExtensionInstaller(context, options);
+    this.#clock = this.createClock(options);
+    this.#installer = new ExtensionInstaller(context, options, this.#clock);
     context.on('close', () => {
       this.#ready = false;
     });
   }
 
   /**
-   * Lazily creates the controller for configured page and worker clocks.
+   * Returns the configured controller for page and worker clocks.
    */
   get clock() {
-    if (!this.options.extensionClock) {
+    if (!this.#clock) {
       throw new Error('Clock is not enabled. Configure extensionClock before installation.');
     }
-    // Resolve the current worker on each call because reloads and upgrades replace it.
-    const getWorker = () => {
-      if (!this.ready) {
-        throw new Error('Extension is not installed. Call extension.install() first.');
-      }
-      return this.hasServiceWorker ? this.worker : undefined;
-    };
-    return (this.#clock ??= new ExtensionClock(
-      this.context,
-      getWorker,
-      this.options.extensionClock,
-    ));
+    return this.#clock;
   }
 
   /**
@@ -305,7 +295,7 @@ export class Extension {
     await management.enableDevMode();
     const worker = this.findWorker();
     if (worker) {
-      await uninstallClock(worker);
+      await this.#clock?.uninstallFromWorker();
       await Promise.all([
         worker.waitForEvent('close'),
         worker.evaluate(() => {
@@ -362,11 +352,24 @@ export class Extension {
   async uninstall() {
     const worker = this.findWorker();
     if (worker) {
+      await this.#clock?.uninstallFromWorker();
       await uninstallWithWorker(worker);
     } else {
       await uninstallWithCDP(this.context, this.id);
     }
     this.#ready = false;
+  }
+
+  private createClock(options: InstallOptions) {
+    if (!options.extensionClock) return;
+    // Resolve the current worker on each call because reloads and upgrades replace it.
+    const getWorker = () => {
+      if (!this.ready) {
+        throw new Error('Extension is not installed. Call extension.install() first.');
+      }
+      return this.hasServiceWorker ? this.worker : undefined;
+    };
+    return new ExtensionClock(this.context, getWorker, options.extensionClock);
   }
 
   private async waitForReady() {

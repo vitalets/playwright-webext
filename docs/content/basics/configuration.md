@@ -178,21 +178,17 @@ These changes apply in a temporary directory, leaving the source unchanged.
 **Default:** unset.
 
 Sets the date in the service worker and all pages and frames in `extension.context` before the
-extension loads. In `'fixed-time'` mode (the default), the date stays fixed while timers keep running. Set
-`mode: 'full-control'` for full timer control. Omit `extensionClock` to keep the real date and timers.
+extension loads. By default, the date stays fixed while native timers keep running. Set
+`withTimers: true` to control timers too. Omit `extensionClock` to keep the real date and timers.
 
-| Option       | Type                             | Default                                                                                 | Effect                                                                     |
-| ------------ | -------------------------------- | --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `time`       | `number \| string \| Date`       | Required                                                                                | Fixed or starting date; numbers are Unix milliseconds.                     |
-| `mode`       | `'fixed-time' \| 'full-control'` | `'fixed-time'`                                                                          | Fixed date with running timers, or full timer control.                     |
-| `paused`     | `boolean`                        | `false`                                                                                 | Starts the fully controlled clock paused. Requires `mode: 'full-control'`. |
-| `workerFake` | Array of Sinon API names         | `['Date', 'setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'performance']` | Worker APIs to fake. Requires `mode: 'full-control'`.                      |
+| Option       | Type                       | Default  | Effect                                                         |
+| ------------ | -------------------------- | -------- | -------------------------------------------------------------- |
+| `time`       | `number \| string \| Date` | Required | Fixed or starting date; numbers are Unix milliseconds.         |
+| `withTimers` | `boolean`                  | `false`  | Also mocks timers, allowing `tick()` to execute due callbacks. |
+| `paused`     | `boolean`                  | `false`  | Starts fake time paused. Requires `withTimers: true`.          |
 
-`workerFake` accepts [Sinon's `toFake` names](https://github.com/sinonjs/fake-timers#var-clock--faketimersinstallconfig)
-available in service workers. Use `['Date']` to fake only dates in the worker; an empty array selects
-all supported APIs. In `full-control` mode, page timers cannot be narrowed to selected functions
-because Playwright does not support it. Native worker APIs excluded by `workerFake` keep running,
-even with `paused: true`.
+With `withTimers: true`, the worker mocks `Date`, `setTimeout`, `clearTimeout`, `setInterval`,
+`clearInterval`, and `performance`. Pages use Playwright's clock mocks.
 
 ```ts
 test.use({
@@ -200,10 +196,11 @@ test.use({
 });
 ```
 
-Use `extension.clock.setFixedTime()` in the default mode. Full timer control enables `pause()`,
-`resume()`, `runFor()`, and `setSystemTime()` instead. See [Fake timers](../guides/fake-timers.md)
-for examples and the [API reference](../api/clock.md) for method availability.
-The same options are available in `launchWithExtension()`.
+Use `extension.clock.setTime()` to set a date and `tick()` to advance by a duration.
+With `withTimers: true`, time advances automatically unless `paused: true` is set;
+`pause()` and `resume()` control automatic advancement later.
+See [Fake timers](../guides/fake-timers.md) for examples and the [API reference](../api/clock.md)
+for method details. The same options are available in `launchWithExtension()`.
 
 ## Forwarded Playwright options
 

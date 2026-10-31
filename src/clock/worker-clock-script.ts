@@ -8,7 +8,7 @@ import { parseClockTime } from './helpers.js';
 /**
  * Builds worker initialization code without changing the browser context.
  */
-export async function getClockInitScript(options: ExtensionClockOptions) {
+export async function getWorkerClockScript(options: ExtensionClockOptions) {
   const time = parseClockTime(options.time);
   const { default: source } = await import('./generated/fake-timers.js');
   return `if (typeof document === 'undefined') {
@@ -24,17 +24,9 @@ export async function getClockInitScript(options: ExtensionClockOptions) {
 function buildSinonOptions(options: ExtensionClockOptions, time: number) {
   return {
     now: time,
-    shouldAdvanceTime: options.mode === 'full-control' && !options.paused,
-    toFake:
-      options.mode === 'full-control'
-        ? (options.workerFake ?? [
-            'Date',
-            'setTimeout',
-            'clearTimeout',
-            'setInterval',
-            'clearInterval',
-            'performance',
-          ])
-        : ['Date'],
+    shouldAdvanceTime: options.withTimers && !options.paused,
+    toFake: options.withTimers
+      ? ['Date', 'setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'performance']
+      : ['Date'],
   };
 }

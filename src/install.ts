@@ -11,8 +11,8 @@ import type { ExtensionDirCache } from './extension-dir/cache.js';
 import { Manifest } from './manifest.js';
 import { isDefaultLocale } from './i18n.js';
 import { getInitScriptContent, addInitScriptToContext } from './init-script.js';
-import { getClockInitScript } from './clock/init-script.js';
-import { initContextClock } from './clock/context.js';
+import { getWorkerClockScript } from './clock/worker-clock-script.js';
+import type { ExtensionClock } from './clock/index.js';
 
 type InstallState = 'not-installed' | 'installing' | 'installed' | 'upgrading' | 'upgraded';
 
@@ -41,6 +41,7 @@ export class ExtensionInstaller {
   constructor(
     private readonly context: BrowserContext,
     private readonly options: InstallOptions,
+    private readonly clock?: ExtensionClock,
   ) {
     this.#extensionPath = resolve(options.extensionPath);
     this.#directory = new PreparedExtensionDir(options.extensionDirCache);
@@ -136,8 +137,7 @@ export class ExtensionInstaller {
   private async initializeContext() {
     if (this.#contextInitialized) return;
     this.#initScriptContent = await this.prepareInitScript();
-    if (this.options.extensionClock)
-      await initContextClock(this.context, this.options.extensionClock);
+    await this.clock?.installToContext();
     if (this.#initScriptContent)
       await addInitScriptToContext(this.context, this.#initScriptContent);
     this.#contextInitialized = true;
@@ -145,7 +145,7 @@ export class ExtensionInstaller {
 
   private async prepareInitScript() {
     const clockScript = this.options.extensionClock
-      ? await getClockInitScript(this.options.extensionClock)
+      ? await getWorkerClockScript(this.options.extensionClock)
       : '';
     const userScript = this.options.extensionInitScript
       ? await getInitScriptContent(this.options.extensionInitScript)

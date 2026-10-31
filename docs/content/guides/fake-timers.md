@@ -17,34 +17,27 @@ test.use({
 });
 ```
 
-## Choose a clock mode
+## Choose whether to mock timers
 
-- **`'fixed-time'` (default):** fixes `Date.now()` and `new Date()`, while `setTimeout` and
-  `setInterval` callbacks run after their normal real-time delays. Use it to test timestamps
-  or behavior that depends on a specific date.
-- **`'full-control'`:** controls both the date and timers such as `setTimeout` and `setInterval`.
-  Use it to simulate time passing or test elapsed-time logic, such as a countdown. Time and callbacks
-  advance automatically unless `paused: true` is set; then mocked callbacks wait for `runFor()`
-  or `resume()`.
+- **`withTimers: false` (default):** `Date.now()` and `new Date()` stay fixed, while native timers
+  keep running. `setTime()` changes the date and `tick()` advances it by a duration without waiting
+  for real time.
+- **`withTimers: true`:** Also controls timers such as `setTimeout` and `setInterval`. Time advances
+  automatically unless `paused: true` is set; then mocked callbacks wait for `tick()` or `resume()`.
+  Use `paused: true` for deterministic time from startup, or `pause()` later to stop at the current
+  fake date. Pausing a running clock can stop at different dates between test runs.
 
-`paused` defaults to `false`, matching Playwright's `clock.install()` and allowing startup timers to
-run. Set it to `true` for deterministic time from startup, or call `pause()` later and `resume()`
-when automatic advancement is needed. `paused` and `workerFake` are only available with
-`mode: 'full-control'`.
+`tick()` jumps ahead and fires each due timer at most once by default, such as when simulating a
+device waking from sleep. Use `{ timers: 'all' }` to execute every due occurrence when testing
+retries, countdowns, or repeated polling:
 
-### Supported methods
+```ts
+await extension.clock.tick('01:00', { timers: 'all' });
+```
 
-| Method                | `'fixed-time'` (default)                    | `'full-control'`                                |
-| --------------------- | ------------------------------------------- | ----------------------------------------------- |
-| `setFixedTime(time)`  | Changes the fixed date; timers keep running | Unsupported                                     |
-| `setSystemTime(time)` | Unsupported                                 | Changes the date without firing timers          |
-| `pause()`             | Unsupported                                 | Stops automatic advancement at the current time |
-| `resume()`            | Unsupported                                 | Resumes automatic advancement                   |
-| `runFor(duration)`    | Unsupported                                 | Advances time, firing all due callbacks         |
-
-Unsupported calls throw a configuration error; they do not switch modes. `setSystemTime()` and
-`runFor()` preserve the running or paused state. Unlike Playwright, `setFixedTime()` is only
-supported in `fixed-time` mode. `fastForward()` and `pauseAt()` are not currently exposed.
+Without timer mocking, either policy only advances the fixed date.
+`setTime()` never fires timers and preserves their remaining delays.
+See the [API reference](../api/clock.md) for callback ordering and method details.
 
 ## Test with fixed time
 
@@ -60,7 +53,7 @@ test.use({
 });
 
 test('records the save date', async ({ extension }) => {
-  await extension.clock.setFixedTime('2026-02-01T00:00:00Z');
+  await extension.clock.setTime('2026-02-01T00:00:00Z');
   const popup = await extension.openPopup();
   await popup.getByRole('button', { name: 'Save' }).click();
 
@@ -69,13 +62,13 @@ test('records the save date', async ({ extension }) => {
 ```
 
 By default, `Date.now()` and `new Date()` stay fixed at `time`, while `setTimeout`,
-`setInterval`, and other scheduling APIs keep running. `setFixedTime()` changes that fixed date.
+`setInterval`, and other scheduling APIs keep running. `setTime()` changes that fixed date.
 This matches Playwright's [`clock.setFixedTime()` behavior](https://playwright.dev/docs/clock#test-with-predefined-time).
 
 ## Move to the next day
 
 For an extension whose popup counts items saved today, advance one day and reopen the popup to check
-that yesterday's items no longer count. With `mode: 'full-control'` and `paused` unset, time starts at
+that yesterday's items no longer count. With `withTimers: true` and `paused` unset, time starts at
 `time` and continues advancing automatically, so `setTimeout`, `setInterval`, and other timer calls
 keep working.
 
@@ -86,7 +79,7 @@ import { test } from 'playwright-webext';
 test.use({
   extensionClock: {
     time: '2026-01-01T12:00:00Z',
-    mode: 'full-control',
+    withTimers: true,
   },
 });
 
@@ -96,16 +89,16 @@ test('starts a fresh count each day', async ({ extension }) => {
   await expect(popup.getByTestId('saved-today')).toHaveText('1');
   await popup.close();
 
-  await extension.clock.runFor(24 * 60 * 60 * 1000);
+  await extension.clock.tick(24 * 60 * 60 * 1000);
 
   const nextDayPopup = await extension.openPopup();
   await expect(nextDayPopup.getByTestId('saved-today')).toHaveText('0');
 });
 ```
 
-`runFor()` advances time in the worker and pages, executes all due timer callbacks (including repeated
-intervals), and leaves time running afterward.
-To change the date without running due timers, use `setSystemTime()` in this mode; it preserves
+`tick()` advances time in the worker and pages, fires each due timer at most once,
+and leaves time running afterward.
+To change the date without running due timers, use `setTime()` with timer mocking; it preserves
 whether the clock is running or paused.
 
 ## Trigger alarms
@@ -128,17 +121,18 @@ See [Dispatching events](dispatching-events.md) for an example with an alarm han
 <details>
 <summary>Implementation details</summary>
 
-`fixed-time` mode uses Playwright's `setFixedTime()` for pages and Sinon with only `Date` faked
-for the worker, leaving worker scheduling APIs native. `full-control` mode uses Playwright's `install()` and Sinon's timer mocks.
+Without timer mocking, the clock uses Playwright's `setFixedTime()` for pages and Sinon with only `Date` faked
+for the worker, leaving worker scheduling APIs native. With `withTimers: true`, it uses Playwright's `install()` and Sinon's timer mocks.
 Both are initialized before extension code and `extensionInitScript`. Use `extension.clock` to
 control both; direct Playwright clock calls affect only pages.
 
-In `full-control` mode, the clocks advance independently, so their dates can differ slightly while running. For exact
-alignment, pause and then call `setSystemTime()`. Each execution context has its own timer queue;
+With timer mocking, the clocks advance independently, so their dates can differ slightly while running. For exact
+alignment, pause and then call `setTime()`. Each execution context has its own timer queue;
 wait for cross-context work to be scheduled before advancing time.
 
 New pages and navigations inherit the context's fake time. Reloading or upgrading the extension
-resets the worker to the configured `time` and mode; page time is unchanged.
+resets the worker to the configured `time` and options; page time is unchanged. Each `tick()` advances from each clock’s own current date.
+Call `setTime()` to align their dates again.
 Fake time also affects ordinary websites in `extension.context`, but does not advance test timeouts,
 network requests, or Chrome's worker lifecycle.
 

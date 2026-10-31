@@ -36,34 +36,18 @@ export type ExtensionClockOptions = {
       /**
        * Keeps dates fixed and timers running. This is the default mode.
        */
-      mode?: 'fixed-time';
+      withTimers?: false;
       paused?: never;
-      workerFake?: never;
     }
   | {
       /**
        * Enables full timer control in pages and the worker.
        */
-      mode: 'full-control';
+      withTimers: true;
       /**
        * Starts fake time paused. Defaults to false.
        */
       paused?: boolean;
-      /**
-       * Worker APIs to fake; pages are unaffected. Defaults to Date, timeout/interval APIs, and performance.
-       * An empty array selects all supported APIs. Selected APIs must exist in the browser.
-       */
-      workerFake?: (
-        | 'Date'
-        | 'setTimeout'
-        | 'clearTimeout'
-        | 'setInterval'
-        | 'clearInterval'
-        | 'performance'
-        | 'queueMicrotask'
-        | 'Intl'
-        | 'Temporal'
-      )[];
     }
 );
 
