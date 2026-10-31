@@ -13,6 +13,9 @@ live directly in `specs/`.
 For public documentation and README changes, use
 [writing-docs](.agents/skills/writing-docs/SKILL.md).
 
+Do not mention required extension permissions in documentation examples; assume readers have
+configured the permissions needed by the Chrome APIs they use.
+
 ## Changelog
 
 Update `CHANGELOG.md` only for meaningful user-facing changes, such as new features, behavior changes,

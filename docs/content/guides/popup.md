@@ -20,8 +20,7 @@ test('popup', async ({ extension }) => {
 
 ## Example
 
-The following example assumes your popup has a “Save” button that stores `saved: true`, and your
-manifest includes the `storage` permission:
+The following example assumes your popup has a “Save” button that stores `saved: true`:
 
 ```ts title="test/popup.spec.ts"
 import { test } from 'playwright-webext';

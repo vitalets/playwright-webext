@@ -5,8 +5,8 @@ description: Set dates and advance time in extension pages and service workers.
 
 Playwright's [`context.clock`](https://playwright.dev/docs/api/class-browsercontext#browser-context-clock)
 controls time in context pages and frames, but does not work in service workers.
-Use [`extension.clock`](../api/clock.md) to manipulate time in both the extension's service worker
-and all pages and frames in `extension.context`. Enable it with the
+Playwright-webext provides [`extension.clock`](../api/clock.md) to manipulate time in both the extension's service worker
+and all pages in `extension.context`. Enable it with the
 [`extensionClock`](../basics/configuration.md#extensionclock) configuration option.
 
 ```ts
@@ -27,21 +27,22 @@ test.use({
   Use `paused: true` for deterministic time from startup, or `pause()` later to stop at the current
   fake date. Pausing a running clock can stop at different dates between test runs.
 
-`tick()` jumps ahead and fires each due timer at most once by default, such as when simulating a
-device waking from sleep. Use `{ timers: 'all' }` to execute every due occurrence when testing
-retries, countdowns, or repeated polling:
-
-```ts
-await extension.clock.tick('01:00', { timers: 'all' });
-```
-
-Without timer mocking, either policy only advances the fixed date.
 `setTime()` never fires timers and preserves their remaining delays.
 See the [API reference](../api/clock.md) for callback ordering and method details.
 
 ## Test with fixed time
 
-For an extension that records `savedAt` in storage when the user clicks Save:
+Imagine an extension that records its installation date in storage.
+
+```ts title="background.ts"
+chrome.runtime.onInstalled.addListener(({ reason }) => {
+  if (reason === 'install') {
+    chrome.storage.local.set({ installedAt: new Date().toISOString() });
+  }
+});
+```
+
+Fake time is set before the extension runs, so the installation handler records the configured date:
 
 ```ts title="test/clock.spec.ts"
 import { test } from 'playwright-webext';
@@ -52,12 +53,8 @@ test.use({
   },
 });
 
-test('records the save date', async ({ extension }) => {
-  await extension.clock.setTime('2026-02-01T00:00:00Z');
-  const popup = await extension.openPopup();
-  await popup.getByRole('button', { name: 'Save' }).click();
-
-  await extension.storage.local.expect('savedAt').toBe('2026-02-01T00:00:00.000Z');
+test('records the installation date', async ({ extension }) => {
+  await extension.storage.local.expect('installedAt').toBe('2026-01-01T00:00:00.000Z');
 });
 ```
 
@@ -65,41 +62,50 @@ By default, `Date.now()` and `new Date()` stay fixed at `time`, while `setTimeou
 `setInterval`, and other scheduling APIs keep running. `setTime()` changes that fixed date.
 This matches Playwright's [`clock.setFixedTime()` behavior](https://playwright.dev/docs/clock#test-with-predefined-time).
 
-## Move to the next day
+## Hide a message after a delay
 
-For an extension whose popup counts items saved today, advance one day and reopen the popup to check
-that yesterday's items no longer count. With `withTimers: true` and `paused` unset, time starts at
-`time` and continues advancing automatically, so `setTimeout`, `setInterval`, and other timer calls
-keep working.
+Imagine an extension whose popup shows a welcome message and hides it after five seconds.
 
-```ts title="test/daily-count.spec.ts"
+```html title="popup.html"
+<p id="welcome">Welcome!</p>
+<script src="popup.js"></script>
+```
+
+```ts title="popup.ts"
+const message = document.querySelector<HTMLElement>('#welcome')!;
+setTimeout(() => {
+  message.hidden = true;
+}, 5_000);
+```
+
+Use `withTimers: true` and `paused: true` so the timeout waits for the test to advance time.
+Check that the message remains visible before the delay expires and disappears when it does:
+
+```ts title="test/popup.spec.ts"
 import { expect } from '@playwright/test';
 import { test } from 'playwright-webext';
 
 test.use({
   extensionClock: {
-    time: '2026-01-01T12:00:00Z',
+    time: '2026-01-01T00:00:00Z',
     withTimers: true,
+    paused: true,
   },
 });
 
-test('starts a fresh count each day', async ({ extension }) => {
+test('hides the welcome message after five seconds', async ({ extension }) => {
   const popup = await extension.openPopup();
-  await popup.getByRole('button', { name: 'Save' }).click();
-  await expect(popup.getByTestId('saved-today')).toHaveText('1');
-  await popup.close();
+  const message = popup.locator('#welcome');
 
-  await extension.clock.tick(24 * 60 * 60 * 1000);
+  await expect(message).toBeVisible();
 
-  const nextDayPopup = await extension.openPopup();
-  await expect(nextDayPopup.getByTestId('saved-today')).toHaveText('0');
+  await extension.clock.tick(4_000);
+  await expect(message).toBeVisible();
+
+  await extension.clock.tick(1_000);
+  await expect(message).toBeHidden();
 });
 ```
-
-`tick()` advances time in the worker and pages, fires each due timer at most once,
-and leaves time running afterward.
-To change the date without running due timers, use `setTime()` with timer mocking; it preserves
-whether the clock is running or paused.
 
 ## Trigger alarms
 

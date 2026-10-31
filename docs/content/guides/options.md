@@ -18,7 +18,7 @@ test('options page', async ({ extension }) => {
 ## Example
 
 This example assumes an options document with a “Theme” select, a “Save” button, and code that stores
-the chosen value under `theme`. The extension needs the `storage` permission.
+the chosen value under `theme`.
 
 ```ts title="test/options.spec.ts"
 import { test } from 'playwright-webext';

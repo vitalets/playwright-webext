@@ -13,8 +13,7 @@ await extension.dispatch(eventName, params);
 
 ## Example
 
-Suppose your extension marks a reminder as due when its alarm fires. Its manifest declares the
-`alarms` and `storage` permissions.
+Suppose your extension marks a reminder as due when its alarm fires.
 
 ```js title="background.js"
 chrome.alarms.onAlarm.addListener(async (alarm) => {

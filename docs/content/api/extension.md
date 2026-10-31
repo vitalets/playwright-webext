@@ -597,7 +597,7 @@ Rejects immediately if the installed manifest declares no worker; evaluation err
 
 #### Usage
 
-Wait for settings saved asynchronously by the extension (requires the `storage` permission):
+Wait for settings saved asynchronously by the extension:
 
 ```ts
 const theme = await extension.waitForFunction(

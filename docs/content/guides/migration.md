@@ -50,7 +50,7 @@ After migration (v2):
 ```
 
 In the version `2.0.0` background script, check `previousVersion` so the migration runs only
-when updating from version `1.x`. The extension needs the `storage` permission.
+when updating from version `1.x`.
 
 ```js title="background.js"
 chrome.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
