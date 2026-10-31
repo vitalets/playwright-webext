@@ -14,8 +14,8 @@ import { WorkerClock } from './worker-clock.js';
  * or upgrades, while the parent retains responsibility for lookup and availability checks.
  */
 export class ExtensionClock {
-  private readonly contextClock: ContextClock;
-  private readonly workerClock: WorkerClock;
+  protected readonly contextClock: ContextClock;
+  protected readonly workerClock: WorkerClock;
 
   constructor(
     context: BrowserContext,
@@ -69,22 +69,6 @@ export class ExtensionClock {
     ]);
   }
 
-  /**
-   * Initializes page clocks before extension code runs. Worker clocks are installed by their script.
-   * @internal
-   */
-  async installToContext() {
-    await this.contextClock.install();
-  }
-
-  /**
-   * Restores native worker timers before reload or uninstallation schedules lifecycle callbacks.
-   * @internal
-   */
-  async uninstallFromWorker() {
-    await this.workerClock.uninstall();
-  }
-
   private async tickWithTimers(milliseconds: number, timers: 'all' | 'once') {
     await Promise.all([
       this.workerClock.tick(milliseconds, timers),
@@ -103,6 +87,14 @@ export class ExtensionClock {
     if (!this.options.withTimers)
       throw new Error(`${method} requires extensionClock.withTimers: true.`);
   }
+}
+
+/**
+ * Exposes the underlying clocks for internal installation and lifecycle operations.
+ */
+export class ExtensionClockInternal extends ExtensionClock {
+  declare readonly contextClock: ContextClock;
+  declare readonly workerClock: WorkerClock;
 }
 
 function parseTimersOption(timers: 'all' | 'once' | undefined) {

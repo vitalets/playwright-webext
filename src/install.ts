@@ -12,7 +12,7 @@ import { Manifest } from './manifest.js';
 import { isDefaultLocale } from './i18n.js';
 import { getInitScriptContent, addInitScriptToContext } from './init-script.js';
 import { getWorkerClockScript } from './clock/worker-clock-script.js';
-import type { ExtensionClock } from './clock/index.js';
+import type { ExtensionClockInternal } from './clock/index.js';
 
 type InstallState = 'not-installed' | 'installing' | 'installed' | 'upgrading' | 'upgraded';
 
@@ -41,7 +41,7 @@ export class ExtensionInstaller {
   constructor(
     private readonly context: BrowserContext,
     private readonly options: InstallOptions,
-    private readonly clock?: ExtensionClock,
+    private readonly clock?: ExtensionClockInternal,
   ) {
     this.#extensionPath = resolve(options.extensionPath);
     this.#directory = new PreparedExtensionDir(options.extensionDirCache);
@@ -137,7 +137,7 @@ export class ExtensionInstaller {
   private async initializeContext() {
     if (this.#contextInitialized) return;
     this.#initScriptContent = await this.prepareInitScript();
-    await this.clock?.installToContext();
+    await this.clock?.contextClock.install();
     if (this.#initScriptContent)
       await addInitScriptToContext(this.context, this.#initScriptContent);
     this.#contextInitialized = true;

@@ -14,7 +14,7 @@ import { dispatch, type ExtensionEventName, type ExtensionEventArgs } from './di
 import { poll, type PollOptions } from './utils/poll.js';
 import { pollForPage, type PageMatcher } from './utils/poll-for-page.js';
 import { runAll } from './utils/run-all.js';
-import { ExtensionClock } from './clock/index.js';
+import { ExtensionClockInternal, type ExtensionClock } from './clock/index.js';
 
 /**
  * Provides access to a loaded extension's context, metadata, worker, and resource URLs.
@@ -22,7 +22,7 @@ import { ExtensionClock } from './clock/index.js';
 export class Extension {
   readonly storage = createStorage(() => this.worker);
   readonly #installer: ExtensionInstaller;
-  readonly #clock?: ExtensionClock;
+  readonly #clock?: ExtensionClockInternal;
   #id?: string;
   #ready = false;
   #manifest?: chrome.runtime.ManifestV3;
@@ -42,7 +42,7 @@ export class Extension {
   /**
    * Returns the configured controller for page and worker clocks.
    */
-  get clock() {
+  get clock(): ExtensionClock {
     if (!this.#clock) {
       throw new Error('Clock is not enabled. Configure extensionClock before installation.');
     }
@@ -295,7 +295,7 @@ export class Extension {
     await management.enableDevMode();
     const worker = this.findWorker();
     if (worker) {
-      await this.#clock?.uninstallFromWorker();
+      await this.#clock?.workerClock.uninstall();
       await Promise.all([
         worker.waitForEvent('close'),
         worker.evaluate(() => {
@@ -352,7 +352,7 @@ export class Extension {
   async uninstall() {
     const worker = this.findWorker();
     if (worker) {
-      await this.#clock?.uninstallFromWorker();
+      await this.#clock?.workerClock.uninstall();
       await uninstallWithWorker(worker);
     } else {
       await uninstallWithCDP(this.context, this.id);
@@ -369,7 +369,7 @@ export class Extension {
       }
       return this.hasServiceWorker ? this.worker : undefined;
     };
-    return new ExtensionClock(this.context, getWorker, options.extensionClock);
+    return new ExtensionClockInternal(this.context, getWorker, options.extensionClock);
   }
 
   private async waitForReady() {
