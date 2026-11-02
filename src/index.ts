@@ -24,12 +24,12 @@ export type WebextFixtures = {
 };
 
 export { Extension } from './extension.js';
+export type { ExtensionClockOptions } from './clock/options.js';
 export type {
   WebextOptions,
   WebextTestOptions,
   WebextWorkerOptions,
   ExtensionInitScript,
-  ExtensionClockOptions,
 } from './options.js';
 export type { ExtensionClock } from './clock/index.js';
 export type { ExtensionEventName, ExtensionEventArgs } from './dispatch.js';

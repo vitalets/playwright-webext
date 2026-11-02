@@ -5,13 +5,15 @@
 
 import { resolve } from 'node:path';
 import type { BrowserContext } from '@playwright/test';
-import type { ExtensionInitScript, ExtensionClockOptions } from './options.js';
+import type { ExtensionInitScript } from './options.js';
+import type { ExtensionClockOptions, ExtensionClockOptionsResolved } from './clock/options.js';
 import { PreparedExtensionDir } from './extension-dir/index.js';
 import type { ExtensionDirCache } from './extension-dir/cache.js';
 import { Manifest } from './manifest.js';
 import { isDefaultLocale } from './i18n.js';
 import { getInitScriptContent, addInitScriptToContext } from './init-script.js';
 import { getWorkerClockScript } from './clock/worker-clock-script.js';
+import { resolveClockOptions } from './clock/options.js';
 import type { ExtensionClockInternal } from './clock/index.js';
 
 type InstallState = 'not-installed' | 'installing' | 'installed' | 'upgrading' | 'upgraded';
@@ -136,17 +138,16 @@ export class ExtensionInstaller {
 
   private async initializeContext() {
     if (this.#contextInitialized) return;
-    this.#initScriptContent = await this.prepareInitScript();
-    await this.clock?.contextClock.install();
+    const clockOptions = await resolveClockOptions(this.context, this.options.extensionClock);
+    this.#initScriptContent = await this.prepareInitScript(clockOptions);
+    if (clockOptions) await this.clock?.contextClock.install(clockOptions.time);
     if (this.#initScriptContent)
       await addInitScriptToContext(this.context, this.#initScriptContent);
     this.#contextInitialized = true;
   }
 
-  private async prepareInitScript() {
-    const clockScript = this.options.extensionClock
-      ? await getWorkerClockScript(this.options.extensionClock)
-      : '';
+  private async prepareInitScript(clockOptions?: ExtensionClockOptionsResolved) {
+    const clockScript = clockOptions ? await getWorkerClockScript(clockOptions) : '';
     const userScript = this.options.extensionInitScript
       ? await getInitScriptContent(this.options.extensionInitScript)
       : '';

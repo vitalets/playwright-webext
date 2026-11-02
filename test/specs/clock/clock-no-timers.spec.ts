@@ -52,6 +52,11 @@ test('launchWithExtension applies extensionClock', async ({ channel }) => {
     },
   });
   try {
+    const popup = await extension.openPopup();
+    expect(await extension.evaluate(() => new Date().toISOString())).toBe(
+      '2026-01-01T00:00:00.000Z',
+    );
+    expect(await popup.evaluate(() => new Date().toISOString())).toBe('2026-01-01T00:00:00.000Z');
     await extension.clock.setTime('2026-01-01T00:00:05Z');
     expect(await extension.evaluate(() => new Date().toISOString())).toBe(
       '2026-01-01T00:00:05.000Z',

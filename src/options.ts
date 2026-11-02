@@ -2,6 +2,8 @@
  * Defines extension fixture configuration and default launch options.
  */
 
+import type { ExtensionClockOptions } from './clock/options.js';
+
 /**
  * Configuration accepted by the extension test fixtures.
  */
@@ -22,34 +24,6 @@ export type WebextTestOptions = {
   extensionInitScript?: ExtensionInitScript | ExtensionInitScript[];
   extensionClock?: ExtensionClockOptions;
 };
-
-/**
- * Fixes the date by default, or enables full timer control before extension code runs.
- */
-export type ExtensionClockOptions = {
-  /**
-   * Fixed or starting date as Unix milliseconds, a date string, or a Date.
-   */
-  time: number | string | Date;
-} & (
-  | {
-      /**
-       * Keeps dates fixed and timers running. This is the default mode.
-       */
-      withTimers?: false;
-      paused?: never;
-    }
-  | {
-      /**
-       * Enables full timer control in pages and the worker.
-       */
-      withTimers: true;
-      /**
-       * Starts fake time paused. Defaults to false.
-       */
-      paused?: boolean;
-    }
-);
 
 /**
  * JavaScript to run before extension code in background workers and extension pages.

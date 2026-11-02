@@ -4,7 +4,8 @@
 
 import { chromium } from '@playwright/test';
 import type { BrowserContext, BrowserContextOptions, LaunchOptions } from '@playwright/test';
-import type { ExtensionInitScript, ExtensionClockOptions } from './options.js';
+import type { ExtensionInitScript } from './options.js';
+import type { ExtensionClockOptions } from './clock/options.js';
 import { Extension } from './extension.js';
 import { defaults } from './options.js';
 import { throwIf } from './utils/throw-if.js';

@@ -196,6 +196,21 @@ test.use({
 });
 ```
 
+For `extensionClock.time`, date-time strings without a timezone use the browser's timezone.
+Strings with `Z` or an offset identify an absolute instant: the browser displays it in its own
+timezone, so the local hour can differ from the string.
+
+For a browser in `America/Los_Angeles`:
+
+| `extensionClock.time`      | Browser-local date and time |
+| -------------------------- | --------------------------- |
+| `'2030-01-01T23:00'`       | January 1, 23:00            |
+| `'2030-01-01T23:00Z'`      | January 1, 15:00            |
+| `'2030-01-01T23:00-08:00'` | January 1, 23:00            |
+
+This does not change the browser's timezone. Numbers and `Date` objects retain their timestamps.
+Date-only strings such as `'2030-01-01'` follow JavaScript's UTC parsing.
+
 Use `extension.clock.setTime()` to set a date and `tick()` to advance by a duration.
 With `withTimers: true`, time advances automatically unless `paused: true` is set;
 `pause()` and `resume()` control automatic advancement later.

@@ -3,8 +3,8 @@
  */
 
 import type { BrowserContext } from '@playwright/test';
-import type { ExtensionClockOptions } from '../options.js';
-import { parseClockTime, validateClockTime } from './helpers.js';
+import type { ExtensionClockOptions } from './options.js';
+import { validateClockTime } from './helpers.js';
 
 /**
  * Configures and manipulates fake time shared by pages in a browser context.
@@ -18,8 +18,7 @@ export class ContextClock {
   /**
    * Configures page clocks before the extension is loaded.
    */
-  async install() {
-    const time = parseClockTime(this.options.time);
+  async install(time: number) {
     if (!this.options.withTimers) {
       await this.context.clock.setFixedTime(time);
       return;

@@ -3,8 +3,9 @@
  */
 
 import type { BrowserContext, Worker } from '@playwright/test';
-import type { ExtensionClockOptions } from '../options.js';
-import { parseClockTime, parseClockDuration } from './helpers.js';
+import type { ExtensionClockOptions } from './options.js';
+import { resolveClockTime } from './options.js';
+import { parseClockDuration } from './helpers.js';
 import { ContextClock } from './context-clock.js';
 import { WorkerClock } from './worker-clock.js';
 
@@ -18,7 +19,7 @@ export class ExtensionClock {
   protected readonly workerClock: WorkerClock;
 
   constructor(
-    context: BrowserContext,
+    private readonly context: BrowserContext,
     getWorker: () => Worker | undefined,
     private readonly options: ExtensionClockOptions,
   ) {
@@ -62,7 +63,7 @@ export class ExtensionClock {
    * Preserves whether dates are fixed, paused, or advancing automatically.
    */
   async setTime(time: number | string | Date) {
-    const milliseconds = parseClockTime(time);
+    const milliseconds = await resolveClockTime(this.context, time);
     await Promise.all([
       this.workerClock.setTime(milliseconds),
       this.contextClock.setTime(milliseconds),

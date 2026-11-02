@@ -22,7 +22,9 @@ await extension.clock.setTime('2026-02-01T00:00:00Z');
 #### Arguments
 
 - `time` (`number | string | Date`) — Unix timestamp in milliseconds, date string, or `Date`.
-  Invalid dates throw.
+  Invalid dates throw. Date-time strings without a timezone use the browser's timezone, just like
+  [`extensionClock.time`](../basics/configuration.md#extensionclock). Strings with `Z` or an offset
+  identify an absolute instant, which may have a different local hour in the browser.
 
 #### Returns
 
