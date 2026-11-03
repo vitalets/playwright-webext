@@ -4,9 +4,8 @@
 
 ## [Unreleased]
 
-- Parse timezone-free date-time strings in `extensionClock.time` and `extension.clock.setTime()` in the browser's timezone.
+- Add `extensionClock` and `extension.clock` to control dates and timers in extension pages and service workers, with browser-local date-time and `HH:mm` support.
 - Honor the configured browser channel when launching extensions.
-- Add `extensionClock` and `extension.clock` with `setTime()` and `tick()` to control dates and optional timers in extension pages and service workers.
 - Fix content-script JavaScript and CSS loading from temporary extension directories.
 - Add `extension.loadedPath` to inspect the directory used to load the extension.
 - Isolate extensions with static declarative network rules to prevent shared metadata conflicts between browsers.

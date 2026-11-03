@@ -47,6 +47,38 @@ test('setTime resolves browser-local dates with and without open pages', async (
   expect(await popup.evaluate(() => new Date().toISOString())).toBe('2030-01-01T22:00:00.000Z');
 });
 
+test.describe('time only', () => {
+  test.use({ extensionClock: { time: '23:00' } });
+
+  test('uses the current browser date before worker and page initialization', async ({
+    extension,
+  }) => {
+    await extension.context.clock.setFixedTime(new Date('2030-01-01T23:30:45.123Z'));
+    await extension.install();
+    const popup = await extension.openPopup();
+    expect(await extension.evaluate('globalThis.initialTime.iso')).toBe('2030-01-02T22:00:00.000Z');
+    expect(await popup.evaluate('globalThis.initialTime.iso')).toBe('2030-01-02T22:00:00.000Z');
+
+    await extension.clock.setTime('00:00');
+    expect(await extension.evaluate(() => new Date().toISOString())).toBe(
+      '2030-01-01T23:00:00.000Z',
+    );
+    expect(await popup.evaluate(() => new Date().toISOString())).toBe('2030-01-01T23:00:00.000Z');
+  });
+});
+
+test('time only preserves the fake date without open pages and rejects invalid times', async ({
+  extension,
+}) => {
+  await extension.install();
+  await Promise.all(extension.context.pages().map((page) => page.close()));
+  await extension.clock.setTime('12:34');
+  expect(extension.context.pages()).toHaveLength(0);
+  expect(await extension.evaluate(() => new Date().toISOString())).toBe('2030-01-01T11:34:00.000Z');
+  await expect(extension.clock.setTime('24:00')).rejects.toThrow(/Invalid clock time/);
+  await expect(extension.clock.setTime('23:60')).rejects.toThrow(/Invalid clock time/);
+});
+
 test.describe('paused timers without open pages', () => {
   test.use({ extensionClock: { time: '2030-01-01T23:00', withTimers: true, paused: true } });
 
@@ -57,6 +89,11 @@ test.describe('paused timers without open pages', () => {
     const popup = await extension.openPopup();
     expect(await extension.evaluate('globalThis.initialTime.iso')).toBe('2030-01-01T22:00:00.000Z');
     expect(await popup.evaluate('globalThis.initialTime.iso')).toBe('2030-01-01T22:00:00.000Z');
+    await extension.clock.setTime('12:34');
+    expect(await extension.evaluate(() => new Date().toISOString())).toBe(
+      '2030-01-01T11:34:00.000Z',
+    );
+    expect(await popup.evaluate(() => new Date().toISOString())).toBe('2030-01-01T11:34:00.000Z');
   });
 });
 

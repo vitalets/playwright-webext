@@ -10,7 +10,8 @@ import { hasExplicitTimezone, parseClockTime, resolveInBrowserTimezone } from '.
  */
 export type ExtensionClockOptions = {
   /**
-   * Fixed or starting date as Unix milliseconds, a date string, or a Date.
+   * Fixed or starting date as Unix milliseconds, a date string, HH:mm, or a Date.
+   * HH:mm uses the browser's current date and timezone.
    */
   time: number | string | Date;
 } & (
@@ -69,7 +70,7 @@ export async function resolveClockOptions(
 }
 
 /**
- * Resolves timezone-free date-time strings using the browser's timezone.
+ * Resolves timezone-free date-time and HH:mm strings using the browser's timezone.
  */
 export async function resolveClockTime(context: BrowserContext, time: number | string | Date) {
   if (typeof time !== 'string' || hasExplicitTimezone(time)) return parseClockTime(time);

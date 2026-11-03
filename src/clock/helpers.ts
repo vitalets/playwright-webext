@@ -36,13 +36,21 @@ export function parseClockDuration(ticks: number | string) {
 }
 
 /**
- * Parses a date string using the browser's timezone.
+ * Parses a date or HH:mm string using the browser's date and timezone.
  */
 export async function resolveInBrowserTimezone(context: BrowserContext, time: string) {
+  if (!isValidTimeOnlyValue(time)) throw new Error(`Invalid clock time: ${time}`);
   const existingPage = context.pages()[0];
   const page = existingPage ?? (await context.newPage());
   try {
-    const milliseconds = await page.evaluate((value) => new Date(value).getTime(), time);
+    const milliseconds = await page.evaluate((value) => {
+      // Only time, e.g. "13:00", is interpreted as today at that time in the browser's timezone.
+      if (/^\d+:\d+$/.test(value)) {
+        const [hours, minutes] = value.split(':').map(Number);
+        return new Date().setHours(hours, minutes, 0, 0);
+      }
+      return new Date(value).getTime();
+    }, time);
     if (!Number.isFinite(milliseconds)) throw new Error(`Invalid clock time: ${time}`);
     return milliseconds;
   } finally {
@@ -56,4 +64,8 @@ export async function resolveInBrowserTimezone(context: BrowserContext, time: st
 export function hasExplicitTimezone(time: string) {
   // Recognize ISO offsets and named zones accepted by Date, including Date.toString() output.
   return /(?:z|[+-]\d{2}:?\d{2}|\b(?:GMT|UTC|[ECMP][SD]T))(?:\s*\([^)]*\))?\s*$/i.test(time);
+}
+
+function isValidTimeOnlyValue(time: string) {
+  return !/^\d+:\d+$/.test(time) || /^([01]\d|2[0-3]):[0-5]\d$/.test(time);
 }

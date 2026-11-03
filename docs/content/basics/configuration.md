@@ -187,8 +187,8 @@ extension loads. By default, the date stays fixed while native timers keep runni
 | `withTimers` | `boolean`                  | `false`  | Also mocks timers, allowing `tick()` to execute due callbacks. |
 | `paused`     | `boolean`                  | `false`  | Starts fake time paused. Requires `withTimers: true`.          |
 
-With `withTimers: true`, the worker mocks `Date`, `setTimeout`, `clearTimeout`, `setInterval`,
-`clearInterval`, and `performance`. Pages use Playwright's clock mocks.
+With `withTimers: true`, the worker mocks `setTimeout`, `clearTimeout`, `setInterval`,
+`clearInterval`, and `performance` additionally to `Date`. Pages use Playwright's clock mocks.
 
 ```ts
 test.use({
@@ -197,6 +197,8 @@ test.use({
 ```
 
 For `extensionClock.time`, date-time strings without a timezone use the browser's timezone.
+Time-only strings in `HH:mm` format, such as `'23:00'`, use the browser's current date and timezone,
+with seconds and milliseconds set to zero.
 Strings with `Z` or an offset identify an absolute instant: the browser displays it in its own
 timezone, so the local hour can differ from the string.
 
@@ -209,7 +211,8 @@ For a browser in `America/Los_Angeles`:
 | `'2030-01-01T23:00-08:00'` | January 1, 23:00            |
 
 This does not change the browser's timezone. Numbers and `Date` objects retain their timestamps.
-Date-only strings such as `'2030-01-01'` follow JavaScript's UTC parsing.
+
+Date-only strings such as `'2030-01-01'` are converted to midnight UTC (`'2030-01-01T00:00:00Z'`)
 
 Use `extension.clock.setTime()` to set a date and `tick()` to advance by a duration.
 With `withTimers: true`, time advances automatically unless `paused: true` is set;

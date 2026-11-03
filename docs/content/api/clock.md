@@ -25,6 +25,8 @@ await extension.clock.setTime('2026-02-01T00:00:00Z');
   Invalid dates throw. Date-time strings without a timezone use the browser's timezone, just like
   [`extensionClock.time`](../basics/configuration.md#extensionclock). Strings with `Z` or an offset
   identify an absolute instant, which may have a different local hour in the browser.
+  Time-only strings in `HH:mm` format, such as `'23:00'`, preserve the current fake date in the
+  browser's timezone and reset seconds and milliseconds to zero.
 
 #### Returns
 
