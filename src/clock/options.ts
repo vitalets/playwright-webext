@@ -19,14 +19,14 @@ export type ExtensionClockOptions = {
       /**
        * Keeps dates fixed and timers running. This is the default mode.
        */
-      withTimers?: false;
+      timers?: false;
       paused?: never;
     }
   | {
       /**
        * Enables full timer control in pages and the worker.
        */
-      withTimers: true;
+      timers: true;
       /**
        * Starts fake time paused. Defaults to false.
        */

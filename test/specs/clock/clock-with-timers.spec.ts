@@ -7,7 +7,7 @@ test.describe('running clock', () => {
   test.use({
     extensionClock: {
       time: '2026-01-01T00:00:00Z',
-      withTimers: true,
+      timers: true,
     },
   });
 
@@ -61,7 +61,7 @@ test.describe('paused clock', () => {
   test.use({
     extensionClock: {
       time: initialTime,
-      withTimers: true,
+      timers: true,
       paused: true,
     },
   });
@@ -147,7 +147,7 @@ test.describe('classic worker', () => {
     extensionAutoInstall: false,
     extensionClock: {
       time: 0,
-      withTimers: true,
+      timers: true,
       paused: true,
     },
   });
@@ -164,7 +164,7 @@ test.describe('without a worker', () => {
     extensionAutoInstall: false,
     extensionClock: {
       time: 0,
-      withTimers: true,
+      timers: true,
       paused: true,
     },
   });
@@ -178,7 +178,7 @@ test.describe('without a worker', () => {
 });
 
 test.describe('tick timer policies', () => {
-  test.use({ extensionClock: { time: 0, withTimers: true, paused: true } });
+  test.use({ extensionClock: { time: 0, timers: true, paused: true } });
 
   test('all runs repeated intervals and chained timeouts at their due times', async ({
     extension,

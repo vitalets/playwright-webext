@@ -33,8 +33,8 @@ test.describe('without timer mocking', () => {
   });
 
   test('timer control methods require timer mocking', async ({ extension }) => {
-    await expect(extension.clock.pause()).rejects.toThrow(/requires.*withTimers/);
-    await expect(extension.clock.resume()).rejects.toThrow(/requires.*withTimers/);
+    await expect(extension.clock.pause()).rejects.toThrow(/requires.*timers/);
+    await expect(extension.clock.resume()).rejects.toThrow(/requires.*timers/);
   });
 });
 
@@ -48,7 +48,7 @@ test('launchWithExtension applies extensionClock', async ({ channel }) => {
     extensionPath: './test/data/extension',
     extensionClock: {
       time: new Date('2026-01-01T00:00:00Z'),
-      withTimers: false,
+      timers: false,
     },
   });
   try {
@@ -67,7 +67,7 @@ test('launchWithExtension applies extensionClock', async ({ channel }) => {
 });
 
 test.describe('tick without timer mocking', () => {
-  test.use({ extensionClock: { time: 0, withTimers: false } });
+  test.use({ extensionClock: { time: 0, timers: false } });
 
   test('successive ticks update dates while native timers keep running', async ({ extension }) => {
     const popup = await extension.openPopup();

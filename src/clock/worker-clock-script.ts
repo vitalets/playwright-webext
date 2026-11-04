@@ -22,8 +22,8 @@ export async function getWorkerClockScript(options: ExtensionClockOptionsResolve
 function buildSinonOptions(options: ExtensionClockOptionsResolved) {
   return {
     now: options.time,
-    shouldAdvanceTime: options.withTimers && !options.paused,
-    toFake: options.withTimers
+    shouldAdvanceTime: options.timers && !options.paused,
+    toFake: options.timers
       ? ['Date', 'setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'performance']
       : ['Date'],
   };

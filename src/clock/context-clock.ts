@@ -19,7 +19,7 @@ export class ContextClock {
    * Configures page clocks before the extension is loaded.
    */
   async install(time: number) {
-    if (!this.options.withTimers) {
+    if (!this.options.timers) {
       await this.context.clock.setFixedTime(time);
       return;
     }
@@ -67,7 +67,7 @@ export class ContextClock {
    * Sets the date while preserving whether it is fixed or advancing automatically.
    */
   async setTime(milliseconds: number) {
-    if (this.options.withTimers) await this.context.clock.setSystemTime(milliseconds);
+    if (this.options.timers) await this.context.clock.setSystemTime(milliseconds);
     else await this.context.clock.setFixedTime(milliseconds);
   }
 

@@ -35,8 +35,8 @@ await extension.clock.setTime('2026-02-01T00:00:00Z');
 ### tick
 
 Advances each clock by a duration, preserving its running or paused state.
-With `withTimers: false`, only the fixed date changes; native timers and `performance.now()`
-continue on real time. With `withTimers: true`, due mocked timers also execute.
+With `timers: false`, only the fixed date changes; native timers and `performance.now()`
+continue on real time. With `timers: true`, due mocked timers also execute.
 
 ```ts
 await extension.clock.tick(5000);
@@ -49,7 +49,7 @@ await extension.clock.tick('01:00', { timers: 'all' });
   `ss`, `mm:ss`, or `hh:mm:ss` format. Invalid values throw.
 - `options.timers` (`'all' | 'once'`) — Defaults to `'once'`. Jumps to the destination and fires each due timer
   at most once. Use `'all'` to run every due occurrence at its scheduled time.
-  Both options have the same effect with `withTimers: false`.
+  Both options have the same effect with `timers: false`.
 
 For a one-second interval, `tick(60_000)` runs one callback; `tick(60_000, { timers: 'all' })`
 runs 60. Timeouts scheduled by callbacks can run within the remaining duration with `'all'`;
@@ -66,7 +66,7 @@ does not yield between timer callbacks, unlike Playwright's page clock.
 
 ### pause
 
-Stops automatic advancement at each clock's current fake date. Requires `withTimers: true`.
+Stops automatic advancement at each clock's current fake date. Requires `timers: true`.
 
 ```ts
 await extension.clock.pause();
@@ -81,7 +81,7 @@ Configure `paused: true` to start at an exact date without automatic advancement
 
 ### resume
 
-Resumes automatic advancement without restoring native timers. Requires `withTimers: true`.
+Resumes automatic advancement without restoring native timers. Requires `timers: true`.
 
 ```ts
 await extension.clock.resume();

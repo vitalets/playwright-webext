@@ -31,7 +31,7 @@ export class ExtensionClock {
    * Stops automatic advancement in pages and the worker at their current fake dates.
    */
   async pause() {
-    this.requireWithTimers('pause');
+    this.requireTimersOption('pause');
     await Promise.all([this.workerClock.pause(), this.contextClock.pause()]);
   }
 
@@ -39,7 +39,7 @@ export class ExtensionClock {
    * Resumes automatic advancement in pages and the worker without restoring native timers.
    */
   async resume() {
-    this.requireWithTimers('resume');
+    this.requireTimersOption('resume');
     await Promise.all([this.workerClock.resume(), this.contextClock.resume()]);
   }
 
@@ -51,7 +51,7 @@ export class ExtensionClock {
   async tick(duration: number | string, options: { timers?: 'all' | 'once' } = {}) {
     const milliseconds = parseClockDuration(duration);
     const timers = parseTimersOption(options.timers);
-    if (this.options.withTimers) {
+    if (this.options.timers) {
       await this.tickWithTimers(milliseconds, timers);
     } else {
       await this.tickNoTimers(milliseconds);
@@ -84,9 +84,8 @@ export class ExtensionClock {
     ]);
   }
 
-  private requireWithTimers(method: string) {
-    if (!this.options.withTimers)
-      throw new Error(`${method} requires extensionClock.withTimers: true.`);
+  private requireTimersOption(method: string) {
+    if (!this.options.timers) throw new Error(`${method} requires extensionClock.timers: true.`);
   }
 }
 

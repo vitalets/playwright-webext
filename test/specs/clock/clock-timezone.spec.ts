@@ -80,7 +80,7 @@ test('time only preserves the fake date without open pages and rejects invalid t
 });
 
 test.describe('paused timers without open pages', () => {
-  test.use({ extensionClock: { time: '2030-01-01T23:00', withTimers: true, paused: true } });
+  test.use({ extensionClock: { time: '2030-01-01T23:00', timers: true, paused: true } });
 
   test('resolves initial time and closes its temporary page', async ({ extension }) => {
     await Promise.all(extension.context.pages().map((page) => page.close()));

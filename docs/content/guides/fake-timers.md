@@ -19,16 +19,26 @@ test.use({
 
 ## Choose whether to mock timers
 
-- **`withTimers: false` (default):** `Date.now()` and `new Date()` stay fixed, while native timers
+- **`timers: false` (default):** `Date.now()` and `new Date()` stay fixed, while native timers
   keep running. `setTime()` changes the date and `tick()` advances it by a duration without waiting
   for real time.
-- **`withTimers: true`:** Also controls timers such as `setTimeout` and `setInterval`. Time advances
+- **`timers: true`:** Also controls timers such as `setTimeout` and `setInterval`. Time advances
   automatically unless `paused: true` is set; then mocked callbacks wait for `tick()` or `resume()`.
   Use `paused: true` for deterministic time from startup, or `pause()` later to stop at the current
   fake date. Pausing a running clock can stop at different dates between test runs.
 
 `setTime()` never fires timers and preserves their remaining delays.
 See the [API reference](../api/clock.md) for callback ordering and method details.
+
+| Method                              | Use case                                                                                                   |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `tick(duration)`                    | Dismiss a message after a delay, or deliver overdue timers once after a gap.                               |
+| `tick(duration, { timers: 'all' })` | Exercise every polling or retry attempt within an interval.                                                |
+| `setTime(time)`                     | Change the date shown by a calendar, or simulate a system-clock correction without consuming timer delays. |
+| `pause()` / `resume()`              | Let timer-dependent initialization finish before taking manual control, then resume automatic advancement. |
+
+With `timers: true`, leave `paused` unset if extension initialization depends on timers.
+Wait for initialization to finish before calling `pause()`.
 
 ## Test with fixed time
 
@@ -78,7 +88,7 @@ setTimeout(() => {
 }, 5_000);
 ```
 
-Use `withTimers: true` and `paused: true` so the timeout waits for the test to advance time.
+Use `timers: true` and `paused: true` so the timeout waits for the test to advance time.
 Check that the message remains visible before the delay expires and disappears when it does:
 
 ```ts title="test/popup.spec.ts"
@@ -88,7 +98,7 @@ import { test } from 'playwright-webext';
 test.use({
   extensionClock: {
     time: '2026-01-01T00:00:00Z',
-    withTimers: true,
+    timers: true,
     paused: true,
   },
 });
@@ -128,7 +138,7 @@ See [Dispatching events](dispatching-events.md) for an example with an alarm han
 <summary>Implementation details</summary>
 
 Without timer mocking, the clock uses Playwright's `setFixedTime()` for pages and Sinon with only `Date` faked
-for the worker, leaving worker scheduling APIs native. With `withTimers: true`, it uses Playwright's `install()` and Sinon's timer mocks.
+for the worker, leaving worker scheduling APIs native. With `timers: true`, it uses Playwright's `install()` and Sinon's timer mocks.
 Both are initialized before extension code and `extensionInitScript`. Use `extension.clock` to
 control both; direct Playwright clock calls affect only pages.
 
