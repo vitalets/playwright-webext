@@ -32,6 +32,15 @@ test.describe('without timer mocking', () => {
     expect(await popup.evaluate(() => new Date().toISOString())).toBe('2026-02-01T00:00:00.000Z');
   });
 
+  test('fixed dates leave worker abort timeouts on real time', async ({ extension }) => {
+    const abortedAt = await extension.evaluate(async () => {
+      const signal = AbortSignal.timeout(20);
+      await new Promise<void>((resolve) => signal.addEventListener('abort', () => resolve()));
+      return new Date().toISOString();
+    });
+    expect(abortedAt).toBe(time);
+  });
+
   test('timer control methods require timer mocking', async ({ extension }) => {
     await expect(extension.clock.pause()).rejects.toThrow(/requires.*timers/);
     await expect(extension.clock.resume()).rejects.toThrow(/requires.*timers/);

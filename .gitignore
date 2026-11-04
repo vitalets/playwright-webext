@@ -3,7 +3,7 @@ node_modules/
 .vscode/
 .env
 dist/
-src/clock/generated/
+src/clock/worker-clock/generated/
 test-results/
 playwright-report/
 test/data/**/_metadata/

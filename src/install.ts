@@ -12,7 +12,7 @@ import type { ExtensionDirCache } from './extension-dir/cache.js';
 import { Manifest } from './manifest.js';
 import { isDefaultLocale } from './i18n.js';
 import { getInitScriptContent, addInitScriptToContext } from './init-script.js';
-import { getWorkerClockScript } from './clock/worker-clock-script.js';
+import { getWorkerClockScript } from './clock/worker-clock/playwright-wrapper.js';
 import { resolveClockOptions } from './clock/options.js';
 import type { ExtensionClockInternal } from './clock/index.js';
 

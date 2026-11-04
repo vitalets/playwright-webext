@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+- Align service worker clock timer and promise ordering with Playwright.
+
 - Add `extensionClock` and `extension.clock` to control dates and timers in extension pages and service workers, with browser-local date-time and `HH:mm` support.
 - Honor the configured browser channel when launching extensions.
 - Fix content-script JavaScript and CSS loading from temporary extension directories.

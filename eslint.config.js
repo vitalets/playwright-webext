@@ -11,6 +11,7 @@ export default defineConfig([
   includeIgnoreFile(gitignorePath),
   globalIgnores([
     'dist/',
+    'src/clock/worker-clock/from-playwright/',
     'docs/',
     'example/',
     'test-results/',

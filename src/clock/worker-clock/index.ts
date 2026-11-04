@@ -1,19 +1,14 @@
 /**
- * Manipulates the Sinon clock installed in the current extension service worker.
+ * Manipulates the Playwright clock installed in the current extension service worker.
  * An absent worker is supported for extensions that only have pages.
  */
 
 import type { Worker } from '@playwright/test';
-import { validateClockTime } from './helpers.js';
+import { validateClockTime } from '../helpers.js';
 
-declare const __webextClock: {
-  now: number;
-  jump(milliseconds: number): number;
-  tickAsync(milliseconds: number): Promise<unknown>;
-  setSystemTime(time: number): void;
-  uninstall(): void;
-  setTickMode(mode: { mode: 'manual' | 'interval' }): void;
-};
+import type { installWorkerClock } from './playwright-wrapper.js';
+
+declare const __pwClock: ReturnType<typeof installWorkerClock>;
 
 /**
  * Resolves the current worker for each operation so clock controls survive reloads and upgrades.
@@ -25,14 +20,14 @@ export class WorkerClock {
    * Stops automatic advancement without changing the worker's current fake date.
    */
   pause() {
-    return this.getWorker()?.evaluate(() => __webextClock.setTickMode({ mode: 'manual' }));
+    return this.getWorker()?.evaluate(() => __pwClock.pause());
   }
 
   /**
    * Resumes automatic advancement without restoring native timers.
    */
   resume() {
-    return this.getWorker()?.evaluate(() => __webextClock.setTickMode({ mode: 'interval' }));
+    return this.getWorker()?.evaluate(() => __pwClock.resume());
   }
 
   /**
@@ -41,8 +36,8 @@ export class WorkerClock {
   tick(milliseconds: number, timers: 'all' | 'once') {
     return this.getWorker()?.evaluate(
       async ({ milliseconds, timers }) => {
-        if (timers === 'once') __webextClock.jump(milliseconds);
-        else await __webextClock.tickAsync(milliseconds);
+        if (timers === 'once') await __pwClock.fastForward(milliseconds);
+        else await __pwClock.runFor(milliseconds);
       },
       { milliseconds, timers },
     );
@@ -63,14 +58,14 @@ export class WorkerClock {
    * Sets the worker date without firing timers or changing their remaining delays.
    */
   setTime(milliseconds: number) {
-    return this.getWorker()?.evaluate((ms) => __webextClock.setSystemTime(ms), milliseconds);
+    return this.getWorker()?.evaluate((ms) => __pwClock.setTime(ms), milliseconds);
   }
 
   /**
    * Reads the worker clock's current date, including after worker reloads.
    */
   readTime() {
-    return this.getWorker()?.evaluate(() => __webextClock.now);
+    return this.getWorker()?.evaluate(() => __pwClock.now());
   }
 
   /**
@@ -78,7 +73,7 @@ export class WorkerClock {
    */
   uninstall() {
     return this.getWorker()?.evaluate(() => {
-      if (typeof __webextClock !== 'undefined') __webextClock.uninstall();
+      if (typeof __pwClock !== 'undefined') return __pwClock.uninstall();
     });
   }
 }

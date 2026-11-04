@@ -206,6 +206,42 @@ test.describe('tick timer policies', () => {
     expect(await popup.evaluate(readTimerEvents)).toEqual([3000, 3000, 4000, 4000]);
   });
 
+  test('once flushes promise continuations between overdue callbacks', async ({ extension }) => {
+    const popup = await extension.openPopup();
+    await extension.evaluate(schedulePromiseEvents);
+    await popup.evaluate(schedulePromiseEvents);
+    await extension.clock.tick(1000);
+    expect(await extension.evaluate(readTimerEvents)).toEqual([1, 2, 3]);
+    expect(await popup.evaluate(readTimerEvents)).toEqual([1, 2, 3]);
+  });
+
+  test('all runs timers scheduled by promise continuations', async ({ extension }) => {
+    const popup = await extension.openPopup();
+    await extension.evaluate(schedulePromiseEvents);
+    await popup.evaluate(schedulePromiseEvents);
+    await extension.clock.tick(1000, { timers: 'all' });
+    expect(await extension.evaluate(readTimerEvents)).toEqual([1, 2, 3, 4]);
+    expect(await popup.evaluate(readTimerEvents)).toEqual([1, 2, 3, 4]);
+  });
+
+  test('worker clock controls abort timeouts without adding DOM timer APIs', async ({
+    extension,
+  }) => {
+    await extension.evaluate(() => {
+      const events: number[] = [];
+      (globalThis as typeof globalThis & { clockEvents: number[] }).clockEvents = events;
+      AbortSignal.timeout(1000).addEventListener('abort', () => events.push(Date.now()));
+    });
+    await extension.clock.tick(1000);
+    expect(await extension.evaluate(readTimerEvents)).toEqual([1000]);
+    expect(
+      await extension.evaluate(() => ({
+        animationFrame: typeof requestAnimationFrame,
+        idleCallback: typeof requestIdleCallback,
+      })),
+    ).toEqual({ animationFrame: 'undefined', idleCallback: 'undefined' });
+  });
+
   test('setTime preserves timer delays even when moving backward', async ({ extension }) => {
     const popup = await extension.openPopup();
     await extension.evaluate(scheduleTimerEvents);
@@ -225,4 +261,17 @@ function scheduleTimerEvents() {
     events.push(Date.now());
     setTimeout(() => events.push(Date.now()), 1000);
   }, 1500);
+}
+
+function schedulePromiseEvents() {
+  const events: number[] = [];
+  (globalThis as typeof globalThis & { clockEvents: number[] }).clockEvents = events;
+  setTimeout(() => {
+    events.push(1);
+    void Promise.resolve().then(() => {
+      events.push(2);
+      setTimeout(() => events.push(4), 100);
+    });
+  }, 100);
+  setTimeout(() => events.push(3), 100);
 }

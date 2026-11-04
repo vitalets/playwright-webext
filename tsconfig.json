@@ -11,5 +11,5 @@
     "types": ["chrome", "node"]
   },
   "include": ["**/*.ts", "**/*.tsx", "**/*.mts"],
-  "exclude": ["dist", "docs", "example"]
+  "exclude": ["dist", "docs", "example", "src/clock/worker-clock/from-playwright/"]
 }

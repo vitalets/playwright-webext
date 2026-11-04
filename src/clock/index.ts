@@ -7,7 +7,7 @@ import type { ExtensionClockOptions } from './options.js';
 import { resolveClockTime } from './options.js';
 import { parseClockDuration } from './helpers.js';
 import { ContextClock } from './context-clock.js';
-import { WorkerClock } from './worker-clock.js';
+import { WorkerClock } from './worker-clock/index.js';
 
 /**
  * Controls fake time in pages and the service worker when extensionClock is configured.
