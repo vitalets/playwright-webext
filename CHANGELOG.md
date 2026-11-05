@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+- Replace `extension.clock.tick()`, `setTime()`, and `pause()` with Playwright-compatible clock methods, retaining browser-local and time-only date inputs.
+
 - Align service worker clock timer and promise ordering with Playwright.
 
 - Add `extensionClock` and `extension.clock` to control dates and timers in extension pages and service workers, with browser-local date-time and `HH:mm` support.

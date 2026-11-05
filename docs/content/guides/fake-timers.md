@@ -19,26 +19,18 @@ test.use({
 
 ## Choose whether to mock timers
 
-- **`timers: false` (default):** `Date.now()` and `new Date()` stay fixed, while native timers
-  keep running. `setTime()` changes the date and `tick()` advances it by a duration without waiting
-  for real time.
+- **`timers: false` (default):** Dates start fixed while native timers keep running.
+  Use `setFixedTime()` to change the fixed date or `setSystemTime()` to let dates advance again.
 - **`timers: true`:** Also controls timers such as `setTimeout` and `setInterval`. Time advances
-  automatically unless `paused: true` is set; then mocked callbacks wait for `tick()` or `resume()`.
-  Use `paused: true` for deterministic time from startup, or `pause()` later to stop at the current
-  fake date. Pausing a running clock can stop at different dates between test runs.
-
-`setTime()` never fires timers and preserves their remaining delays.
-See the [API reference](../api/clock.md) for callback ordering and method details.
-
-| Method                              | Use case                                                                                                   |
-| ----------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `tick(duration)`                    | Dismiss a message after a delay, or deliver overdue timers once after a gap.                               |
-| `tick(duration, { timers: 'all' })` | Exercise every polling or retry attempt within an interval.                                                |
-| `setTime(time)`                     | Change the date shown by a calendar, or simulate a system-clock correction without consuming timer delays. |
-| `pause()` / `resume()`              | Let timer-dependent initialization finish before taking manual control, then resume automatic advancement. |
+  automatically unless `paused: true` is set. Use `runFor()` to execute all callbacks within a
+  duration, or `fastForward()` to deliver each overdue timer at most once.
 
 With `timers: true`, leave `paused` unset if extension initialization depends on timers.
-Wait for initialization to finish before calling `pause()`.
+Wait for initialization to finish before calling `pauseAt()` with a future target.
+Use `resume()` to resume automatic advancement.
+
+`setSystemTime()` changes the date without firing timers or changing their remaining delays.
+See the [API reference](../api/clock.md) for date inputs and method details.
 
 ## Test with fixed time
 
@@ -69,7 +61,7 @@ test('records the installation date', async ({ extension }) => {
 ```
 
 By default, `Date.now()` and `new Date()` stay fixed at `time`, while `setTimeout`,
-`setInterval`, and other scheduling APIs keep running. `setTime()` changes that fixed date.
+`setInterval`, and other scheduling APIs keep running. `setFixedTime()` changes that fixed date.
 This matches Playwright's [`clock.setFixedTime()` behavior](https://playwright.dev/docs/clock#test-with-predefined-time).
 
 ## Hide a message after a delay
@@ -109,13 +101,36 @@ test('hides the welcome message after five seconds', async ({ extension }) => {
 
   await expect(message).toBeVisible();
 
-  await extension.clock.tick(4_000);
+  await extension.clock.runFor(4_000);
   await expect(message).toBeVisible();
 
-  await extension.clock.tick(1_000);
+  await extension.clock.runFor(1_000);
   await expect(message).toBeHidden();
 });
 ```
+
+## Advance to the next day and pause
+
+With `timers: true`, calculate tomorrow's target inside an extension page so it uses the
+current fake date and browser timezone. For example, to jump from 23:00 to tomorrow at 01:00:
+
+```ts
+const popup = await extension.openPopup();
+const tomorrowAtOne = await popup.evaluate(() => {
+  const date = new Date();
+  date.setDate(date.getDate() + 1);
+  date.setHours(1, 0, 0, 0);
+  return date.getTime();
+});
+
+await extension.clock.pauseAt(tomorrowAtOne);
+```
+
+`pauseAt()` fires each overdue timer at most once and leaves the clocks paused.
+Using `setDate()` advances by a calendar day, accounting for daylight-saving changes;
+adding 24 hours does not always reach the same local hour.
+A time-only call such as `pauseAt('01:00')` targets the current day and throws if that time
+has already passed.
 
 ## Trigger alarms
 
@@ -137,18 +152,19 @@ See [Dispatching events](dispatching-events.md) for an example with an alarm han
 <details>
 <summary>Implementation details</summary>
 
-Without timer mocking, the clock uses Playwright's `setFixedTime()` for pages and Sinon with only `Date` faked
-for the worker, leaving worker scheduling APIs native. With `timers: true`, it uses Playwright's `install()` and Sinon's timer mocks.
-Both are initialized before extension code and `extensionInitScript`. Use `extension.clock` to
-control both; direct Playwright clock calls affect only pages.
+The clock uses Playwright's public clock API for pages and a copy of its clock engine for the
+worker. Without timer mocking, worker scheduling APIs remain native. Both clocks are initialized
+before extension code and `extensionInitScript`. Use `extension.clock` to control both;
+direct Playwright clock calls affect only pages.
 
-With timer mocking, the clocks advance independently, so their dates can differ slightly while running. For exact
-alignment, pause and then call `setTime()`. Each execution context has its own timer queue;
-wait for cross-context work to be scheduled before advancing time.
+With timer mocking, the clocks advance independently, so their dates can differ slightly while running.
+Use `pauseAt()` with a future target to align their dates and pause. Each execution context has
+its own timer queue; wait for cross-context work to be scheduled before advancing time.
 
 New pages and navigations inherit the context's fake time. Reloading or upgrading the extension
-resets the worker to the configured `time` and options; page time is unchanged. Each `tick()` advances from each clock’s own current date.
-Call `setTime()` to align their dates again.
+resets the worker to the configured `time` and options; page time is unchanged.
+`runFor()` and `fastForward()` advance from each clock's own current date.
+Use `setFixedTime()` or `setSystemTime()` to set both dates again.
 Fake time also affects ordinary websites in `extension.context`, but does not advance test timeouts,
 network requests, or Chrome's worker lifecycle.
 

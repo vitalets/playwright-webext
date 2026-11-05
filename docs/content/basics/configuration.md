@@ -181,11 +181,11 @@ Sets the date in the service worker and all pages and frames in `extension.conte
 extension loads. By default, the date stays fixed while native timers keep running. Set
 `timers: true` to control timers too. Omit `extensionClock` to keep the real date and timers.
 
-| Option   | Type                       | Default  | Effect                                                         |
-| -------- | -------------------------- | -------- | -------------------------------------------------------------- |
-| `time`   | `number \| string \| Date` | Required | Fixed or starting date; numbers are Unix milliseconds.         |
-| `timers` | `boolean`                  | `false`  | Also mocks timers, allowing `tick()` to execute due callbacks. |
-| `paused` | `boolean`                  | `false`  | Starts fake time paused. Requires `timers: true`.              |
+| Option   | Type                       | Default  | Effect                                                                               |
+| -------- | -------------------------- | -------- | ------------------------------------------------------------------------------------ |
+| `time`   | `number \| string \| Date` | Required | Fixed or starting date; numbers are Unix milliseconds.                               |
+| `timers` | `boolean`                  | `false`  | Also mocks timers, allowing `runFor()` and `fastForward()` to execute due callbacks. |
+| `paused` | `boolean`                  | `false`  | Starts fake time paused. Requires `timers: true`.                                    |
 
 With `timers: true`, the worker mocks `setTimeout`, `clearTimeout`, `setInterval`,
 `clearInterval`, and `performance` additionally to `Date`. Pages use Playwright's clock mocks.
@@ -214,9 +214,10 @@ This does not change the browser's timezone. Numbers and `Date` objects retain t
 
 Date-only strings such as `'2030-01-01'` are converted to midnight UTC (`'2030-01-01T00:00:00Z'`)
 
-Use `extension.clock.setTime()` to set a date and `tick()` to advance by a duration.
+Use `extension.clock.setFixedTime()` to fix a date or `setSystemTime()` to change the system date.
+With `timers: true`, use `runFor()` or `fastForward()` to advance by a duration.
 With `timers: true`, time advances automatically unless `paused: true` is set;
-`pause()` and `resume()` control automatic advancement later.
+`pauseAt()` and `resume()` control automatic advancement later.
 See [Fake timers](../guides/fake-timers.md) for examples and the [API reference](../api/clock.md)
 for method details. The same options are available in `launchWithExtension()`.
 

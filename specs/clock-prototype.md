@@ -22,7 +22,8 @@ and run the clock tests against the supported Playwright versions.
 
 ## Adapter decisions
 
-- Keep `extension.clock` and its options unchanged.
+- Expose Playwright clock controls through `extension.clock`, with installation driven only by
+  `extensionClock` options. Preserve browser-local and time-only date inputs.
 - Install before application code, for both module and classic workers.
 - Select worker APIs explicitly; do not add animation-frame or idle-callback APIs.
 - Fixed-date mode mocks Date, Intl and Temporal when available, leaving timers native.

@@ -28,59 +28,71 @@ export class ExtensionClock {
   }
 
   /**
-   * Stops automatic advancement in pages and the worker at their current fake dates.
+   * Advances to the target date, firing due timers at most once, then pauses.
    */
-  async pause() {
-    this.requireTimersOption('pause');
-    await Promise.all([this.workerClock.pause(), this.contextClock.pause()]);
+  async pauseAt(time: number | string | Date) {
+    this.requireTimersOption('pauseAt');
+    const milliseconds = await resolveClockTime(this.context, time);
+    await Promise.all([
+      this.workerClock.pauseAt(milliseconds), // prettier-ignore
+      this.contextClock.pauseAt(milliseconds),
+    ]);
   }
 
   /**
-   * Resumes automatic advancement in pages and the worker without restoring native timers.
+   * Resumes automatic advancement without restoring native timers.
    */
   async resume() {
     this.requireTimersOption('resume');
-    await Promise.all([this.workerClock.resume(), this.contextClock.resume()]);
+    await Promise.all([
+      this.workerClock.resume(), // prettier-ignore
+      this.contextClock.resume(),
+    ]);
   }
 
   /**
-   * Advances each clock by a duration. With timers enabled, fires each due timer at most once
-   * by default, or all due occurrences with timers: 'all'. Otherwise only the fixed date changes.
-   * Preserves the running or paused state; cross-context callback ordering is not guaranteed.
+   * Advances time, firing each due timer at most once.
    */
-  async tick(duration: number | string, options: { timers?: 'all' | 'once' } = {}) {
+  async fastForward(duration: number | string) {
+    this.requireTimersOption('fastForward');
     const milliseconds = parseClockDuration(duration);
-    const timers = parseTimersOption(options.timers);
-    if (this.options.timers) {
-      await this.tickWithTimers(milliseconds, timers);
-    } else {
-      await this.tickNoTimers(milliseconds);
-    }
+    await Promise.all([
+      this.workerClock.fastForward(milliseconds),
+      this.contextClock.fastForward(milliseconds),
+    ]);
   }
 
   /**
-   * Sets the date without firing timers or changing their remaining delays.
-   * Preserves whether dates are fixed, paused, or advancing automatically.
+   * Advances time, executing all due timer callbacks at their scheduled times.
    */
-  async setTime(time: number | string | Date) {
+  async runFor(duration: number | string) {
+    this.requireTimersOption('runFor');
+    const milliseconds = parseClockDuration(duration);
+    await Promise.all([
+      this.workerClock.runFor(milliseconds),
+      this.contextClock.runFor(milliseconds),
+    ]);
+  }
+
+  /**
+   * Fixes the reported date without changing timer scheduling or the paused state.
+   */
+  async setFixedTime(time: number | string | Date) {
     const milliseconds = await resolveClockTime(this.context, time);
     await Promise.all([
-      this.workerClock.setTime(milliseconds),
-      this.contextClock.setTime(milliseconds),
+      this.workerClock.setFixedTime(milliseconds),
+      this.contextClock.setFixedTime(milliseconds),
     ]);
   }
 
-  private async tickWithTimers(milliseconds: number, timers: 'all' | 'once') {
+  /**
+   * Changes system time without firing timers, preserving their remaining delays.
+   */
+  async setSystemTime(time: number | string | Date) {
+    const milliseconds = await resolveClockTime(this.context, time);
     await Promise.all([
-      this.workerClock.tick(milliseconds, timers),
-      this.contextClock.tick(milliseconds, timers),
-    ]);
-  }
-
-  private async tickNoTimers(milliseconds: number) {
-    await Promise.all([
-      this.workerClock.tickNoTimers(milliseconds),
-      this.contextClock.tickNoTimers(milliseconds),
+      this.workerClock.setSystemTime(milliseconds),
+      this.contextClock.setSystemTime(milliseconds),
     ]);
   }
 
@@ -95,10 +107,4 @@ export class ExtensionClock {
 export class ExtensionClockInternal extends ExtensionClock {
   declare readonly contextClock: ContextClock;
   declare readonly workerClock: WorkerClock;
-}
-
-function parseTimersOption(timers: 'all' | 'once' | undefined) {
-  const value = timers ?? 'once';
-  if (value !== 'all' && value !== 'once') throw new Error("Clock timers must be 'all' or 'once'.");
-  return value;
 }

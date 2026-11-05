@@ -4,7 +4,6 @@
  */
 
 import type { Worker } from '@playwright/test';
-import { validateClockTime } from '../helpers.js';
 
 import type { installWorkerClock } from './playwright-wrapper.js';
 
@@ -17,10 +16,10 @@ export class WorkerClock {
   constructor(private readonly getWorker: () => Worker | undefined) {}
 
   /**
-   * Stops automatic advancement without changing the worker's current fake date.
+   * Advances to the target date and pauses the worker clock.
    */
-  pause() {
-    return this.getWorker()?.evaluate(() => __pwClock.pause());
+  pauseAt(milliseconds: number) {
+    return this.getWorker()?.evaluate((ms) => __pwClock.pauseAt(ms), milliseconds);
   }
 
   /**
@@ -31,41 +30,31 @@ export class WorkerClock {
   }
 
   /**
-   * Advances fake time and executes due timers according to the selected policy.
+   * Advances time, firing each due timer at most once.
    */
-  tick(milliseconds: number, timers: 'all' | 'once') {
-    return this.getWorker()?.evaluate(
-      async ({ milliseconds, timers }) => {
-        if (timers === 'once') await __pwClock.fastForward(milliseconds);
-        else await __pwClock.runFor(milliseconds);
-      },
-      { milliseconds, timers },
-    );
+  fastForward(milliseconds: number) {
+    return this.getWorker()?.evaluate((ms) => __pwClock.fastForward(ms), milliseconds);
   }
 
   /**
-   * Advances only the fixed date, leaving native timers running on real time.
+   * Advances time through all scheduled callbacks.
    */
-  async tickNoTimers(milliseconds: number) {
-    const time = await this.readTime();
-    if (time === undefined) return;
-    const newTime = time + milliseconds;
-    validateClockTime(newTime);
-    await this.setTime(newTime);
+  runFor(milliseconds: number) {
+    return this.getWorker()?.evaluate((ms) => __pwClock.runFor(ms), milliseconds);
   }
 
   /**
-   * Sets the worker date without firing timers or changing their remaining delays.
+   * Fixes the worker date without changing timer scheduling.
    */
-  setTime(milliseconds: number) {
-    return this.getWorker()?.evaluate((ms) => __pwClock.setTime(ms), milliseconds);
+  setFixedTime(milliseconds: number) {
+    return this.getWorker()?.evaluate((ms) => __pwClock.setFixedTime(ms), milliseconds);
   }
 
   /**
-   * Reads the worker clock's current date, including after worker reloads.
+   * Changes the worker date without firing timers or changing their remaining delays.
    */
-  readTime() {
-    return this.getWorker()?.evaluate(() => __pwClock.now());
+  setSystemTime(milliseconds: number) {
+    return this.getWorker()?.evaluate((ms) => __pwClock.setSystemTime(ms), milliseconds);
   }
 
   /**

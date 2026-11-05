@@ -21,7 +21,7 @@ declare const __playwrightClock: {
 
 /**
  * Only the upstream methods this wrapper uses. A direct type import would pull the copied
- * source into our NodeNext type check instead of its separate browser configuration.
+ * source into our NodeNext type check.
  * Keep this contract in sync with clock.ts when updating upstream.
  */
 type PlaywrightClockController = {
@@ -65,8 +65,8 @@ export function installWorkerClock(options: ExtensionClockOptionsResolved) {
   // Upstream install() replaces APIs; controller.install() sets their initial date.
   clock.install(options.time);
   if (!options.timers) clock.setFixedTime(options.time);
-  else if (!options.paused) clock.resume();
-  return createControls(clock, options, restoreDescriptors);
+  if (!options.timers || !options.paused) clock.resume();
+  return createControls(clock, restoreDescriptors);
 }
 
 /**
@@ -94,22 +94,19 @@ function installClock(options: ExtensionClockOptionsResolved) {
 
 /**
  * Exposes our worker controls as __pwClock. Unlike Playwright's page global, these controls
- * sit directly on the object rather than under .controller; pause and setTime are adapters.
+ * sit directly on the object rather than under .controller.
  * Timer execution remains delegated to the copied engine.
  */
-function createControls(
-  clock: PlaywrightClockController,
-  options: ExtensionClockOptionsResolved,
-  restoreDescriptors: () => void,
-) {
+function createControls(clock: PlaywrightClockController, restoreDescriptors: () => void) {
   return {
-    now: () => clock.now(),
-    pause: () => pauseClock(clock),
+    pauseAt: async (ms: number) => {
+      await clock.pauseAt(ms);
+    },
     resume: () => clock.resume(),
     fastForward: (ms: number) => clock.fastForward(ms),
     runFor: (ms: number) => clock.runFor(ms),
-    // Preserve fixed-date mode; upstream setSystemTime() clears its fixed-time flag.
-    setTime: (ms: number) => (options.timers ? clock.setSystemTime(ms) : clock.setFixedTime(ms)),
+    setFixedTime: (ms: number) => clock.setFixedTime(ms),
+    setSystemTime: (ms: number) => clock.setSystemTime(ms),
     uninstall: async () => {
       // Upstream uninstall() restores globals but does not stop its real-time ticker.
       await pauseClock(clock);

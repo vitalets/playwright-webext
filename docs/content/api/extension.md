@@ -20,7 +20,7 @@ See [ExtensionClock](clock.md) for supported methods and modes.
 #### Usage
 
 ```ts
-await extension.clock.setTime('2026-02-01T00:00:00Z');
+await extension.clock.setFixedTime('2026-02-01T00:00:00Z');
 ```
 
 #### Returns

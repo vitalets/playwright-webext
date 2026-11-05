@@ -14,14 +14,6 @@ export function parseClockTime(time: number | string | Date) {
 }
 
 /**
- * Rejects numeric timestamps outside JavaScript's valid Date range.
- */
-export function validateClockTime(time: number) {
-  if (!Number.isFinite(time) || Math.abs(time) > 8.64e15)
-    throw new Error(`Invalid clock time: ${time}`);
-}
-
-/**
  * Accepts milliseconds or Playwright's seconds, mm:ss, and hh:mm:ss duration strings.
  */
 export function parseClockDuration(ticks: number | string) {

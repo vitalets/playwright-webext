@@ -4,7 +4,6 @@
 
 import type { BrowserContext } from '@playwright/test';
 import type { ExtensionClockOptions } from './options.js';
-import { validateClockTime } from './helpers.js';
 
 /**
  * Configures and manipulates fake time shared by pages in a browser context.
@@ -24,18 +23,19 @@ export class ContextClock {
       return;
     }
     await this.context.clock.install({ time });
-    if (this.options.paused) await this.pause(time);
+    if (this.options.paused) {
+      // Freeze the date before pausing so transport latency cannot put the target time in the past.
+      await this.context.clock.setFixedTime(time);
+      await this.pauseAt(time);
+      await this.context.clock.setSystemTime(time);
+    }
   }
 
   /**
-   * Pauses at the supplied initial time or the current date sampled from a context page.
+   * Advances page clocks to the target date and pauses them.
    */
-  async pause(time?: number) {
-    const pausedTime = time ?? (await this.readTime());
-    // Freeze the date before pausing so transport latency cannot put the target time in the past.
-    await this.context.clock.setFixedTime(pausedTime);
-    await this.context.clock.pauseAt(pausedTime);
-    await this.context.clock.setSystemTime(pausedTime);
+  async pauseAt(time: number) {
+    await this.context.clock.pauseAt(time);
   }
 
   /**
@@ -46,42 +46,30 @@ export class ContextClock {
   }
 
   /**
-   * Advances mocked timers according to the selected policy.
+   * Advances time, firing each due timer at most once.
    */
-  async tick(milliseconds: number, timers: 'all' | 'once') {
-    if (timers === 'once') await this.context.clock.fastForward(milliseconds);
-    else await this.context.clock.runFor(milliseconds);
+  async fastForward(milliseconds: number) {
+    await this.context.clock.fastForward(milliseconds);
   }
 
   /**
-   * Advances only the fixed date, leaving native timers running on real time.
+   * Advances time through all scheduled callbacks.
    */
-  async tickNoTimers(milliseconds: number) {
-    const time = await this.readTime();
-    const newTime = time + milliseconds;
-    validateClockTime(newTime);
-    await this.context.clock.setFixedTime(newTime);
+  async runFor(milliseconds: number) {
+    await this.context.clock.runFor(milliseconds);
   }
 
   /**
-   * Sets the date while preserving whether it is fixed or advancing automatically.
+   * Fixes the date without changing timer scheduling.
    */
-  async setTime(milliseconds: number) {
-    if (this.options.timers) await this.context.clock.setSystemTime(milliseconds);
-    else await this.context.clock.setFixedTime(milliseconds);
+  async setFixedTime(milliseconds: number) {
+    await this.context.clock.setFixedTime(milliseconds);
   }
 
   /**
-   * Reads the current page date, including when the context has no open pages.
+   * Changes the date without firing timers or changing their remaining delays.
    */
-  async readTime() {
-    const existingPage = this.context.pages()[0];
-    // Playwright exposes no clock time getter; a page reads its fake time without tracking it ourselves.
-    const page = existingPage ?? (await this.context.newPage());
-    try {
-      return await page.evaluate(() => Date.now());
-    } finally {
-      if (!existingPage) await page.close();
-    }
+  async setSystemTime(milliseconds: number) {
+    await this.context.clock.setSystemTime(milliseconds);
   }
 }
