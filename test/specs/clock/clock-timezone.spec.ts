@@ -3,7 +3,6 @@ import type { Page } from '@playwright/test';
 import { test } from '../../../src/index.js';
 
 test.use({
-  timezoneId: 'Europe/Madrid',
   launchOptions: { env: { ...process.env, TZ: 'Europe/Madrid' } },
   extensionAutoInstall: false,
   extensionClock: { time: '2030-01-01T23:00' },

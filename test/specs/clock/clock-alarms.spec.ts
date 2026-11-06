@@ -5,6 +5,7 @@ import { expect } from '@playwright/test';
 import { test } from '../../../src/index.js';
 
 test.use({
+  launchOptions: { env: { ...process.env, TZ: 'Europe/Madrid' } },
   extensionPath: './data/extension-alarms',
   extensionClock: { time: 0, alarms: true, timers: true, paused: true },
 });
@@ -230,7 +231,6 @@ test('native alarms from extension pages cannot reach emulated worker listeners'
 
 test.describe('local midnight', () => {
   test.use({
-    timezoneId: 'Europe/Madrid',
     extensionClock: { time: '2026-03-28T23:00', alarms: true, paused: true },
   });
 

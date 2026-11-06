@@ -216,6 +216,20 @@ For a browser in `Europe/Berlin` (UTC+01:00 in January):
 
 This does not change the browser's timezone. Numbers and `Date` objects retain their timestamps.
 
+:::caution Service worker timezone
+
+Playwright's `timezoneId` option changes the timezone in pages, but does not work in the
+extension service worker. To set the timezone for both, pass the `TZ` environment variable
+when launching the browser:
+
+```ts
+test.use({
+  launchOptions: { env: { ...process.env, TZ: 'UTC' } },
+});
+```
+
+:::
+
 Date-only strings such as `'2030-01-01'` use midnight in the browser's timezone, equivalent to
 `'2030-01-01T00:00:00'`. This differs from JavaScript's `Date` parsing, which treats date-only strings as UTC.
 

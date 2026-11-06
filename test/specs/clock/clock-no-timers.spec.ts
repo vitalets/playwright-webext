@@ -3,6 +3,10 @@ import { expect } from '@playwright/test';
 import { test, launchWithExtension } from '../../../src/index.js';
 import { readTimerEvents } from './helpers.js';
 
+test.use({
+  launchOptions: { env: { ...process.env, TZ: 'UTC' } },
+});
+
 test.describe('without timer mocking', () => {
   const time = '2026-01-01T00:00:00.000Z';
 
@@ -14,6 +18,8 @@ test.describe('without timer mocking', () => {
     const popup = await extension.openPopup();
     expect(await extension.evaluate(() => new Date().toISOString())).toBe(time);
     expect(await popup.evaluate(() => new Date().toISOString())).toBe(time);
+    expect(await extension.evaluate(() => new Date().getTimezoneOffset())).toBe(0);
+    expect(await popup.evaluate(() => new Date().getTimezoneOffset())).toBe(0);
 
     // Changing the fixed date must not freeze the native performance clock.
     await extension.clock.setFixedTime('2026-02-01T00:00:00Z');

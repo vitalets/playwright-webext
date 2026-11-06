@@ -43,6 +43,20 @@ Use `resume()` to resume automatic advancement.
 `setSystemTime()` changes the date without firing timers or changing their remaining delays.
 See the [API reference](../api/clock.md) for date inputs and method details.
 
+:::caution Service worker timezone
+
+Playwright's `timezoneId` option does not work in extension service workers. If your worker
+calculates local dates, such as the next midnight or a daylight saving time transition, set
+the browser process timezone with the `TZ` environment variable:
+
+```ts
+test.use({
+  launchOptions: { env: { ...process.env, TZ: 'UTC' } },
+});
+```
+
+:::
+
 ## Examples
 
 ### Test with fixed time
