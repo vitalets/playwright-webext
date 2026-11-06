@@ -19,7 +19,7 @@ test.use({
 
 ## Choose whether to mock timers
 
-- **`timers: false` (default):** Dates start fixed while native timers keep running.
+- **`timers: false` (default), without alarm emulation:** Dates start fixed while native timers keep running.
   Use `setFixedTime()` to change the fixed date or `setSystemTime()` to let dates advance again.
 - **`timers: true`:** Also controls timers such as `setTimeout` and `setInterval`. Time advances
   automatically unless `paused: true` is set. Use `runFor()` to execute all callbacks within a
@@ -132,20 +132,69 @@ adding 24 hours does not always reach the same local hour.
 A time-only call such as `pauseAt('01:00')` targets the current day and throws if that time
 has already passed.
 
-## Trigger alarms
+## Test scheduled alarms
 
-Advancing fake time does not trigger Chrome alarms automatically. Use `extension.dispatch()` to
-invoke the worker's alarm listeners explicitly:
+For an extension that refreshes its data every ten minutes using `chrome.alarms`, enable
+`alarms: true` and advance the clock to exercise its normal scheduling code:
 
-```ts
-await extension.waitForFunction(() => chrome.alarms.onAlarm.hasListeners());
-await extension.dispatch('alarms.onAlarm', {
-  name: 'my-alarm',
-  scheduledTime: Date.parse('2026-02-01T00:00:00Z'),
+```ts title="test/alarms.spec.ts"
+import { expect } from '@playwright/test';
+import { test } from 'playwright-webext';
+
+test.use({
+  extensionClock: {
+    time: '2026-01-01T10:00',
+    alarms: true,
+    paused: true,
+  },
+});
+
+test('refreshes data after ten minutes', async ({ extension }) => {
+  await expect.poll(() => extension.evaluate(() => chrome.alarms.get('refresh'))).toBeDefined();
+  await extension.clock.runFor('10:00');
+  await extension.storage.local.expect('refreshCount').toBe(1);
 });
 ```
 
-See [Dispatching events](dispatching-events.md) for an example with an alarm handler and assertions.
+This example assumes the extension stores the number of completed refreshes as `refreshCount`.
+Alarm emulation works independently of `timers`: leave `timers` unset to keep JavaScript timers
+native, or add `timers: true` to advance them too. Dates advance automatically unless
+`paused: true` is set, including in extension pages.
+
+| Testing scenario                                                       | Configuration or API                                   |
+| ---------------------------------------------------------------------- | ------------------------------------------------------ |
+| Start at a known date without time advancing                           | `extensionClock: { time, alarms: true, paused: true }` |
+| Run every alarm occurrence during an interval                          | `clock.runFor(duration)`                               |
+| Skip ahead and deliver each overdue alarm once                         | `clock.fastForward(duration)`                          |
+| Skip to a specific time, deliver overdue alarms once, then stay paused | `clock.pauseAt(time)`                                  |
+| Change time without delivering alarms during the change                | `clock.setSystemTime(time)`                            |
+| Resume automatic time advancement and alarm delivery                   | `clock.resume()`                                       |
+
+`runFor()` delivers alarms at their deadlines. Alarms synchronously created by listeners can fire
+within the remaining interval. `fastForward()` and `pauseAt()` deliver overdue alarms at the
+destination; alarms created during that operation wait for a subsequent advancement or automatic
+scheduler opportunity. Listener promises and detached asynchronous work are not awaited; assert
+resulting storage or UI changes separately.
+
+Repeating alarms retain their original cadence after a jump. If an alarm is due at 10:10 and
+repeats every ten minutes, jumping to 10:35 delivers it once with `scheduledTime` of 10:10;
+the listener observes 10:35 and the next deadline is 10:40. This follows Chromium's scheduler,
+not the recurrence reset described in Chrome's device-wake documentation.
+
+`setSystemTime()` leaves alarm deadlines unchanged. Moving forward can make alarms overdue:
+a running clock delivers them at its next scheduler opportunity, while a paused clock waits
+for an explicit advance such as `runFor(0)`. Moving backward postpones their delivery.
+JavaScript timers retain their remaining delays. `setFixedTime()` is unavailable with alarm
+emulation; use `paused: true` to keep time still.
+
+Emulation covers alarm calls and listeners in the live service worker. Extension pages do not
+share its emulated alarms. Worker restarts discard them; persistence, waking terminated workers,
+and device sleep are not simulated. Deadlines execute deterministically without Chrome's
+real-time throttling. Runaway alarm chains fail with a descriptive error; a single advancement
+is limited to 10,000 alarm deliveries.
+
+Without `alarms: true`, Chrome alarms remain native. You can still use
+[dispatching events](dispatching-events.md) to invoke an alarm listener explicitly.
 
 ## Under the hood
 

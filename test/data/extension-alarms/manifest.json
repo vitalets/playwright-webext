@@ -1,0 +1,8 @@
+{
+  "manifest_version": 3,
+  "name": "Alarm clock tests",
+  "version": "1.0.0",
+  "permissions": ["alarms", "storage"],
+  "background": { "service_worker": "background.js", "type": "module" },
+  "action": { "default_popup": "popup.html" }
+}

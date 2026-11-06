@@ -20,6 +20,7 @@ export type ExtensionClockOptions = {
        * Keeps dates fixed and timers running. This is the default mode.
        */
       timers?: false;
+      alarms?: false;
       paused?: never;
     }
   | {
@@ -28,8 +29,20 @@ export type ExtensionClockOptions = {
        */
       timers: true;
       /**
+       * Emulates worker alarms using the extension clock. Defaults to false.
+       */
+      alarms?: boolean;
+      /**
        * Starts fake time paused. Defaults to false.
        */
+      paused?: boolean;
+    }
+  | {
+      timers?: false;
+      /**
+       * Enables alarm control while JavaScript timers remain native.
+       */
+      alarms: true;
       paused?: boolean;
     }
 );

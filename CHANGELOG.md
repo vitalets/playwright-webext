@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+- Add opt-in `chrome.alarms` emulation through `extensionClock.alarms`, including deterministic advancement and alarm-only clock control.
+
 - Replace `extension.clock.tick()`, `setTime()`, and `pause()` with Playwright-compatible clock methods, retaining browser-local and time-only date inputs.
 
 - Align service worker clock timer and promise ordering with Playwright.

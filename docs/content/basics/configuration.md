@@ -185,7 +185,8 @@ extension loads. By default, the date stays fixed while native timers keep runni
 | -------- | -------------------------- | -------- | ------------------------------------------------------------------------------------ |
 | `time`   | `number \| string \| Date` | Required | Fixed or starting date; numbers are Unix milliseconds.                               |
 | `timers` | `boolean`                  | `false`  | Also mocks timers, allowing `runFor()` and `fastForward()` to execute due callbacks. |
-| `paused` | `boolean`                  | `false`  | Starts fake time paused. Requires `timers: true`.                                    |
+| `alarms` | `boolean`                  | `false`  | Emulates alarms in the live service worker, independently of JavaScript timers.      |
+| `paused` | `boolean`                  | `false`  | Starts fake time paused. Requires `timers: true` or `alarms: true`.                  |
 
 With `timers: true`, the worker mocks `setTimeout`, `clearTimeout`, `setInterval`,
 `clearInterval`, and `performance` additionally to `Date`. Pages use Playwright's clock mocks.
@@ -214,9 +215,10 @@ This does not change the browser's timezone. Numbers and `Date` objects retain t
 
 Date-only strings such as `'2030-01-01'` are converted to midnight UTC (`'2030-01-01T00:00:00Z'`)
 
-Use `extension.clock.setFixedTime()` to fix a date or `setSystemTime()` to change the system date.
-With `timers: true`, use `runFor()` or `fastForward()` to advance by a duration.
-With `timers: true`, time advances automatically unless `paused: true` is set;
+Use `extension.clock.setSystemTime()` to change the system date. Without alarm emulation,
+`setFixedTime()` fixes the reported date.
+With `timers: true` or `alarms: true`, use `runFor()` or `fastForward()` to advance by a duration.
+With `timers: true` or `alarms: true`, time advances automatically unless `paused: true` is set;
 `pauseAt()` and `resume()` control automatic advancement later.
 See [Fake timers](../guides/fake-timers.md) for examples and the [API reference](../api/clock.md)
 for method details. The same options are available in `launchWithExtension()`.

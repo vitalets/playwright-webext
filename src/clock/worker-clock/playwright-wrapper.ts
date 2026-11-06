@@ -5,6 +5,7 @@
  */
 
 import type { ExtensionClockOptionsResolved } from '../options.js';
+import { MockAlarms } from './mock-alarms/index.js';
 
 /**
  * Build-time bundle binding, not a second clock implementation.
@@ -16,6 +17,10 @@ declare const __playwrightClock: {
     options: { toFake: string[]; browserName: string },
   ): {
     clock: PlaywrightClockController;
+    api: {
+      setTimeout(callback: () => void, delay: number): number;
+      clearTimeout(id: number): void;
+    };
   };
 };
 
@@ -59,14 +64,15 @@ export async function getWorkerClockScript(options: ExtensionClockOptionsResolve
  */
 export function installWorkerClock(options: ExtensionClockOptionsResolved) {
   const restoreDescriptors = captureNativeDescriptors();
-  const clock = installClock(options);
+  const { clock, api } = installClock(options);
   // Upstream creates the AbortSignal shim even when it is not selected in toFake.
   if (!options.timers) restoreDescriptors();
   // Upstream install() replaces APIs; controller.install() sets their initial date.
   clock.install(options.time);
-  if (!options.timers) clock.setFixedTime(options.time);
-  if (!options.timers || !options.paused) clock.resume();
-  return createControls(clock, restoreDescriptors);
+  if (isFixedDate(options)) clock.setFixedTime(options.time);
+  const alarms = options.alarms ? new MockAlarms(clock, api) : undefined;
+  if (!options.paused) clock.resume();
+  return createControls(clock, restoreDescriptors, alarms);
 }
 
 /**
@@ -89,7 +95,7 @@ function installClock(options: ExtensionClockOptionsResolved) {
       ]
     : ['Date', 'Intl', 'Temporal'];
   // Selects Chromium's AbortSignal timeout error text, including for Edge.
-  return __playwrightClock.install(globalThis, { toFake, browserName: 'chromium' }).clock;
+  return __playwrightClock.install(globalThis, { toFake, browserName: 'chromium' });
 }
 
 /**
@@ -97,18 +103,28 @@ function installClock(options: ExtensionClockOptionsResolved) {
  * sit directly on the object rather than under .controller.
  * Timer execution remains delegated to the copied engine.
  */
-function createControls(clock: PlaywrightClockController, restoreDescriptors: () => void) {
+function createControls(
+  clock: PlaywrightClockController,
+  restoreDescriptors: () => void,
+  alarms?: MockAlarms,
+) {
+  const advance = (operation: () => Promise<unknown>, once: boolean) =>
+    alarms ? alarms.advance(operation, once) : operation().then(() => {});
   return {
     pauseAt: async (ms: number) => {
-      await clock.pauseAt(ms);
+      await advance(() => clock.pauseAt(ms), true);
     },
     resume: () => clock.resume(),
-    fastForward: (ms: number) => clock.fastForward(ms),
-    runFor: (ms: number) => clock.runFor(ms),
+    fastForward: (ms: number) => advance(() => clock.fastForward(ms), true),
+    runFor: (ms: number) => advance(() => clock.runFor(ms), false),
     setFixedTime: (ms: number) => clock.setFixedTime(ms),
-    setSystemTime: (ms: number) => clock.setSystemTime(ms),
+    setSystemTime: (ms: number) => {
+      clock.setSystemTime(ms);
+      alarms?.reschedule();
+    },
     uninstall: async () => {
       // Upstream uninstall() restores globals but does not stop its real-time ticker.
+      alarms?.uninstall();
       await pauseClock(clock);
       clock.uninstall();
       restoreDescriptors();
@@ -140,4 +156,8 @@ function captureNativeDescriptors() {
     Object.defineProperty(AbortSignal, 'timeout', abortTimeout);
     Object.defineProperty(Event.prototype, 'timeStamp', eventTimeStamp);
   };
+}
+
+function isFixedDate(options: ExtensionClockOptionsResolved) {
+  return !options.timers && !options.alarms;
 }

@@ -7,6 +7,7 @@ import type { ExtensionClockOptions } from './options.js';
 import { resolveClockTime } from './options.js';
 import { parseClockDuration } from './helpers.js';
 import { ContextClock } from './context-clock.js';
+import { ContextClockDateOnly } from './context-clock-date-only.js';
 import { WorkerClock } from './worker-clock/index.js';
 
 /**
@@ -15,7 +16,7 @@ import { WorkerClock } from './worker-clock/index.js';
  * or upgrades, while the parent retains responsibility for lookup and availability checks.
  */
 export class ExtensionClock {
-  protected readonly contextClock: ContextClock;
+  protected readonly contextClock: ContextClock | ContextClockDateOnly;
   protected readonly workerClock: WorkerClock;
 
   constructor(
@@ -23,7 +24,10 @@ export class ExtensionClock {
     getWorker: () => Worker | undefined,
     private readonly options: ExtensionClockOptions,
   ) {
-    this.contextClock = new ContextClock(context, options);
+    this.contextClock =
+      options.alarms && !options.timers
+        ? new ContextClockDateOnly(context, { paused: options.paused ?? false })
+        : new ContextClock(context, options);
     this.workerClock = new WorkerClock(getWorker);
   }
 
@@ -31,7 +35,7 @@ export class ExtensionClock {
    * Advances to the target date, firing due timers at most once, then pauses.
    */
   async pauseAt(time: number | string | Date) {
-    this.requireTimersOption('pauseAt');
+    this.requireAdvancementOption('pauseAt');
     const milliseconds = await resolveClockTime(this.context, time);
     await Promise.all([
       this.workerClock.pauseAt(milliseconds), // prettier-ignore
@@ -43,7 +47,7 @@ export class ExtensionClock {
    * Resumes automatic advancement without restoring native timers.
    */
   async resume() {
-    this.requireTimersOption('resume');
+    this.requireAdvancementOption('resume');
     await Promise.all([
       this.workerClock.resume(), // prettier-ignore
       this.contextClock.resume(),
@@ -54,7 +58,7 @@ export class ExtensionClock {
    * Advances time, firing each due timer at most once.
    */
   async fastForward(duration: number | string) {
-    this.requireTimersOption('fastForward');
+    this.requireAdvancementOption('fastForward');
     const milliseconds = parseClockDuration(duration);
     await Promise.all([
       this.workerClock.fastForward(milliseconds),
@@ -66,7 +70,7 @@ export class ExtensionClock {
    * Advances time, executing all due timer callbacks at their scheduled times.
    */
   async runFor(duration: number | string) {
-    this.requireTimersOption('runFor');
+    this.requireAdvancementOption('runFor');
     const milliseconds = parseClockDuration(duration);
     await Promise.all([
       this.workerClock.runFor(milliseconds),
@@ -78,6 +82,11 @@ export class ExtensionClock {
    * Fixes the reported date without changing timer scheduling or the paused state.
    */
   async setFixedTime(time: number | string | Date) {
+    if (this.options.alarms) {
+      throw new Error(
+        'setFixedTime() is unavailable when extensionClock.alarms is enabled. Use paused: true or setSystemTime().',
+      );
+    }
     const milliseconds = await resolveClockTime(this.context, time);
     await Promise.all([
       this.workerClock.setFixedTime(milliseconds),
@@ -96,8 +105,12 @@ export class ExtensionClock {
     ]);
   }
 
-  private requireTimersOption(method: string) {
-    if (!this.options.timers) throw new Error(`${method} requires extensionClock.timers: true.`);
+  private requireAdvancementOption(method: string) {
+    if (!this.options.timers && !this.options.alarms) {
+      throw new Error(
+        `${method} requires extensionClock.timers: true or extensionClock.alarms: true.`,
+      );
+    }
   }
 }
 
@@ -105,6 +118,6 @@ export class ExtensionClock {
  * Exposes the underlying clocks for internal installation and lifecycle operations.
  */
 export class ExtensionClockInternal extends ExtensionClock {
-  declare readonly contextClock: ContextClock;
+  declare readonly contextClock: ContextClock | ContextClockDateOnly;
   declare readonly workerClock: WorkerClock;
 }
