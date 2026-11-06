@@ -193,7 +193,7 @@ With `timers: true`, the worker mocks `setTimeout`, `clearTimeout`, `setInterval
 
 ```ts
 test.use({
-  extensionClock: { time: '2026-01-01T00:00:00' },
+  extensionClock: { time: '2026-01-01T15:00:00' },
 });
 ```
 
@@ -205,16 +205,14 @@ For `extensionClock.time`, date-time strings without a timezone use the browser'
 Time-only strings in `HH:mm` format, such as `'23:00'`, use the browser's current date and timezone,
 with seconds and milliseconds set to zero.
 Strings with `Z` or an offset identify an absolute instant: the browser displays it in its own
-timezone, so the local hour can differ from the string. Prefer date-time strings without a timezone
-when testing local dates or hours to avoid converting expected values for each browser timezone.
+timezone, so the local hour can differ from the string.
 
-For a browser in `America/Los_Angeles`:
+For a browser in `Europe/Berlin` (UTC+01:00 in January):
 
-| `extensionClock.time`      | Browser-local date and time |
-| -------------------------- | --------------------------- |
-| `'2030-01-01T23:00'`       | January 1, 23:00            |
-| `'2030-01-01T23:00Z'`      | January 1, 15:00            |
-| `'2030-01-01T23:00-08:00'` | January 1, 23:00            |
+|                         | Without timezone                                                                                  | With timezone                                                                                     |
+| ----------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `extensionClock.time`   | <code>2030-01-01T<strong style={{ color: 'var(--ifm-color-success-dark)' }}>15:00</strong></code> | <code>2030-01-01T<strong style={{ color: 'var(--ifm-color-danger-dark)' }}>15:00</strong>Z</code> |
+| Browser-local date/time | <code>2030-01-01T<strong style={{ color: 'var(--ifm-color-success-dark)' }}>15:00</strong></code> | <code>2030-01-01T<strong style={{ color: 'var(--ifm-color-danger-dark)' }}>16:00</strong></code>  |
 
 This does not change the browser's timezone. Numbers and `Date` objects retain their timestamps.
 
