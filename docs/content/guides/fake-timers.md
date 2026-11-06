@@ -12,7 +12,7 @@ and all pages in `extension.context`. Enable it with the
 ```ts
 test.use({
   extensionClock: {
-    time: '2026-01-01T00:00:00Z',
+    time: '2026-01-01T00:00:00',
   },
 });
 ```
@@ -51,12 +51,13 @@ import { test } from 'playwright-webext';
 
 test.use({
   extensionClock: {
-    time: '2026-01-01T00:00:00Z',
+    time: '2026-01-01T00:00:00',
   },
 });
 
 test('records the installation date', async ({ extension }) => {
-  await extension.storage.local.expect('installedAt').toBe('2026-01-01T00:00:00.000Z');
+  const installedAt = await extension.evaluate(() => new Date('2026-01-01T00:00:00').toISOString());
+  await extension.storage.local.expect('installedAt').toBe(installedAt);
 });
 ```
 
@@ -89,7 +90,7 @@ import { test } from 'playwright-webext';
 
 test.use({
   extensionClock: {
-    time: '2026-01-01T00:00:00Z',
+    time: '2026-01-01T00:00:00',
     timers: true,
     paused: true,
   },

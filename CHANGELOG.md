@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+- Interpret date-only clock inputs as midnight in the browser's timezone.
+
 - Make `extensionClock.time` optional, defaulting to the browser’s current time at installation.
 
 - Add opt-in `chrome.alarms` emulation through `extensionClock.alarms`, including deterministic advancement and alarm-only clock control.

@@ -17,6 +17,7 @@ export type ExtensionClockOptions = {
   /**
    * Fixed or starting date as Unix milliseconds, a date string, HH:mm, or a Date.
    * Defaults to the browser's current time at installation.
+   * YYYY-MM-DD uses midnight in the browser's timezone.
    * HH:mm uses the browser's current date and timezone.
    */
   time?: number | string | Date;
@@ -92,9 +93,10 @@ export async function resolveClockOptions(
 }
 
 /**
- * Resolves timezone-free date-time and HH:mm strings using the browser's timezone.
+ * Resolves timezone-free dates, date-times, and HH:mm strings using the browser's timezone.
  */
 export async function resolveClockTime(context: BrowserContext, time: number | string | Date) {
   if (typeof time !== 'string' || hasExplicitTimezone(time)) return parseClockTime(time);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(time)) time += 'T00:00:00';
   return resolveInBrowserTimezone(context, time);
 }

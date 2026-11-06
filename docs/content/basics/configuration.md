@@ -193,7 +193,7 @@ With `timers: true`, the worker mocks `setTimeout`, `clearTimeout`, `setInterval
 
 ```ts
 test.use({
-  extensionClock: { time: '2026-01-01T00:00:00Z' },
+  extensionClock: { time: '2026-01-01T00:00:00' },
 });
 ```
 
@@ -205,7 +205,8 @@ For `extensionClock.time`, date-time strings without a timezone use the browser'
 Time-only strings in `HH:mm` format, such as `'23:00'`, use the browser's current date and timezone,
 with seconds and milliseconds set to zero.
 Strings with `Z` or an offset identify an absolute instant: the browser displays it in its own
-timezone, so the local hour can differ from the string.
+timezone, so the local hour can differ from the string. Prefer date-time strings without a timezone
+when testing local dates or hours to avoid converting expected values for each browser timezone.
 
 For a browser in `America/Los_Angeles`:
 
@@ -217,7 +218,8 @@ For a browser in `America/Los_Angeles`:
 
 This does not change the browser's timezone. Numbers and `Date` objects retain their timestamps.
 
-Date-only strings such as `'2030-01-01'` are converted to midnight UTC (`'2030-01-01T00:00:00Z'`)
+Date-only strings such as `'2030-01-01'` use midnight in the browser's timezone, equivalent to
+`'2030-01-01T00:00:00'`. This differs from JavaScript's `Date` parsing, which treats date-only strings as UTC.
 
 Use `extension.clock.setSystemTime()` to change the system date. Without alarm emulation,
 `setFixedTime()` fixes the reported date.

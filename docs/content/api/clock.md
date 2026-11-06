@@ -18,6 +18,7 @@ to install full timer mocking before extension code runs.
 Numbers are Unix timestamps in milliseconds. Invalid dates throw.
 Date-time strings without a timezone use the browser's timezone, just like
 [`extensionClock.time`](../basics/configuration.md#extensionclock).
+Date-only strings in `YYYY-MM-DD` format use midnight in the browser's timezone.
 Strings with `Z` or an offset identify an absolute instant.
 
 Time-only strings in `HH:mm` format, such as `'13:00'`, use the current browser clock date
@@ -35,7 +36,7 @@ Native timers keep running when timer mocking is disabled.
 Throws when `alarms: true`; use `paused: true` to freeze the clock instead.
 
 ```ts
-await extension.clock.setFixedTime('2026-02-01T00:00:00Z');
+await extension.clock.setFixedTime('2026-02-01T00:00:00');
 await extension.clock.setFixedTime('13:00');
 ```
 
@@ -52,7 +53,7 @@ overdue alarms become eligible at the next scheduler opportunity, or the next ex
 advancement when paused.
 
 ```ts
-await extension.clock.setSystemTime('2026-02-01T00:00:00Z');
+await extension.clock.setSystemTime('2026-02-01T00:00:00');
 ```
 
 See [Playwright’s `clock.setSystemTime()` documentation](https://playwright.dev/docs/api/class-clock#clock-set-system-time).
@@ -102,7 +103,7 @@ Requires `timers: true` or `alarms: true`. A target earlier than the current clo
 an earlier time-only target on the same day.
 
 ```ts
-await extension.clock.pauseAt('2026-02-01T13:00:00Z');
+await extension.clock.pauseAt('2026-02-01T13:00:00');
 ```
 
 Configure `paused: true` to start paused before extension code executes.

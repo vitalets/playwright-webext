@@ -51,6 +51,45 @@ test('setFixedTime resolves browser-local dates with and without open pages', as
   expect(await popup.evaluate(() => new Date().toISOString())).toBe('2030-01-01T22:00:00.000Z');
 });
 
+test.describe('date only', () => {
+  test.use({ extensionClock: { time: '2026-01-01' } });
+
+  test('starts at browser-local midnight and changes fixed dates across seasons', async ({
+    extension,
+  }) => {
+    await extension.install();
+    const popup = await extension.openPopup();
+    expect(await extension.evaluate('globalThis.initialTime.iso')).toBe('2025-12-31T23:00:00.000Z');
+    expect(await popup.evaluate('globalThis.initialTime.iso')).toBe('2025-12-31T23:00:00.000Z');
+
+    await extension.clock.setFixedTime('2026-07-01');
+    expect(await extension.evaluate(() => new Date().toISOString())).toBe(
+      '2026-06-30T22:00:00.000Z',
+    );
+    expect(await popup.evaluate(() => new Date().toISOString())).toBe('2026-06-30T22:00:00.000Z');
+  });
+
+  test.describe('paused timers', () => {
+    test.use({ extensionClock: { time: '2026-01-01', timers: true, paused: true } });
+
+    test('sets and pauses at browser-local midnight without open pages', async ({ extension }) => {
+      await extension.install();
+      await Promise.all(extension.context.pages().map((page) => page.close()));
+      await extension.clock.setSystemTime('2026-07-01');
+      expect(await extension.evaluate(() => new Date().toISOString())).toBe(
+        '2026-06-30T22:00:00.000Z',
+      );
+      const popup = await extension.openPopup();
+
+      await extension.clock.pauseAt('2026-07-02');
+      expect(await extension.evaluate(() => new Date().toISOString())).toBe(
+        '2026-07-01T22:00:00.000Z',
+      );
+      expect(await popup.evaluate(() => new Date().toISOString())).toBe('2026-07-01T22:00:00.000Z');
+    });
+  });
+});
+
 test.describe('time only', () => {
   test.use({ extensionClock: { time: '23:00' } });
 
