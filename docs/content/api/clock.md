@@ -5,13 +5,12 @@ description: Control fake time in extension pages and service workers.
 ---
 
 `extension.clock` controls fake time in the service worker and all pages and frames in
-`extension.context`. Enable it with [`extensionClock`](../basics/configuration.md#extensionclock)
-before installation. There is no public `clock.install()` method: configure `timers: true`
-to install full timer mocking before extension code runs.
+`extension.context`. Enable it with the [`extensionClock`](../basics/configuration.md#extensionclock) option.
 
 The methods follow [Playwright's Clock API](https://playwright.dev/docs/api/class-clock),
 with browser-local date parsing as described below. See [Fake timers](../guides/fake-timers.md)
-for examples and lifecycle behavior.
+for examples and lifecycle behavior. There is no public `clock.install()` method: configure `timers: true`
+to install full timer mocking before extension code runs.
 
 ## Date inputs
 
@@ -31,8 +30,6 @@ All methods return `Promise<void>`.
 
 ### setFixedTime
 
-See [Playwright’s `clock.setFixedTime()` documentation](https://playwright.dev/docs/api/class-clock#clock-set-fixed-time).
-
 Fixes the reported date without changing timer scheduling or the paused state.
 Native timers keep running when timer mocking is disabled.
 Throws when `alarms: true`; use `paused: true` to freeze the clock instead.
@@ -42,9 +39,9 @@ await extension.clock.setFixedTime('2026-02-01T00:00:00Z');
 await extension.clock.setFixedTime('13:00');
 ```
 
-### setSystemTime
+See [Playwright’s `clock.setFixedTime()` documentation](https://playwright.dev/docs/api/class-clock#clock-set-fixed-time).
 
-See [Playwright’s `clock.setSystemTime()` documentation](https://playwright.dev/docs/api/class-clock#clock-set-system-time).
+### setSystemTime
 
 Changes the system date without firing timers or changing their remaining delays.
 Clears a previously fixed date; dates then advance with the clock, unless it is paused.
@@ -58,9 +55,9 @@ advancement when paused.
 await extension.clock.setSystemTime('2026-02-01T00:00:00Z');
 ```
 
-### fastForward
+See [Playwright’s `clock.setSystemTime()` documentation](https://playwright.dev/docs/api/class-clock#clock-set-system-time).
 
-See [Playwright’s `clock.fastForward()` documentation](https://playwright.dev/docs/api/class-clock#clock-fast-forward).
+### fastForward
 
 Jumps forward by a duration, firing each due timer at most once.
 Requires `timers: true` or `alarms: true` and preserves the running or paused state.
@@ -76,9 +73,9 @@ or automatic scheduler opportunity.
 The duration accepts non-negative, finite milliseconds or a string in `ss`, `mm:ss`, or
 `hh:mm:ss` format. For example, a one-second interval runs once during `fastForward(60_000)`.
 
-### runFor
+See [Playwright’s `clock.fastForward()` documentation](https://playwright.dev/docs/api/class-clock#clock-fast-forward).
 
-See [Playwright’s `clock.runFor()` documentation](https://playwright.dev/docs/api/class-clock#clock-run-for).
+### runFor
 
 Advances by a duration, executing all due callbacks at their scheduled times.
 Requires `timers: true` or `alarms: true` and preserves the running or paused state.
@@ -96,9 +93,9 @@ can run within the remaining duration.
 Use assertions to wait for resulting asynchronous work. Each execution context has its own
 timer queue, so callback ordering across pages and the worker is not guaranteed.
 
-### pauseAt
+See [Playwright’s `clock.runFor()` documentation](https://playwright.dev/docs/api/class-clock#clock-run-for).
 
-See [Playwright’s `clock.pauseAt()` documentation](https://playwright.dev/docs/api/class-clock#clock-pause-at).
+### pauseAt
 
 Jumps to the target date, firing each due timer at most once, then pauses automatic advancement.
 Requires `timers: true` or `alarms: true`. A target earlier than the current clock time throws, including
@@ -110,12 +107,14 @@ await extension.clock.pauseAt('2026-02-01T13:00:00Z');
 
 Configure `paused: true` to start paused before extension code executes.
 
-### resume
+See [Playwright’s `clock.pauseAt()` documentation](https://playwright.dev/docs/api/class-clock#clock-pause-at).
 
-See [Playwright’s `clock.resume()` documentation](https://playwright.dev/docs/api/class-clock#clock-resume).
+### resume
 
 Resumes automatic advancement without restoring native timers. Requires `timers: true` or `alarms: true`.
 
 ```ts
 await extension.clock.resume();
 ```
+
+See [Playwright’s `clock.resume()` documentation](https://playwright.dev/docs/api/class-clock#clock-resume).
