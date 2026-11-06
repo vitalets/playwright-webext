@@ -193,8 +193,7 @@ and device sleep are not simulated. Deadlines execute deterministically without 
 real-time throttling. Runaway alarm chains fail with a descriptive error; a single advancement
 is limited to 10,000 alarm deliveries.
 
-Without `alarms: true`, Chrome alarms remain native. You can still use
-[dispatching events](dispatching-events.md) to invoke an alarm listener explicitly.
+Without `alarms: true`, Chrome alarms remain native.
 
 ## Under the hood
 
