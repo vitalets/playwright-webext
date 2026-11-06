@@ -181,12 +181,12 @@ Sets the date in the service worker and all pages and frames in `extension.conte
 extension loads. By default, the date stays fixed while native timers keep running. Set
 `timers: true` to control timers too. Omit `extensionClock` to keep the real date and timers.
 
-| Option   | Type                       | Default  | Effect                                                                               |
-| -------- | -------------------------- | -------- | ------------------------------------------------------------------------------------ |
-| `time`   | `number \| string \| Date` | Required | Fixed or starting date; numbers are Unix milliseconds.                               |
-| `timers` | `boolean`                  | `false`  | Also mocks timers, allowing `runFor()` and `fastForward()` to execute due callbacks. |
-| `alarms` | `boolean`                  | `false`  | Emulates alarms in the live service worker, independently of JavaScript timers.      |
-| `paused` | `boolean`                  | `false`  | Starts fake time paused. Requires `timers: true` or `alarms: true`.                  |
+| Option   | Type                       | Default                | Effect                                                                               |
+| -------- | -------------------------- | ---------------------- | ------------------------------------------------------------------------------------ |
+| `time`   | `number \| string \| Date` | Browser’s current time | Fixed or starting date; numbers are Unix milliseconds.                               |
+| `timers` | `boolean`                  | `false`                | Also mocks timers, allowing `runFor()` and `fastForward()` to execute due callbacks. |
+| `alarms` | `boolean`                  | `false`                | Emulates alarms in the live service worker, independently of JavaScript timers.      |
+| `paused` | `boolean`                  | `false`                | Starts fake time paused. Requires `timers: true` or `alarms: true`.                  |
 
 With `timers: true`, the worker mocks `setTimeout`, `clearTimeout`, `setInterval`,
 `clearInterval`, and `performance` additionally to `Date`. Pages use Playwright's clock mocks.
@@ -196,6 +196,10 @@ test.use({
   extensionClock: { time: '2026-01-01T00:00:00Z' },
 });
 ```
+
+Omit `time` to start from the browser’s current time at installation, for example
+`extensionClock: { timers: true }` or `extensionClock: { alarms: true }`.
+With `extensionClock: {}`, the date stays fixed at that initial time.
 
 For `extensionClock.time`, date-time strings without a timezone use the browser's timezone.
 Time-only strings in `HH:mm` format, such as `'23:00'`, use the browser's current date and timezone,

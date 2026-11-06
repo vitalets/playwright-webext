@@ -28,6 +28,19 @@ export function parseClockDuration(ticks: number | string) {
 }
 
 /**
+ * Reads the browser's current timestamp, opening a temporary page if needed.
+ */
+export async function readBrowserTime(context: BrowserContext) {
+  const existingPage = context.pages()[0];
+  const page = existingPage ?? (await context.newPage());
+  try {
+    return await page.evaluate(() => Date.now());
+  } finally {
+    if (!existingPage) await page.close();
+  }
+}
+
+/**
  * Parses a date or HH:mm string using the browser's date and timezone.
  */
 export async function resolveInBrowserTimezone(context: BrowserContext, time: string) {

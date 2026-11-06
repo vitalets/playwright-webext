@@ -3,7 +3,12 @@
  */
 
 import type { BrowserContext } from '@playwright/test';
-import { hasExplicitTimezone, parseClockTime, resolveInBrowserTimezone } from './helpers.js';
+import {
+  hasExplicitTimezone,
+  parseClockTime,
+  readBrowserTime,
+  resolveInBrowserTimezone,
+} from './helpers.js';
 
 /**
  * Fixes the date by default, or enables full timer control before extension code runs.
@@ -11,9 +16,10 @@ import { hasExplicitTimezone, parseClockTime, resolveInBrowserTimezone } from '.
 export type ExtensionClockOptions = {
   /**
    * Fixed or starting date as Unix milliseconds, a date string, HH:mm, or a Date.
+   * Defaults to the browser's current time at installation.
    * HH:mm uses the browser's current date and timezone.
    */
-  time: number | string | Date;
+  time?: number | string | Date;
 } & (
   | {
       /**
@@ -78,7 +84,10 @@ export async function resolveClockOptions(
     // See: https://github.com/microsoft/playwright/blob/main/packages/playwright-core/src/server/clock.ts#L136-L142
     // so we need to resolve the time in the browser's timezone,
     // convert it to timestamp and pass to Playwright.
-    time: await resolveClockTime(context, options.time),
+    time:
+      options.time === undefined
+        ? await readBrowserTime(context)
+        : await resolveClockTime(context, options.time),
   } satisfies ExtensionClockOptionsResolved;
 }
 
