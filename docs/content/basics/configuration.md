@@ -218,15 +218,8 @@ This does not change the browser's timezone. Numbers and `Date` objects retain t
 
 :::caution Service worker timezone
 
-Playwright's `timezoneId` option changes the timezone in pages, but does not work in the
-extension service worker. To set the timezone for both, pass the `TZ` environment variable
-when launching the browser:
-
-```ts
-test.use({
-  launchOptions: { env: { ...process.env, TZ: 'UTC' } },
-});
-```
+Playwright's `timezoneId` option currently does not apply to service workers.
+See [Playwright issue #43983](https://github.com/microsoft/playwright/issues/43983).
 
 :::
 

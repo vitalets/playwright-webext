@@ -45,15 +45,8 @@ See the [API reference](../api/clock.md) for date inputs and method details.
 
 :::caution Service worker timezone
 
-Playwright's `timezoneId` option does not work in extension service workers. If your worker
-calculates local dates, such as the next midnight or a daylight saving time transition, set
-the browser process timezone with the `TZ` environment variable:
-
-```ts
-test.use({
-  launchOptions: { env: { ...process.env, TZ: 'UTC' } },
-});
-```
+Playwright's `timezoneId` option currently does not apply to service workers.
+See [Playwright issue #43983](https://github.com/microsoft/playwright/issues/43983).
 
 :::
 

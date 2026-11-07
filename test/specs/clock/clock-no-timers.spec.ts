@@ -3,10 +3,6 @@ import { expect } from '@playwright/test';
 import { test, launchWithExtension } from '../../../src/index.js';
 import { readTimerEvents } from './helpers.js';
 
-test.use({
-  launchOptions: { env: { ...process.env, TZ: 'UTC' } },
-});
-
 test.describe('without timer mocking', () => {
   const time = '2026-01-01T00:00:00.000Z';
 
@@ -18,8 +14,6 @@ test.describe('without timer mocking', () => {
     const popup = await extension.openPopup();
     expect(await extension.evaluate(() => new Date().toISOString())).toBe(time);
     expect(await popup.evaluate(() => new Date().toISOString())).toBe(time);
-    expect(await extension.evaluate(() => new Date().getTimezoneOffset())).toBe(0);
-    expect(await popup.evaluate(() => new Date().getTimezoneOffset())).toBe(0);
 
     // Changing the fixed date must not freeze the native performance clock.
     await extension.clock.setFixedTime('2026-02-01T00:00:00Z');
@@ -37,6 +31,18 @@ test.describe('without timer mocking', () => {
       '2026-02-01T00:00:00.000Z',
     );
     expect(await popup.evaluate(() => new Date().toISOString())).toBe('2026-02-01T00:00:00.000Z');
+  });
+
+  test.describe('timezone', () => {
+    // https://github.com/microsoft/playwright/issues/43983
+    test.skip(true, 'Playwright timezoneId does not apply to service workers');
+    test.use({ timezoneId: 'UTC' });
+
+    test('applies timezoneId to the worker and page', async ({ extension }) => {
+      expect(await extension.evaluate(() => new Date().getTimezoneOffset())).toBe(0);
+      const popup = await extension.openPopup();
+      expect(await popup.evaluate(() => new Date().getTimezoneOffset())).toBe(0);
+    });
   });
 
   test('fixed dates leave worker abort timeouts on real time', async ({ extension }) => {
