@@ -59,7 +59,7 @@ test('installs an older build and upgrades it', async ({ extension }) => {
 ```
 
 The example requires both an older build in `dist-v1/` and the current build at `extensionPath`.
-See [Migration](../guides/migration.md) for assertions on the upgrade's effects.
+See [Data Migration](../guides/migration.md) for assertions on the upgrade's effects.
 
 `extensionPath` is required even when automatic installation is disabled. `extension.context`
 exists before installation, but metadata and worker operations require an installed, ready extension.

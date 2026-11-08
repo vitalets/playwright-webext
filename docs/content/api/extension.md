@@ -578,7 +578,7 @@ await extension.install('./dist-old');
 await extension.upgrade();
 ```
 
-Use this inside a test with automatic installation disabled. See [Migration](../guides/migration.md)
+Use this inside a test with automatic installation disabled. See [Data Migration](../guides/migration.md)
 for a complete example, including waiting for data migration.
 
 #### Arguments

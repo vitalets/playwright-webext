@@ -1,5 +1,5 @@
 ---
-title: Migration
+title: Data Migration
 description: Test stored-data migration when upgrading from an older unpacked extension build.
 ---
 
