@@ -12,7 +12,7 @@ service worker, access storage, and manage the extension's lifecycle.
 
 ### clock
 
-Controls fixed dates or fake timers in the service worker and all pages and frames in `extension.context`.
+Emulates the clock in the service worker and all pages and frames in `extension.context`.
 Requires [`extensionClock`](../basics/configuration.md#extensionclock); accessing this property
 without the option throws. Clock commands require an installed extension.
 See [ExtensionClock](clock.md) for supported methods and modes.

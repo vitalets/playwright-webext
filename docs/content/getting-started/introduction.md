@@ -19,7 +19,7 @@ that make testing browser extensions easier.
   [side panel](../guides/side-panel.md) pages.
 - Read and write [extension storage](../guides/storage.md) directly from test.
 - Trigger actions by [emulating browser events](../api/extension.md#dispatch).
-- Mock [time and timers](../guides/fake-timers.md) in the service worker and extension pages with automatic alarms triggering.
+- Emulate [clock](../guides/clock-emulation.md) in the service worker and extension pages with automatic alarms triggering.
 - Check [internationalization (i18n)](../guides/i18n.md) without changing your system language.
 - Verify [data migration](../guides/migration.md) between upgrades.
 - Inject a custom [init script](../basics/configuration.md#extensioninitscript) into the service worker and all extension pages.

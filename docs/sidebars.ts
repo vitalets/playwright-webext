@@ -40,7 +40,7 @@ const sidebars: SidebarsConfig = {
         'guides/welcome-page',
         'guides/side-panel',
         'guides/i18n',
-        'guides/fake-timers',
+        'guides/clock-emulation',
         'guides/migration',
         'guides/uninstall',
       ],

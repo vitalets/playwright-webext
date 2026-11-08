@@ -1,5 +1,5 @@
 ---
-title: Fake timers
+title: Clock emulation
 description: Set dates and advance time in extension pages and service workers.
 ---
 
@@ -13,26 +13,26 @@ and all pages in `extension.context`. Enable it with the
 test.use({
   extensionClock: {
     time: '2026-01-01T15:00:00',
-    // timers: true, // Mock JavaScript timers.
+    // timers: true, // Emulate JavaScript timers.
     // alarms: true, // Emulate Chrome alarms in the service worker.
     // paused: true, // Start paused; requires timers or alarms.
   },
 });
 ```
 
-## Choose what to mock
+## Choose what to emulate
 
 - **Dates only (default):** Leave `timers` and `alarms` unset or `false`. `Date.now()` and
   `new Date()` stay fixed at `time`, while JavaScript timers and Chrome alarms keep running natively.
   Use `setFixedTime()` to change the fixed date or `setSystemTime()` to let dates advance again.
-- **Timers (setTimeout, setInterval, etc):** Set `timers: true` to mock JavaScript timers in
-  the service worker and context pages. See Playwright's [full list of mocked APIs](https://playwright.dev/docs/clock#introduction).
+- **Timers (setTimeout, setInterval, etc):** Set `timers: true` to emulate JavaScript timers in
+  the service worker and context pages. See Playwright's [full list of emulated APIs](https://playwright.dev/docs/clock#introduction).
 - **Alarms:** Set `alarms: true` to emulate `chrome.alarms` in the live service worker. JavaScript timers remain
   native unless you also set `timers: true`. See [Test scheduled alarms](#test-scheduled-alarms)
   for examples and emulation limits.
 
 With either `timers: true` or `alarms: true`, dates advance automatically. Add `paused: true`
-to start with fake time paused; it requires at least one of those options.
+to start with the emulated clock paused; it requires at least one of those options.
 Use `runFor()` to execute every due timer or alarm within a duration, or `fastForward()` to
 deliver each overdue timer or alarm at most once. These methods only control the APIs you enabled.
 
@@ -46,7 +46,7 @@ See the [API reference](../api/clock.md) for date inputs and method details.
 :::caution Service worker timezone
 
 Playwright's `timezoneId` option currently does not apply to service workers.
-See [Playwright issue #43983](https://github.com/microsoft/playwright/issues/43983).
+See [playwright#43983](https://github.com/microsoft/playwright/issues/43983).
 
 :::
 
@@ -64,7 +64,7 @@ chrome.runtime.onInstalled.addListener(({ reason }) => {
 });
 ```
 
-Fake time is set before the extension runs, so the installation handler records the configured date:
+The emulated clock is set before the extension runs, so the installation handler records the configured date:
 
 ```ts title="test/clock.spec.ts"
 import { test } from 'playwright-webext';
@@ -228,7 +228,7 @@ native, or add `timers: true` to advance them too. Dates advance automatically u
 
 Choose between changing the **date only** and controlling scheduled work. With `timers` and `alarms`
 unset, the date stays fixed while native timers and alarms keep running. Enable `timers: true`,
-`alarms: true`, or both to control their execution. Fake time then advances automatically unless
+`alarms: true`, or both to control their execution. The emulated clock then advances automatically unless
 you set `paused: true`; `resume()` restarts automatic advancement.
 
 For explicit advancement, choose how to handle repeated callbacks:
@@ -256,19 +256,19 @@ device sleep, persistence, and Chrome's real-time throttling are not simulated.
 <summary>Implementation details</summary>
 
 The clock uses Playwright's public clock API for pages and a copy of its clock engine for the
-worker. Without timer mocking, worker scheduling APIs remain native. Both clocks are initialized
+worker. Without timer emulation, worker scheduling APIs remain native. Both clocks are initialized
 before extension code and `extensionInitScript`. Use `extension.clock` to control both;
 direct Playwright clock calls affect only pages.
 
-With timer mocking, the clocks advance independently, so their dates can differ slightly while running.
+With timer emulation, the clocks advance independently, so their dates can differ slightly while running.
 Use `pauseAt()` with a future target to align their dates and pause. Each execution context has
 its own timer queue; wait for cross-context work to be scheduled before advancing time.
 
-New pages and navigations inherit the context's fake time. Reloading or upgrading the extension
+New pages and navigations inherit the context's emulated time. Reloading or upgrading the extension
 resets the worker to the configured `time` and options; page time is unchanged.
 `runFor()` and `fastForward()` advance from each clock's own current date.
 Use `setFixedTime()` or `setSystemTime()` to set both dates again.
-Fake time also affects ordinary websites in `extension.context`, but does not advance test timeouts,
+Clock emulation also affects ordinary websites in `extension.context`, but does not advance test timeouts,
 network requests, or Chrome's worker lifecycle.
 
 </details>

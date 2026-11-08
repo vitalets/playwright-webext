@@ -49,7 +49,7 @@ await extension.waitForFunction(() => chrome.action.onClicked.hasListeners());
 If your extension registers several listeners, wait for an application-specific readiness condition
 instead. Dispatch also does not wait for asynchronous listener work to finish.
 
-To test scheduled alarms, use the [clock API](fake-timers.md#test-scheduled-alarms) to advance time
+To test scheduled alarms, use the [clock API](clock-emulation.md#test-scheduled-alarms) to advance time
 and trigger them automatically.
 
 ## Limitations

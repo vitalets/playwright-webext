@@ -181,15 +181,15 @@ Sets the date in the service worker and all pages and frames in `extension.conte
 extension loads. By default, the date stays fixed while native timers keep running. Set
 `timers: true` to control timers too. Omit `extensionClock` to keep the real date and timers.
 
-| Option   | Type                       | Default                | Effect                                                                               |
-| -------- | -------------------------- | ---------------------- | ------------------------------------------------------------------------------------ |
-| `time`   | `number \| string \| Date` | Browser’s current time | Fixed or starting date; numbers are Unix milliseconds.                               |
-| `timers` | `boolean`                  | `false`                | Also mocks timers, allowing `runFor()` and `fastForward()` to execute due callbacks. |
-| `alarms` | `boolean`                  | `false`                | Emulates alarms in the live service worker, independently of JavaScript timers.      |
-| `paused` | `boolean`                  | `false`                | Starts fake time paused. Requires `timers: true` or `alarms: true`.                  |
+| Option   | Type                       | Default                | Effect                                                                                  |
+| -------- | -------------------------- | ---------------------- | --------------------------------------------------------------------------------------- |
+| `time`   | `number \| string \| Date` | Browser’s current time | Fixed or starting date; numbers are Unix milliseconds.                                  |
+| `timers` | `boolean`                  | `false`                | Also emulates timers, allowing `runFor()` and `fastForward()` to execute due callbacks. |
+| `alarms` | `boolean`                  | `false`                | Emulates alarms in the live service worker, independently of JavaScript timers.         |
+| `paused` | `boolean`                  | `false`                | Starts the emulated clock paused. Requires `timers: true` or `alarms: true`.            |
 
-With `timers: true`, the worker mocks `setTimeout`, `clearTimeout`, `setInterval`,
-`clearInterval`, and `performance` additionally to `Date`. Pages use Playwright's clock mocks.
+With `timers: true`, the worker emulates `setTimeout`, `clearTimeout`, `setInterval`,
+`clearInterval`, and `performance` additionally to `Date`. Pages use Playwright's clock emulation.
 
 ```ts
 test.use({
@@ -219,7 +219,7 @@ This does not change the browser's timezone. Numbers and `Date` objects retain t
 :::caution Service worker timezone
 
 Playwright's `timezoneId` option currently does not apply to service workers.
-See [Playwright issue #43983](https://github.com/microsoft/playwright/issues/43983).
+See [playwright#43983](https://github.com/microsoft/playwright/issues/43983).
 
 :::
 
@@ -231,7 +231,7 @@ Use `extension.clock.setSystemTime()` to change the system date. Without alarm e
 With `timers: true` or `alarms: true`, use `runFor()` or `fastForward()` to advance by a duration.
 With `timers: true` or `alarms: true`, time advances automatically unless `paused: true` is set;
 `pauseAt()` and `resume()` control automatic advancement later.
-See [Fake timers](../guides/fake-timers.md) for examples and the [API reference](../api/clock.md)
+See [Clock emulation](../guides/clock-emulation.md) for examples and the [API reference](../api/clock.md)
 for method details. The same options are available in `launchWithExtension()`.
 
 ## Forwarded Playwright options

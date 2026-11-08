@@ -39,7 +39,7 @@ One options object, typed as `LaunchWithExtensionOptions`:
   current working directory. Absolute paths are used unchanged.
 - `extensionAutoInstall` (`boolean`, optional): defaults to `true`. Set to `false` to install manually.
 - `extensionClock` (`ExtensionClockOptions`, optional): enables
-  [fake timers](../guides/fake-timers.md) before installation.
+  [clock emulation](../guides/clock-emulation.md) before installation.
 - `launchOptions` ([LaunchOptions](https://playwright.dev/docs/api/class-browsertype#browser-type-launch),
   optional): browser launch settings, including `headless`. The package uses the `chromium` channel
   and adds the flags needed to load extensions.

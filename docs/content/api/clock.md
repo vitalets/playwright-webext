@@ -1,16 +1,16 @@
 ---
 title: ExtensionClock
 toc_max_heading_level: 3
-description: Control fake time in extension pages and service workers.
+description: Emulate the clock in extension pages and service workers.
 ---
 
-`extension.clock` controls fake time in the service worker and all pages and frames in
+`extension.clock` emulates the clock in the service worker and all pages and frames in
 `extension.context`. Enable it with the [`extensionClock`](../basics/configuration.md#extensionclock) option.
 
 The methods follow [Playwright's Clock API](https://playwright.dev/docs/api/class-clock),
-with browser-local date parsing as described below. See [Fake timers](../guides/fake-timers.md)
+with browser-local date parsing as described below. See [Clock emulation](../guides/clock-emulation.md)
 for examples and lifecycle behavior. There is no public `clock.install()` method: configure `timers: true`
-to install full timer mocking before extension code runs.
+to install timer emulation before extension code runs.
 
 ## Date inputs
 
@@ -32,7 +32,7 @@ All methods return `Promise<void>`.
 ### setFixedTime
 
 Fixes the reported date without changing timer scheduling or the paused state.
-Native timers keep running when timer mocking is disabled.
+Native timers keep running when timer emulation is disabled.
 Throws when `alarms: true`; use `paused: true` to freeze the clock instead.
 
 ```ts
@@ -46,7 +46,7 @@ See [Playwright’s `clock.setFixedTime()` documentation](https://playwright.dev
 
 Changes the system date without firing timers or changing their remaining delays.
 Clears a previously fixed date; dates then advance with the clock, unless it is paused.
-Works with or without timer mocking. Moving backward is allowed.
+Works with or without timer emulation. Moving backward is allowed.
 
 Emulated alarm deadlines remain unchanged. No alarms are delivered during this operation;
 overdue alarms become eligible at the next scheduler opportunity, or the next explicit
