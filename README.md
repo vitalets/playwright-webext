@@ -15,7 +15,7 @@
 
 </div>
 
-A set of [Playwright](https://playwright.dev/) fixtures that make browser extensions testing easier.
+[Playwright](https://playwright.dev/) fixtures for testing browser extensions.
 
 ## Features
 
