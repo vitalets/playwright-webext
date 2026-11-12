@@ -37,7 +37,6 @@
     "deps": "npx npm-check-updates -i --interactiveSelect none --format group,dep,repo --cooldown 3",
     "build:clock": "tsx scripts/build-clock.ts",
     "build": "npm run build:clock && rm -rf ./dist && tsc -p tsconfig.build.json",
-    "update:rules": "cp ../agentic-dev/rules/ts-file-structure/ts-file-structure.md ../agentic-dev/rules/good-tests/good-tests.md .agents/rules/",
     "docs": "npm --prefix docs run start --",
     "docs:build": "npm --prefix docs run build",
     "docs:release": "git checkout docs && git pull --no-edit && git merge --no-edit main && git push origin docs && git checkout main",
