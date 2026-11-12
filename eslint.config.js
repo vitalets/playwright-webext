@@ -11,7 +11,8 @@ export default defineConfig([
   includeIgnoreFile(gitignorePath),
   globalIgnores([
     'dist/',
-    'website/',
+    'src/clock/worker-clock/from-playwright/',
+    'docs/',
     'example/',
     'test-results/',
     'playwright-report/',
@@ -29,6 +30,11 @@ export default defineConfig([
         projectService: true,
         tsconfigRootDir: import.meta.dirname,
       },
+    },
+  },
+  {
+    rules: {
+      'no-empty-pattern': 'off',
     },
   },
   {

@@ -3,42 +3,66 @@
  * Worker lifecycle synchronization is supplied by the extension facade.
  */
 
-import { join, resolve } from 'node:path';
+import { resolve } from 'node:path';
 import type { BrowserContext } from '@playwright/test';
-import { ExtensionCopy } from './copy.js';
-import { hasServiceWorker } from './manifest.js';
-import { isDefaultLocale, localizeExtension } from './i18n.js';
+import type { ExtensionInitScript } from './options.js';
+import type { ExtensionClockOptions, ExtensionClockOptionsResolved } from './clock/options.js';
+import { PreparedExtensionDir } from './extension-dir/index.js';
+import type { ExtensionDirCache } from './extension-dir/cache.js';
+import { Manifest } from './manifest.js';
+import { isDefaultLocale } from './i18n.js';
+import { getInitScriptContent, addInitScriptToContext } from './init-script.js';
+import { getWorkerClockScript } from './clock/worker-clock/playwright-wrapper.js';
+import { resolveClockOptions } from './clock/options.js';
+import type { ExtensionClockInternal } from './clock/index.js';
 
 type InstallState = 'not-installed' | 'installing' | 'installed' | 'upgrading' | 'upgraded';
 
 export type InstallOptions = {
   extensionPath: string;
+  extensionDirCache?: ExtensionDirCache;
   locale?: string;
+  extensionInitScript?: ExtensionInitScript | ExtensionInitScript[];
+  extensionClock?: ExtensionClockOptions;
 };
 
 /**
  * Coordinates one initial installation and an optional upgrade at the same filesystem path.
  */
 export class ExtensionInstaller {
-  readonly #copy = new ExtensionCopy();
+  readonly #directory: PreparedExtensionDir;
+  readonly #manifest = new Manifest();
   readonly #extensionPath: string;
   #state: InstallState = 'not-installed';
   #canUpgrade = false;
   #id?: string;
-  #hasServiceWorker?: boolean;
+  #loadedPath?: string;
+  #initScriptContent?: string;
+  #contextInitialized = false;
 
   constructor(
     private readonly context: BrowserContext,
     private readonly options: InstallOptions,
+    private readonly clock?: ExtensionClockInternal,
   ) {
     this.#extensionPath = resolve(options.extensionPath);
+    this.#directory = new PreparedExtensionDir(options.extensionDirCache);
   }
 
   /**
-   * Whether the last loaded build declares a background service worker.
+   * Whether the loaded source manifest declares a background service worker.
    */
   get hasServiceWorker() {
-    return this.#hasServiceWorker;
+    return this.#manifest.hasServiceWorker;
+  }
+
+  /**
+   * Returns the absolute installation directory, or throws before a successful load.
+   */
+  get loadedPath() {
+    if (!this.#loadedPath)
+      throw new Error('Extension is not installed. Call extension.install() first.');
+    return this.#loadedPath;
   }
 
   /**
@@ -49,11 +73,11 @@ export class ExtensionInstaller {
     this.verifyStateForInstall();
     this.#state = 'installing';
     try {
+      await this.initializeContext();
       const installPath = await this.resolveInstallPath(path);
       this.#id = await this.loadUnpacked(installPath);
       this.#state = 'installed';
       this.#canUpgrade = path !== undefined;
-      await this.updateHasServiceWorker(installPath);
       return this.#id;
     } catch (error) {
       if (this.#state === 'installing') this.#state = 'not-installed';
@@ -68,12 +92,12 @@ export class ExtensionInstaller {
     this.verifyStateForUpgrade();
     this.#state = 'upgrading';
     try {
-      await this.prepareCopy(this.#extensionPath);
+      await this.#manifest.load(this.#extensionPath);
+      await this.#directory.replace(this.createPreparationRequest(this.#extensionPath));
       this.#state = 'upgraded';
       this.#canUpgrade = false;
-      const id = await this.loadUnpacked(this.#copy.path);
+      const id = await this.loadUnpacked(this.#directory.path);
       if (id !== this.#id) throw new Error('Extension upgrade changed the extension ID.');
-      await this.updateHasServiceWorker(this.#copy.path);
     } catch (error) {
       if (this.#state === 'upgrading') this.#state = 'installed';
       throw error;
@@ -81,25 +105,53 @@ export class ExtensionInstaller {
   }
 
   /**
-   * Removes the private build copy owned by this installer.
+   * Retains reusable cached builds and removes private or upgraded copies.
    */
   async cleanup() {
-    await this.#copy.cleanup();
+    await this.#directory.cleanup();
   }
 
   private async resolveInstallPath(path?: string) {
     const source = path === undefined ? this.#extensionPath : resolve(path);
-    return path !== undefined || !isDefaultLocale(this.options.locale)
-      ? this.prepareCopy(source)
+    await this.#manifest.load(source);
+    return path !== undefined || this.requiresPreparedDirectory()
+      ? this.#directory.create(this.createPreparationRequest(source))
       : source;
   }
 
-  private async prepareCopy(source: string) {
-    await this.#copy.copyFrom(source);
-    if (!isDefaultLocale(this.options.locale)) {
-      await localizeExtension(this.#copy.path, this.options.locale);
-    }
-    return this.#copy.path;
+  private requiresPreparedDirectory() {
+    return (
+      this.#initScriptContent !== undefined ||
+      !isDefaultLocale(this.options.locale) ||
+      this.#manifest.hasDnr
+    );
+  }
+
+  private createPreparationRequest(sourcePath: string) {
+    return {
+      sourcePath,
+      manifest: this.#manifest.data,
+      locale: isDefaultLocale(this.options.locale) ? undefined : this.options.locale,
+      initScriptContent: this.#initScriptContent,
+    };
+  }
+
+  private async initializeContext() {
+    if (this.#contextInitialized) return;
+    const clockOptions = await resolveClockOptions(this.context, this.options.extensionClock);
+    this.#initScriptContent = await this.prepareInitScript(clockOptions);
+    if (clockOptions) await this.clock?.contextClock.install(clockOptions.time);
+    if (this.#initScriptContent)
+      await addInitScriptToContext(this.context, this.#initScriptContent);
+    this.#contextInitialized = true;
+  }
+
+  private async prepareInitScript(clockOptions?: ExtensionClockOptionsResolved) {
+    const clockScript = clockOptions ? await getWorkerClockScript(clockOptions) : '';
+    const userScript = this.options.extensionInitScript
+      ? await getInitScriptContent(this.options.extensionInitScript)
+      : '';
+    return [clockScript, userScript].filter(Boolean).join('\n') || undefined;
   }
 
   private async loadUnpacked(path: string) {
@@ -108,14 +160,11 @@ export class ExtensionInstaller {
     const session = await browser.newBrowserCDPSession();
     try {
       const { id } = await session.send('Extensions.loadUnpacked', { path });
+      this.#loadedPath = path;
       return id;
     } finally {
       await session.detach();
     }
-  }
-
-  private async updateHasServiceWorker(path: string) {
-    this.#hasServiceWorker = await hasServiceWorker(join(path, 'manifest.json'));
   }
 
   private verifyStateForInstall() {

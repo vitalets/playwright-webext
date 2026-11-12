@@ -1,0 +1,124 @@
+---
+title: Popup
+description: Test your extension's popup document with Playwright locators and assertions.
+---
+
+Extensions can show a popup when users click their toolbar icon, but Playwright cannot interact with
+the native toolbar popup as a `Page`.
+
+playwright-webext provides [`extension.openPopup()`](../api/extension.md#openpopup) to open the
+document declared by `action.default_popup` in a regular browser tab. This lets you test its UI with
+Playwright locators while using the extension's APIs and storage. See [Limitations](#limitations)
+for differences from the native popup.
+
+```ts
+test('popup', async ({ extension }) => {
+  const popupPage = await extension.openPopup();
+  // ...check popup page
+});
+```
+
+## Example
+
+The following example assumes your popup has a “Save” button that stores `saved: true`:
+
+```ts title="test/popup.spec.ts"
+import { test } from 'playwright-webext';
+
+test('saves preferences from the popup', async ({ extension }) => {
+  const popupPage = await extension.openPopup();
+
+  await popupPage.getByRole('button', { name: 'Save' }).click();
+  await extension.storage.local.expect('saved').toEqual(true);
+});
+```
+
+Use Playwright's [locators](https://playwright.dev/docs/locators) and
+[retrying assertions](https://playwright.dev/docs/test-assertions) to interact with the document.
+
+If your popup has a button that closes its tab, use
+[`extension.pollForPageClosed()`](../api/extension.md#pollforpageclosed) after clicking it:
+
+```ts
+await popupPage.getByRole('button', { name: 'Close' }).click();
+await extension.pollForPageClosed(popupPage);
+```
+
+## Wrap as POM
+
+If your popup has many elements to interact with, wrap it in a Page Object Model (POM)
+to keep locators and actions in one place.
+
+```ts title="test/pages/popup.ts"
+import type { Page } from '@playwright/test';
+import type { Extension } from 'playwright-webext';
+
+export class Popup {
+  #page?: Page;
+
+  constructor(private extension: Extension) {}
+
+  get page() {
+    if (!this.#page || this.#page.isClosed()) {
+      throw new Error('Call Popup.open() before interacting with the popup.');
+    }
+    return this.#page;
+  }
+
+  async open() {
+    this.#page = await this.extension.openPopup();
+    return this;
+  }
+
+  async close() {
+    await this.page.close();
+  }
+
+  saveButton() {
+    return this.page.getByRole('button', { name: 'Save' });
+  }
+}
+```
+
+Use `Popup` in your test to check the same behavior through the page object:
+
+```ts title="test/popup.spec.ts"
+import { test } from 'playwright-webext';
+import { Popup } from './pages/popup';
+
+test('saves preferences from the popup', async ({ extension }) => {
+  const popup = await new Popup(extension).open();
+
+  await popup.saveButton().click();
+  await extension.storage.local.expect('saved').toEqual(true);
+});
+```
+
+## Limitations
+
+`openPopup()` opens the popup document in a regular browser tab. Its extension APIs and storage
+are available, but some native toolbar popup behaviors cannot be tested this way:
+
+- The new tab becomes active. Calling `chrome.tabs.query({ active: true, currentWindow: true })`
+  returns the popup document's own tab, not the website you are testing against. Code that uses
+  that tab ID to send messages to content scripts or inject scripts targets the wrong tab.
+- The document uses a normal tab viewport and does not close when focus moves elsewhere. Native
+  popup sizing, dismissal, and the resulting cleanup are not reproduced. Each `openPopup()` call
+  creates another tab, so tests must close it to end that document's lifetime.
+- Opening the document does not grant the toolbar action's temporary `activeTab` permission or
+  reproduce its user gesture.
+- Runtime messages from this document include `sender.tab`; messages from a native toolbar popup
+  normally do not.
+- Chrome treats the document as a tab view. For example,
+  [`chrome.extension.getViews({ type: 'popup' })`](https://developer.chrome.com/docs/extensions/reference/api/extension#method-getViews)
+  does not include it.
+- The helper reads `action.default_popup` from the manifest snapshot and ignores
+  [`chrome.action.setPopup()`](https://developer.chrome.com/docs/extensions/reference/api/action#method-setPopup)
+  overrides, including per-tab paths. Without a manifest default popup, the helper throws even if
+  a popup was configured at runtime. Opening the document also bypasses the action's enabled state.
+
+Chromium can open the native toolbar popup through `chrome.action.openPopup()` or the CDP command
+`Extensions.triggerAction`. However, Playwright does not expose that popup as a `Page` through its
+supported API, so opening it does not let you interact with it using Playwright locators and
+assertions. `extension.openPopup()` opens the popup document in a regular tab to provide that access. See
+[Chrome's extension testing guidance](https://developer.chrome.com/docs/extensions/how-to/test/end-to-end-testing).

@@ -1,8 +1,8 @@
 /**
- * Projects a requested translation catalog onto an extension directory.
+ * Resolves translation catalogs for prepared extension directories.
  */
 
-import { readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
 /**
@@ -20,14 +20,9 @@ export function isDefaultLocale(locale: string | undefined): locale is DefaultLo
 }
 
 /**
- * Projects the requested locale onto an extension directory in place.
+ * Resolves a requested locale to an available translation catalog.
  */
-export async function localizeExtension(extensionPath: string, locale: string) {
-  const extensionLocale = await resolveExtensionLocale(extensionPath, locale);
-  await applyExtensionLocale(extensionPath, extensionLocale);
-}
-
-async function resolveExtensionLocale(extensionPath: string, locale: string) {
+export async function resolveExtensionLocale(extensionPath: string, locale: string) {
   const normalizedLocale = locale.replace(/-/g, '_');
   if (!/^[A-Za-z0-9_]+$/.test(normalizedLocale)) {
     throw new Error(`Invalid extension locale "${locale}".`);
@@ -49,21 +44,6 @@ async function resolveExtensionLocale(extensionPath: string, locale: string) {
   }
 
   return extensionLocale;
-}
-
-async function applyExtensionLocale(extensionPath: string, locale: string) {
-  const manifestPath = join(extensionPath, 'manifest.json');
-  const manifest = JSON.parse(await readFile(manifestPath, 'utf8')) as chrome.runtime.Manifest;
-  manifest.default_locale = locale;
-  await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
-
-  const localesPath = join(extensionPath, '_locales');
-  const entries = await readdir(localesPath);
-  await Promise.all(
-    entries
-      .filter((entry) => entry !== locale)
-      .map((entry) => rm(join(localesPath, entry), { recursive: true, force: true })),
-  );
 }
 
 async function readAvailableLocales(localesPath: string, extensionPath: string, locale: string) {

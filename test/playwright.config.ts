@@ -10,4 +10,12 @@ export default defineConfig<WebextOptions>({
   use: {
     extensionPath: './data/extension',
   },
+  projects: [
+    { name: 'chromium' },
+    {
+      name: 'edge',
+      default: false,
+      use: { channel: 'msedge' },
+    },
+  ],
 });

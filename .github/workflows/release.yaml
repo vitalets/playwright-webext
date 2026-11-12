@@ -21,13 +21,13 @@ on:
           - patch
           - minor
           - major
-      skip-npm-publish:
-        description: Skip NPM publish
+      dry-run:
+        description: Dry run
         required: false
         type: boolean
         default: false
-      dry-run:
-        description: Dry run
+      skip-npm-publish:
+        description: Skip NPM publish
         required: false
         type: boolean
         default: false
@@ -68,6 +68,6 @@ jobs:
         with:
           channel: ${{ inputs.channel }}
           version: ${{ inputs.version }}
-          skip-npm-publish: ${{ inputs.skip-npm-publish }}
           dry-run: ${{ inputs.dry-run }}
+          skip-npm-publish: ${{ inputs.skip-npm-publish }}
           github-token: ${{ secrets.GITHUB_TOKEN }}

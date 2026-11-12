@@ -1,6 +1,6 @@
 <div align="center">
   <a href="https://vitalets.github.io/playwright-webext">
-    <img width="128" alt="playwright-webext" src="website/static/img/brand/logo.svg">
+    <img width="128" alt="playwright-webext" src="docs/static/img/brand/logo.svg">
   </a>
 </div>
 
@@ -15,19 +15,21 @@
 
 </div>
 
-A set of [Playwright](https://playwright.dev/) fixtures and helpers that make browser extensions testing easier.
+[Playwright](https://playwright.dev/) fixtures for testing browser extensions.
 
 ## Features
 
 - Access your extension’s APIs with the built-in [extension](https://vitalets.github.io/playwright-webext/getting-started/writing-tests/) fixture.
-- Open [popup](https://vitalets.github.io/playwright-webext/guides/popup/), [options](https://vitalets.github.io/playwright-webext/guides/options/), and
+- Open and interact with the [popup](https://vitalets.github.io/playwright-webext/guides/popup/), [options](https://vitalets.github.io/playwright-webext/guides/options/), and
   [side panel](https://vitalets.github.io/playwright-webext/guides/side-panel/) pages.
 - Read and write [extension storage](https://vitalets.github.io/playwright-webext/guides/storage/) directly from test.
-- Trigger extension actions by [emulating browser events](https://vitalets.github.io/playwright-webext/api/extension/#dispatch).
-- Prepare browser state before [extension installation](https://vitalets.github.io/playwright-webext/basics/configuration/#extensionautoinstall).
+- Trigger actions by [emulating browser events](https://vitalets.github.io/playwright-webext/api/extension/#dispatch).
+- Emulate [clock](https://vitalets.github.io/playwright-webext/guides/clock-emulation/) in the service worker and extension pages with automatic alarms triggering.
 - Check [internationalization (i18n)](https://vitalets.github.io/playwright-webext/guides/i18n/) without changing your system language.
-- Verify [data migration](https://vitalets.github.io/playwright-webext/guides/migration/) between extension versions.
-- Test the behavior when extension is [uninstalled](https://vitalets.github.io/playwright-webext/guides/uninstall/) or [disabled](https://vitalets.github.io/playwright-webext/api/extension/#disable).
+- Verify [data migration](https://vitalets.github.io/playwright-webext/guides/migration/) between upgrades.
+- Inject a custom [init script](https://vitalets.github.io/playwright-webext/basics/configuration/#extensioninitscript) into the service worker and all extension pages.
+- Install extension [lazily](https://vitalets.github.io/playwright-webext/basics/configuration/#extensionautoinstall) to prepare browser state.
+- Test the flow when extension is [disabled](https://vitalets.github.io/playwright-webext/api/extension/#disable) or [uninstalled](https://vitalets.github.io/playwright-webext/guides/uninstall/).
 
 ## Quick start
 

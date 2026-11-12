@@ -4,12 +4,12 @@ import { test as base, launchWithExtension, type Extension } from '../../src/ind
 
 const test = base.extend<{}, { sharedExtension: Extension }>({
   sharedExtension: [
-    async ({ extensionPath, headless, launchOptions }, use, workerInfo) => {
+    async ({ extensionPath, channel, headless, launchOptions }, use, workerInfo) => {
       const configFile = workerInfo.config.configFile;
       const baseDir = configFile ? dirname(configFile) : process.cwd();
       const extension = await launchWithExtension({
         extensionPath: resolve(baseDir, extensionPath),
-        launchOptions: { ...launchOptions, headless },
+        launchOptions: { ...launchOptions, channel, headless },
       });
       await use(extension);
       await extension.close();

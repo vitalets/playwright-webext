@@ -1,6 +1,9 @@
 *-lock.json
 .agents/
 
-website/build/
-website/.docusaurus/
-website/.docusaurus-dev/
+docs/build/
+docs/.docusaurus/
+docs/.docusaurus-dev/
+
+# Preserve the pinned upstream source verbatim.
+src/clock/worker-clock/from-playwright/

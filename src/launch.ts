@@ -4,7 +4,10 @@
 
 import { chromium } from '@playwright/test';
 import type { BrowserContext, BrowserContextOptions, LaunchOptions } from '@playwright/test';
+import type { ExtensionInitScript } from './options.js';
+import type { ExtensionClockOptions } from './clock/options.js';
 import { Extension } from './extension.js';
+import { defaults } from './options.js';
 import { throwIf } from './utils/throw-if.js';
 import { mergeOptions } from './utils/merge-options.js';
 
@@ -14,15 +17,10 @@ import { mergeOptions } from './utils/merge-options.js';
 export type LaunchWithExtensionOptions = {
   extensionPath: string;
   extensionAutoInstall?: boolean;
+  extensionInitScript?: ExtensionInitScript | ExtensionInitScript[];
+  extensionClock?: ExtensionClockOptions;
   launchOptions?: LaunchOptions;
   contextOptions?: BrowserContextOptions;
-};
-
-/**
- * Defaults for optional launch settings.
- */
-const defaults: Required<Pick<LaunchWithExtensionOptions, 'extensionAutoInstall'>> = {
-  extensionAutoInstall: true,
 };
 
 /**
@@ -35,6 +33,8 @@ export async function launchWithExtension(options: LaunchWithExtensionOptions) {
   const context = await launchContext(resolvedOptions);
   const extension = new Extension(context, {
     extensionPath: options.extensionPath,
+    extensionInitScript: options.extensionInitScript,
+    extensionClock: options.extensionClock,
     locale: resolvedOptions.contextOptions?.locale,
   });
   try {
@@ -55,7 +55,7 @@ export async function launchContext({
 }: Pick<LaunchWithExtensionOptions, 'launchOptions' | 'contextOptions'>) {
   const context = await chromium.launchPersistentContext('', {
     ...launchOptions,
-    channel: 'chromium',
+    channel: launchOptions?.channel ?? 'chromium',
     /**
      * Enables Extensions.loadUnpacked over CDP for installation and upgrades.
      */

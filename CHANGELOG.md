@@ -4,6 +4,26 @@
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-12
+
+- Interpret date-only clock inputs as midnight in the browser's timezone.
+
+- Make `extensionClock.time` optional, defaulting to the browser’s current time at installation.
+
+- Add opt-in `chrome.alarms` emulation through `extensionClock.alarms`, including deterministic advancement and alarm-only clock control.
+
+- Replace `extension.clock.tick()`, `setTime()`, and `pause()` with Playwright-compatible clock methods, retaining browser-local and time-only date inputs.
+
+- Align service worker clock timer and promise ordering with Playwright.
+
+- Add `extensionClock` and `extension.clock` to control dates and timers in extension pages and service workers, with browser-local date-time and `HH:mm` support.
+- Honor the configured browser channel when launching extensions.
+- Fix content-script JavaScript and CSS loading from temporary extension directories.
+- Add `extension.loadedPath` to inspect the directory used to load the extension.
+- Isolate extensions with static declarative network rules to prevent shared metadata conflicts between browsers.
+- Fix loading extensions with static declarative network rules when using localization, init scripts, or upgrades.
+- Add `extensionInitScript` with file paths, inline source, or an ordered array of both to initialize extension documents and background workers before application code.
+
 ## [0.3.7] - 2026-10-15
 
 - Add `extension.pollForPageClosed()` to wait for a page to close.
@@ -91,7 +111,8 @@
 
 - Initial release.
 
-[unreleased]: https://github.com/vitalets/playwright-webext/compare/v0.3.7...HEAD
+[unreleased]: https://github.com/vitalets/playwright-webext/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/vitalets/playwright-webext/compare/v0.3.7...v0.4.0
 [0.3.7]: https://github.com/vitalets/playwright-webext/compare/v0.3.6...v0.3.7
 [0.3.6]: https://github.com/vitalets/playwright-webext/compare/v0.3.5...v0.3.6
 [0.3.5]: https://github.com/vitalets/playwright-webext/compare/v0.3.4...v0.3.5

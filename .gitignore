@@ -3,13 +3,15 @@ node_modules/
 .vscode/
 .env
 dist/
+src/clock/worker-clock/generated/
 test-results/
 playwright-report/
+test/data/**/_metadata/
 .playwright-cli/
 
 /todo.txt
 
-/website/build/
-/website/.docusaurus/
-/website/.docusaurus-dev/
+/docs/build/
+/docs/.docusaurus/
+/docs/.docusaurus-dev/
 

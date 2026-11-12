@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "default_locale": "en",
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
   "permissions": ["storage", "sidePanel"],
   "side_panel": {

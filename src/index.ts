@@ -6,31 +6,15 @@
 
 import { dirname, resolve } from 'node:path';
 import { test as base } from '@playwright/test';
+import { ExtensionDirCache } from './extension-dir/cache.js';
 import { Extension } from './extension.js';
+import type { WebextTestOptions, WebextWorkerOptions } from './options.js';
 import { launchContext } from './launch.js';
+import { resolveInitScripts } from './init-script.js';
 import { createVideoRecording } from './video.js';
 import { runAll } from './utils/run-all.js';
 import { throwIf } from './utils/throw-if.js';
 import { removeUndefined } from './utils/remove-undefined.js';
-
-/**
- * Configuration accepted by the extension test fixtures.
- */
-export type WebextOptions = WebextTestOptions & WebextWorkerOptions;
-
-/**
- * Options available to both test-scoped and worker-scoped fixtures.
- */
-export type WebextWorkerOptions = {
-  extensionPath: string;
-};
-
-/**
- * Options that can vary between tests.
- */
-export type WebextTestOptions = {
-  extensionAutoInstall?: boolean;
-};
 
 /**
  * Fixtures added to the base Playwright test.
@@ -40,6 +24,14 @@ export type WebextFixtures = {
 };
 
 export { Extension } from './extension.js';
+export type { ExtensionClockOptions } from './clock/options.js';
+export type {
+  WebextOptions,
+  WebextTestOptions,
+  WebextWorkerOptions,
+  ExtensionInitScript,
+} from './options.js';
+export type { ExtensionClock } from './clock/index.js';
 export type { ExtensionEventName, ExtensionEventArgs } from './dispatch.js';
 export { launchWithExtension, type LaunchWithExtensionOptions } from './launch.js';
 export { poll, type PollOptions } from './utils/poll.js';
@@ -47,16 +39,35 @@ export { poll, type PollOptions } from './utils/poll.js';
 /**
  * Playwright test extended with extension configuration and fixtures.
  */
-export const test = base.extend<WebextTestOptions & WebextFixtures, WebextWorkerOptions>({
+export const test = base.extend<
+  WebextTestOptions & WebextFixtures,
+  WebextWorkerOptions & { extensionDirCache: ExtensionDirCache }
+>({
   extensionPath: ['', { option: true, scope: 'worker' }],
   extensionAutoInstall: [true, { option: true }],
+  extensionInitScript: [undefined, { option: true }],
+  extensionClock: [undefined, { option: true }],
+  // internal
+  extensionDirCache: [
+    async ({}, use) => {
+      const extensionDirCache = new ExtensionDirCache();
+      await use(extensionDirCache);
+      await extensionDirCache.cleanup();
+    },
+    { scope: 'worker', box: true },
+  ],
   // eslint-disable-next-line max-lines-per-function
   extension: async (
     {
       extensionPath,
       extensionAutoInstall,
+      extensionInitScript,
+      extensionClock,
+      // internal
+      extensionDirCache,
       // playwright fixtures
       browserName,
+      channel,
       headless,
       launchOptions,
       contextOptions,
@@ -97,7 +108,7 @@ export const test = base.extend<WebextTestOptions & WebextFixtures, WebextWorker
     try {
       // Launch separately from launchWithExtension to track video before extension installation.
       const context = await launchContext({
-        launchOptions: { ...launchOptions, headless },
+        launchOptions: { ...launchOptions, channel, headless },
         contextOptions: {
           ...contextOptions,
           ...removeUndefined({
@@ -129,7 +140,10 @@ export const test = base.extend<WebextTestOptions & WebextFixtures, WebextWorker
       });
       extension = new Extension(context, {
         extensionPath: resolve(baseDir, extensionPath),
+        extensionInitScript: resolveInitScripts(baseDir, extensionInitScript),
+        extensionClock,
         locale,
+        extensionDirCache,
       });
       videoRecording?.track(context);
       if (extensionAutoInstall) await extension.install();
@@ -145,6 +159,7 @@ export const test = base.extend<WebextTestOptions & WebextFixtures, WebextWorker
 
 function validateOptions(extensionPath: string, browserName: string) {
   throwIf(!extensionPath, 'The extension fixture requires use.extensionPath.');
+  // Edge also uses browserName 'chromium'; channel 'msedge' selects the Edge browser.
   throwIf(
     browserName !== 'chromium',
     `The extension fixture only supports Chromium projects; received "${browserName}".`,

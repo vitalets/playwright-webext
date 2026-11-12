@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Static DNR isolation",
+  "version": "1.0.0",
+  "permissions": ["declarativeNetRequest"],
+  "host_permissions": ["http://127.0.0.1/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "rules",
+        "enabled": false,
+        "path": "src/rules.json"
+      }
+    ]
+  }
+}
