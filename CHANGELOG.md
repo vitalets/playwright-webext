@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-12
+
 - Interpret date-only clock inputs as midnight in the browser's timezone.
 
 - Make `extensionClock.time` optional, defaulting to the browser’s current time at installation.
@@ -109,7 +111,8 @@
 
 - Initial release.
 
-[unreleased]: https://github.com/vitalets/playwright-webext/compare/v0.3.7...HEAD
+[unreleased]: https://github.com/vitalets/playwright-webext/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/vitalets/playwright-webext/compare/v0.3.7...v0.4.0
 [0.3.7]: https://github.com/vitalets/playwright-webext/compare/v0.3.6...v0.3.7
 [0.3.6]: https://github.com/vitalets/playwright-webext/compare/v0.3.5...v0.3.6
 [0.3.5]: https://github.com/vitalets/playwright-webext/compare/v0.3.4...v0.3.5
